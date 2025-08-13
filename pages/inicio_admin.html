@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Impulso Comercial</title>
+    <link rel="stylesheet" href="../css/inicio_admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Panel de Administración</h1>
+            <button id="logoutBtn">Cerrar sesión</button>
+        </header>
+
+        <main class="admin-main">
+            <section class="cards-grid">
+                <div class="admin-card" id="cvCard">
+                    <h2>CV Recibidos</h2>
+                    <p class="counter">24</p>
+                    <button class="card-btn">Ver detalles</button>
+                </div>
+
+                <div class="admin-card" id="avisosCard">
+                    <h2>Avisos Activos</h2>
+                    <p class="counter">5</p>
+                    <button class="card-btn">Gestionar</button>
+                </div>
+
+                <div class="admin-card">
+                    <h2>Estadísticas</h2>
+                    <p class="counter">+80% actividad</p>
+                    <button class="card-btn">Ver informe</button>
+                </div>
+            </section>
+
+            <section class="cv-table-section">
+                <h2>Listado de CV Recibidos</h2>
+                <table class="cv-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Puesto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>María González</td>
+                            <td>Atención al cliente</td>
+                            <td><span class="status pendiente">Pendiente</span></td>
+                            <td><button class="table-btn">Ver CV</button></td>
+                        </tr>
+                        <tr>
+                            <td>Carlos Pérez</td>
+                            <td>Ventas</td>
+                            <td><span class="status revisado">Revisado</span></td>
+                            <td><button class="table-btn">Ver CV</button></td>
+                        </tr>
+                        <tr>
+                            <td>Lucía Martínez</td>
+                            <td>Administración</td>
+                            <td><span class="status pendiente">Pendiente</span></td>
+                            <td><button class="table-btn">Ver CV</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/inicio_admin.js"></script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

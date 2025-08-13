@@ -1,0 +1,403 @@
+/* Estilos generales */
+.about-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    line-height: 1.6;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-header h2 {
+    font-size: 2.2rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.divider {
+    width: 80px;
+    height: 3px;
+    background-color: #3498db;
+    margin: 0 auto;
+}
+
+/* Hero Section */
+.about-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../img/hero-about.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.about-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.about-hero p {
+    font-size: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* About Section */
+.about-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+.about-text {
+    flex: 1;
+}
+
+.about-text p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+/* History Section */
+.history-section {
+    margin: 80px 0;
+}
+
+.history-content {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+.history-text {
+    flex: 1;
+}
+
+.history-text p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.history-image {
+    flex: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    max-width: 600px; 
+    max-height: 300px; 
+}
+
+.history-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+
+.method-section {
+    margin: 80px 0;
+}
+
+.method-steps {
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
+}
+
+.method-step {
+    flex: 1;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.method-step:hover {
+    transform: translateY(-10px);
+}
+
+.step-number {
+    position: absolute;
+    top: -25px;
+    left: 20px;
+    background: #3498db;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.step-content {
+    margin-top: 20px;
+}
+
+.step-content h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.contract-types {
+    margin-top: 15px;
+    list-style: none;
+    padding-left: 0;
+}
+
+.contract-types li {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.contract-types i {
+    margin-right: 8px;
+    color: #3498db;
+}
+
+
+.services-section {
+    margin: 80px 0;
+}
+
+.services-cards {
+    display: flex;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.service-card {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+}
+
+.service-icon {
+    font-size: 2.5rem;
+    color: #3498db;
+    margin-bottom: 20px;
+}
+
+.service-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.service-card p {
+    margin-bottom: 15px;
+}
+
+
+.approach-section {
+    margin: 80px 0;
+}
+
+.approach-cards {
+    display: flex;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.approach-card {
+    flex: 1;
+    text-align: center;
+    padding: 30px 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.approach-card:hover {
+    transform: translateY(-10px);
+}
+
+.approach-card i {
+    font-size: 2.5rem;
+    color: #3498db;
+    margin-bottom: 20px;
+}
+
+.approach-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.process-section {
+    margin: 80px 0;
+}
+
+.process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.process-step {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.step-number {
+    background: #3498db;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content {
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.step-content h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+.benefits-section {
+    margin: 80px 0;
+}
+
+.benefits-content {
+    background: #f9f9f9;
+    padding: 40px;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.benefit-item i {
+    color: #3498db;
+    font-size: 1.2rem;
+}
+.about-cta {
+    text-align: center;
+    padding: 60px 20px;
+    background: #3498db;
+    color: white;
+    margin: 80px 0;
+    border-radius: 8px;
+}
+
+.about-cta h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.cta-button {
+    display: inline-block;
+    background: white;
+    color: #3498db;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background: #f8f9fa;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 992px) {
+    .history-content,
+    .about-content,
+    .services-cards,
+    .approach-cards {
+        flex-direction: column;
+    }
+    
+    .method-steps {
+        flex-direction: column;
+        gap: 50px;
+    }
+    
+    .method-step {
+        margin-top: 30px;
+    }
+    
+    .history-image {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .about-hero p {
+        font-size: 1.2rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .about-hero {
+        padding: 60px 20px;
+    }
+    
+    .about-hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .step-content {
+        padding: 15px;
+    }
+    
+    .benefits-content {
+        padding: 20px;
+    }
+}

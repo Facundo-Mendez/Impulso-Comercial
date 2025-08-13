@@ -1,0 +1,162 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #f4f6f9;
+    color: #333;
+}
+
+.admin-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.admin-header {
+    background-color: #275be9;
+    color: #fff;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-header h1 {
+    font-size: 1.8rem;
+}
+
+#logoutBtn {
+    padding: 0.6rem 1.2rem;
+    background-color: #4488ef;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#logoutBtn:hover {
+    background-color: #2684dc;
+}
+
+.admin-main {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+.cards-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.admin-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+}
+
+.admin-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+.counter {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #3f61d1;
+    margin-bottom: 1rem;
+}
+
+.card-btn {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.card-btn:hover {
+    background-color: #2563eb;
+}
+.cv-table-section {
+    margin-top: 3rem;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cv-table-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #1e3a8a;
+}
+
+.cv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.cv-table thead {
+    background-color: #1e40af;
+    color: white;
+}
+
+.cv-table th,
+.cv-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.cv-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.status {
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status.pendiente {
+    background-color: #facc15;
+    color: #7c2d12;
+}
+
+.status.revisado {
+    background-color: #4ade80;
+    color: #065f46;
+}
+
+.table-btn {
+    padding: 0.4rem 0.8rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.table-btn:hover {
+    background-color: #2563eb;
+}
