@@ -1,5 +1,5 @@
 from app import db
-from models.usuario import Usuario
+from app.models.usuario import Usuario
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Optional, List
 
@@ -9,7 +9,7 @@ class UsuarioService:
     def save_usuario(nombre: str, email: str, password: str) -> Usuario:
         hashed_password = generate_password_hash(password)
 
-        nuevo_usuario = Usuario(
+        new_usuario = Usuario(
             nombre=nombre,
             email=email,
             password=hashed_password
