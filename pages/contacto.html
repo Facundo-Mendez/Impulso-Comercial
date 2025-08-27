@@ -21,8 +21,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="../index.html">Inicio</a></li>
-          <li><a href="./sobre-nosotros.html">Sobre Nosotros</a></li>
-          <li><a href="./contacto.html">Contacto</a></li>
+          <li><a href="./contacto.html" class="active">Contacto</a></li>
           <li><a href="./postulantes.html">Postulantes</a></li>
           <li><a href="./login.html" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
@@ -33,9 +32,29 @@
     </div>
   </header>
 
-  <main class="container page-content">
-    <h2 class="page-title">Contacto</h2>
-    <p>Escribinos a <a href='mailto:info@impulsocomercial.com'>info@impulsocomercial.com</a> o llamanos al +57 123 456 7890.</p>
+  <main class="main-content container">
+    
+    <!-- Datos de contacto -->
+    <section class="contact-info">
+      <h2 class="section-title">Datos de contacto</h2>
+      <ul class="contact-list">
+        <li><i class="fas fa-map-marker-alt"></i> Av. San Martín 1234, San Rafael, Mendoza, Argentina</li>
+        <li><i class="fas fa-phone"></i> +54 260 444 5678</li>
+        <li><i class="fas fa-envelope"></i> info@impulsocomercial.com</li>
+      </ul>
+    </section>
+    <!-- Mapa -->
+    <section class="contact-map">
+      <h2 class="section-title">Ubicación</h2>
+      <div class="map-embed">
+        <iframe
+          title="Mapa - Impulso Comercial"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=-32.8904672,-68.8447333&z=16&output=embed">
+        </iframe>
+      </div>
+    </section>
   </main>
 
   <footer class="main-footer">

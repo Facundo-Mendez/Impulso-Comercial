@@ -34,25 +34,43 @@
  <!-- Apartado inicio secion -->
 <main class="container page-content">
   <h2 class="page-title">Acceder</h2>
+
+  <!-- Tabs superiores -->
   <div class="tab-toggle" id="modeTabs">
     <button class="tab-btn active" data-mode="login"><i class="fas fa-right-to-bracket"></i> Iniciar sesión</button>
     <button class="tab-btn" data-mode="signup"><i class="fas fa-user-plus"></i> Crear cuenta</button>
   </div>
+
+  <!-- SUB-tabs para tipo de cuenta (sólo en Login) -->
   <div class="tab-toggle small" id="loginTypeTabs">
     <button class="tab-btn active" data-type="empresa"><i class="fas fa-building"></i> Empresa</button>
     <button class="tab-btn" data-type="usuario"><i class="fas fa-user"></i> Usuario</button>
   </div>
+
+  <!-- FORM LOGIN -->
   <form id="loginForm" class="simple-form" autocomplete="on">
     <input type="hidden" id="loginUserType" value="empresa" />
-    <label>Email <input name="email" type="email" required /></label>
-    <label>Contraseña <input name="password" type="password" required /></label>
+    <label>Email
+      <input name="email" type="email" placeholder="correo@ejemplo.com" required />
+    </label>
+    <label>Contraseña
+      <input name="password" type="password" placeholder="********" required />
+    </label>
     <button type="submit" class="cta-btn primary">Entrar</button>
     <p id="loginMsg" style="margin:4px 0 0;color:var(--muted);"></p>
   </form>
+
+  <!-- FORM SIGNUP (usuario) -->
   <form id="signupForm" class="simple-form" style="display:none" autocomplete="on">
-    <label>Nombre <input name="nombre" type="text" required /></label>
-    <label>Email <input name="correo" type="email" required /></label>
-    <label>Contraseña <input name="password" type="password" required /></label>
+    <label>Nombre
+      <input name="nombre" type="text" placeholder="Tu nombre" required />
+    </label>
+    <label>Email
+      <input name="correo" type="email" placeholder="correo@ejemplo.com" required />
+    </label>
+    <label>Contraseña
+      <input name="password" type="password" placeholder="Mínimo 8 caracteres" required />
+    </label>
     <button type="submit" class="cta-btn primary">Crear cuenta</button>
     <p id="signupMsg" style="margin:4px 0 0;color:var(--muted);"></p>
   </form>
