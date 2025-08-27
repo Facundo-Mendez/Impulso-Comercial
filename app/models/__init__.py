@@ -15,3 +15,4 @@ from . import usuario
 from . import curriculums
 from . import empresas
 from . import etiquetas
+from .entities import Usuario, Empresa      # usa esta línea si elegiste singular

@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Postulantes - Impulso Comercial</title>
+  <title>Postulantes y Empresas - Impulso Comercial</title>
   <link rel="icon" href="../img/logo.png" type="image/png" />
+  <!-- estamos en /pages, por eso subimos un nivel -->
   <link rel="stylesheet" href="../css/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
@@ -21,9 +22,8 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="../index.html">Inicio</a></li>
-          <li><a href="./sobre-nosotros.html">Sobre Nosotros</a></li>
           <li><a href="./contacto.html">Contacto</a></li>
-          <li><a href="./postulantes.html">Postulantes</a></li>
+          <li><a href="./postulantes.html" class="active">Postulantes</a></li>
           <li><a href="./login.html" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
         <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
@@ -33,9 +33,118 @@
     </div>
   </header>
 
-  <main class="container page-content">
-    <h2 class="page-title">Postulantes</h2>
-    <p>Completá el formulario para sumarte a nuestra base de talentos.</p><form class='simple-form'><label>Nombre<input type='text' placeholder='Tu nombre' required></label><label>Email<input type='email' placeholder='tu@email.com' required></label><button type='submit' class='cta-btn primary'>Enviar</button></form>
+  <main class="main-content container">
+    <section class="candidates-hero">
+      <h2 class="section-title">Postulantes y Empresas</h2>
+      <p>Elegí el tipo de formulario que querés completar.</p>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs" id="postTabs" role="tablist">
+      <button class="tab-btn active" data-target="#formEmpresa" role="tab" aria-controls="formEmpresa" aria-selected="true">
+        Para Empresa
+      </button>
+      <button class="tab-btn" data-target="#formPostulante" role="tab" aria-controls="formPostulante" aria-selected="false">
+        Para Postulante
+      </button>
+    </div>
+
+    <div class="tab-panels">
+
+      <!-- =Formulario Empresa = -->
+      <form id="formEmpresa" class="tab-panel" role="tabpanel" aria-labelledby="Para Empresa">
+        <h3 class="form-title">Si querés personal para tu empresa</h3>
+
+        <fieldset class="grid-2">
+          <legend>Perfil requerido</legend>
+
+          <label>
+            Cargo / Perfil solicitado
+            <input type="text" name="empresa_cargo" placeholder="Ej.: Ejecutivo/a de Ventas" required>
+          </label>
+
+          <label>
+            Requisitos del perfil
+            <textarea name="empresa_requisitos" rows="4" placeholder="Experiencia, conocimientos, certificaciones, etc."></textarea>
+          </label>
+
+          <label>
+            Expectativa de personal
+            <input type="text" name="empresa_expectativa" placeholder="Cantidad, seniority, objetivo">
+          </label>
+
+          <label>
+            Modalidad
+            <select name="empresa_modalidad">
+              <option value="presencial">Presencial</option>
+              <option value="hibrido">Híbrido</option>
+              <option value="remoto">Remoto</option>
+            </select>
+          </label>
+
+          <label class="full">
+            Skills requeridas
+            <textarea name="empresa_skills" rows="4" placeholder="Negociación, prospección, CRM, reporting, etc."></textarea>
+          </label>
+
+          <label class="full">
+            Comentarios adicionales
+            <textarea name="empresa_extra" rows="3" placeholder="Horario, zona, paquete de compensación, observaciones"></textarea>
+          </label>
+
+          <label class="check full">
+            <input type="checkbox" required> Acepto los términos y condiciones
+          </label>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" class="cta-btn primary">Enviar</button>
+        </div>
+      </form>
+
+      <!-- ===== Formulario Postulante ===== -->
+      <form id="formPostulante" class="tab-panel hidden" role="tabpanel" aria-labelledby="Para Postulante">
+        <h3 class="form-title">Si querés postularte para una empresa</h3>
+
+        <fieldset class="grid-2">
+          <legend>Cargá tu CV</legend>
+
+          <label class="full">
+            Adjuntar documento (PDF/DOC)
+            <input type="file" name="cv" accept=".pdf,.doc,.docx">
+          </label>
+
+          <label class="full">
+            Contanos sobre vos
+            <textarea name="descripcion" rows="4" placeholder="Resumen de experiencia, logros y objetivos"></textarea>
+          </label>
+
+          <div class="full grid-3">
+            <label>
+              LinkedIn
+              <input type="url" name="linkedin" placeholder="https://www.linkedin.com/in/usuario">
+            </label>
+            <label>
+              GitHub
+              <input type="url" name="github" placeholder="https://github.com/usuario">
+            </label>
+            <label>
+              Portafolio
+              <input type="url" name="portfolio" placeholder="https://portafolio.com/usuario">
+            </label>
+          </div>
+
+          <label class="check full">
+            <input type="checkbox" required> Acepto los términos y condiciones
+          </label>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" class="cta-btn primary">Enviar</button>
+        </div>
+      </form>
+
+    </div>
   </main>
 
   <footer class="main-footer">
@@ -63,6 +172,7 @@
     </div>
   </footer>
 
+  <!-- ruta al JS -->
   <script src="../js/main.js"></script>
 </body>
 </html>
