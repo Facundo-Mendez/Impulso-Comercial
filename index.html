@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -188,3 +189,173 @@
     <script src="js/main.js"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impulso Comercial - Especialistas en Talento Comercial</title>
+  <link rel="icon" href="./img/logo.png" type="image/png" />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="./index.html">
+        <img src="./img/logo.png" alt="Logo Impulso Comercial" class="logo-img" />
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="./index.html" class="active">Inicio</a></li>
+          <li><a href="./pages/contacto.html">Contacto</a></li>
+          <li><a href="./pages/postulantes.html">Postulantes</a></li>
+          <li><a href="./pages/login.html" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+        </ul>
+        <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero-banner">
+    <div class="container hero-content">
+      <h2>IMPULSAMOS TU EQUIPO COMERCIAL</h2>
+      <p>Conectamos empresas con los mejores profesionales comerciales del mercado</p>
+      <div class="cta-buttons">
+        <a href="./pages/login.html" class="cta-btn primary">Quiero postularme</a>
+        <a href="./pages/contacto.html" class="cta-btn secondary">Busco talento comercial</a>
+      </div>
+    </div>
+  </section>
+
+  <main class="main-content container">
+    <section class="features-section">
+      <article class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+        <h3>Perfiles Comerciales</h3>
+        <p>Selección especializada en ventas, trade marketing y gerencias comerciales.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+        <h3>Asesoría Especializada</h3>
+        <p>Te ayudamos a encontrar el perfil que necesita tu negocio.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon"><i class="fas fa-bullseye"></i></div>
+        <h3>Enfoque en Resultados</h3>
+        <p>Talentos orientados a objetivos comerciales concretos.</p>
+      </article>
+    </section>
+
+    <section class="quick-access">
+      <h2 class="section-title">Accesos Rápidos</h2>
+      <div class="quick-accordion">
+        <!-- Proceso de Selección -->
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <i class="fas fa-file-alt"></i>
+            <span>Proceso de Selección</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="process-steps">
+              <div class="process-step">
+                <div class="step-number">1</div>
+                <h3>Conocimiento del Cliente</h3>
+                <p>Comprendemos contexto, valores y objetivos de la organización.</p>
+              </div>
+              <div class="process-step">
+                <div class="step-number">2</div>
+                <h3>Exploración de Talento</h3>
+                <p>Búsqueda integral para identificar perfiles alineados a la cultura y necesidades.</p>
+              </div>
+              <div class="process-step">
+                <div class="step-number">3</div>
+                <h3>Valoración de Perfiles</h3>
+                <p>Análisis integral de habilidades, experiencia y potencial de desarrollo.</p>
+              </div>
+              <div class="process-step">
+                <div class="step-number">4</div>
+                <h3>Selección y Presentación</h3>
+                <p>Preselección curada con visión global de cada candidato.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oportunidades Actuales -->
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <i class="fas fa-briefcase"></i>
+            <span>Oportunidades Actuales</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="job-filters">
+              <p>Trabajamos con empresas que necesitan perfiles de atención al cliente, ventas presenciales, telefónicas y comerciales de campo.</p>
+              <p>Si tenés actitud proactiva y habilidades comunicativas, ¡sumate a la base!</p>
+            </div>
+            <div class="job-listings">
+              <div class="job-card">
+                <h3>Unite a nuestra base de talentos</h3>
+                <p>Cargá tus datos y contanos sobre tu experiencia e intereses. Te contactaremos ante oportunidades acordes.</p>
+                <form class="upload-form" action="http://127.0.0.1:5000/api/curriculums" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="usuario_id">Tu ID de Usuario:</label>
+        <input type="number" id="usuario_id" name="usuario_id" required>
+    </div>
+    <div class="form-group">
+        <label for="cv_file">Selecciona tu CV:</label>
+        <input type="file" id="cv_file" name="file" accept=".pdf,.doc,.docx" required>
+    </div>
+    <button type="submit" class="apply-btn">Enviar mi CV</button>
+</form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+       
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="./img/logo.png" alt="Logo Impulso Comercial" class="footer-logo" />
+        <p>Especialistas en reclutamiento de talento comercial.</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contacto</h4>
+        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+      </div>
+      <div class="footer-social">
+        <h4>Seguinos</h4>
+        <div class="social-links">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="./js/main.js"></script>
+</body>
+</html>
+>>>>>>> Stashed changes
