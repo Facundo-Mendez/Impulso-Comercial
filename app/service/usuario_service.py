@@ -6,13 +6,13 @@ from typing import Optional, List
 class UsuarioService:
 
     @staticmethod
-    def save_usuario(nombre: str, email: str, password: str) -> Usuario:
-        hashed_password = generate_password_hash(password)
+    def save_usuario(data: dict) -> Usuario:
+        hashed_password = generate_password_hash(data['password'])
 
         new_usuario = Usuario(
-            nombre=nombre,
-            email=email,
-            password=hashed_password
+            nombre=data['nombre'],
+            email=data['email'],
+            password_hash=hashed_password
         )
 
         db.session.add(new_usuario)
@@ -20,14 +20,14 @@ class UsuarioService:
         return new_usuario
 
     @staticmethod
-    def update_usuarios(usuario_id: int, nombre: Optional[str] = None, email: Optional[str] = None) -> Optional[Usuario]:
+    def update_usuarios(usuario_id: int, data: dict) -> Optional[Usuario]:
         usuario = Usuario.query.get(usuario_id)
         if not usuario:
             return None
-        if nombre:
-            usuario.nombre = nombre
-        if email:
-            usuario.email = email
+        if 'nombre' in data:
+            usuario.nombre = data['nombre']
+        if 'email' in data:
+            usuario.email = data['email']
 
         db.session.commit()
         return usuario
@@ -46,7 +46,7 @@ class UsuarioService:
 
     @staticmethod
     def validar_password(usuario: Usuario, password: str) -> bool:
-        return check_password_hash(usuario.password, password)
+        return check_password_hash(usuario.password_hash, password)
 
     @staticmethod
     def delete_usuarios(usuario_id: int) -> bool:

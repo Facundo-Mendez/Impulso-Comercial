@@ -11,6 +11,13 @@ class Usuario(db.Model):
 
     curriculums = db.relationship("Curriculums", back_populates="usuario")
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "email": self.email
+        }
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 

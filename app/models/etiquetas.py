@@ -14,8 +14,14 @@ class Etiqueta(db.Model):
         back_populates='etiquetas'
     )
 
-    curriculums = db.relationship(
+    empresas = db.relationship(
         'Empresas',
         secondary=empresas_etiquetas,
         back_populates='etiquetas'
     )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre
+        }

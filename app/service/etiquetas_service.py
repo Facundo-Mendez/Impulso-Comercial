@@ -5,7 +5,7 @@ import datetime
 
 class EtiquetaService:
     @staticmethod
-    def create_etiqueta(nombre: str) -> Optional[Etiqueta]:
+    def save_etiqueta(nombre: str) -> Optional[Etiqueta]:
         if Etiqueta.query.filter_by(nombre=nombre).first():
             return None
         etiqueta = Etiqueta(nombre=nombre)

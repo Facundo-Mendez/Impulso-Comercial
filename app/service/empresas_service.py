@@ -6,23 +6,38 @@ from typing import Optional, List
 class EmpresaService:
 
     @staticmethod
-    def save_empresa(nombre_empresa: str, descripcion: str, usuario_id: int, etiquetas_nombres: List[str]) -> Empresas:
+    def save_empresa(data: dict) -> Empresas:
 
         empresa = Empresas(
-            nombre_empresa=nombre_empresa,
-            descripcion=descripcion,
-            usuario_id=usuario_id
+            nombre_empresa=data['nombre_empresa'],
+            descripcion=data['descripcion'],
+            usuario_id=data['usuario_id'],
         )
 
-        for nombre in etiquetas_nombres:
+        for nombre in data.get('etiquetas', []):
             etiqueta = Etiqueta.query.filter_by(nombre=nombre).first()
             if not etiqueta:
                 etiqueta = Etiqueta(nombre=nombre)
                 db.session.add(etiqueta)
                 db.session.flush()
-            empresa.etiquetas.append(etiqueta)
+            curriculum.etiquetas.append(etiqueta)
 
         db.session.add(empresa)
+        db.session.commit()
+        return empresa
+
+    @staticmethod
+    def update_empresa(empresa_id: int, data: dict) -> Optional[Empresas]:
+
+        empresa = Empresas.query.get(empresa_id)
+        if not empresa:
+            return None
+
+        if 'nombre_empresa':
+            empresa.nombre_empresa = 'nombre_empresa'
+        if 'descripcion':
+            empresa.descripcion = 'descripcion'
+
         db.session.commit()
         return empresa
 
@@ -35,21 +50,6 @@ class EmpresaService:
     def get_all_empresas() -> List[Empresas]:
 
         return Empresas.query.all()
-
-    @staticmethod
-    def update_empresa(empresa_id: int, nombre_empresa: Optional[str] = None, descripcion: Optional[str] = None) -> Optional[Empresas]:
-
-        empresa = Empresas.query.get(empresa_id)
-        if not empresa:
-            return None
-
-        if nombre_empresa:
-            empresa.nombre_empresa = nombre_empresa
-        if descripcion:
-            empresa.descripcion = descripcion
-
-        db.session.commit()
-        return empresa
 
     @staticmethod
     def delete_empresa(empresa_id: int) -> bool:

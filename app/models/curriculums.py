@@ -23,4 +23,4 @@ class Curriculums(db.Model):
     )
 
     def __repr__(self):
-        return f"<Curriculum {self.nombre_archivo}>"
+        return f"<Curriculums {self.nombre_archivo}>"

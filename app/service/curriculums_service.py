@@ -6,15 +6,15 @@ from app import db
 class CurriculumsService:
 
     @staticmethod
-    def save_curriculum(nombre_archivo: str, file_data: bytes, usuario_id: int, etiquetas_nombres: List[str]) -> Curriculums:
+    def save_curriculum(data: dict) -> Curriculums:
         curriculum = Curriculums(
-            nombre_archivo=nombre_archivo,
-            file_data=file_data,
-            usuario_id=usuario_id,
-            ruta_archivo=f"uploads/{nombre_archivo}"
+            nombre_archivo=data['nombre_archivo'],
+            file_data=data['file_data'],
+            usuario_id=data['usuario_id'],
+            ruta_archivo=f"uploads/{data['nombre_archivo']}"
         )
 
-        for nombre in etiquetas_nombres:
+        for nombre in data.get('etiquetas', []):
             etiqueta = Etiqueta.query.filter_by(nombre=nombre).first()
             if not etiqueta:
                 etiqueta = Etiqueta(nombre=nombre)
@@ -27,15 +27,16 @@ class CurriculumsService:
         return curriculum
 
     @staticmethod
-    def update_curriculum(curriculum_id: int, nombre_archivo: Optional[str] = None, file_data: Optional[bytes] = None) -> Optional[Curriculums]:
+    def update_curriculum(curriculum_id: int, data: dict) -> Optional[Curriculums]:
         curriculum = Curriculums.query.get(curriculum_id)
         if not curriculum:
             return None
 
-        if nombre_archivo:
-            curriculum.nombre_archivo = nombre_archivo
-        if file_data:
-            curriculum.file_data = file_data
+        if 'nombre_archivo' in data:
+            curriculum.nombre_archivo = 'nombre_archivo'
+            curriculum.ruta_archivo = f"uploads/{data['nombre_archivo']}"
+        if 'file_data' in data:
+            curriculum.file_data = data['file_data']
 
         db.session.commit()
         return curriculum
