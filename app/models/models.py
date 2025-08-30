@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from sqlalchemy import DateTime
 
+# Para un modelo de usuario
 class Usuario(db.Model):
     __tablename__ = "usuario"
     id_usuario: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -13,6 +14,7 @@ class Usuario(db.Model):
     rol: Mapped[str] = mapped_column(String(20), nullable=False, default="usuario")  # <-- NUEVO
     empresas = relationship("Empresa", back_populates="owner", lazy="selectin")
 
+# Para un modelo de empresa
 class Empresa(db.Model):
     __tablename__ = "empresa"
     id_empresa: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -21,6 +23,7 @@ class Empresa(db.Model):
     usuario_id: Mapped[int] = mapped_column(Integer, ForeignKey("usuario.id_usuario"), nullable=True)
     owner = relationship("Usuario", back_populates="empresas")
 
+# Para un modelo de solicitud empresa
 class SolicitudEmpresa(db.Model):
     __tablename__ = "solicitud_empresa"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -33,6 +36,7 @@ class SolicitudEmpresa(db.Model):
     extra: Mapped[str | None] = mapped_column(Text, nullable=True)
     creado_en: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
+# Para un modelo de solicitud usuario
 class PostulanteRegistro(db.Model):
     __tablename__ = "postulante_registro"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

@@ -74,6 +74,7 @@ def postulante_registro():
 
         upload_dir = os.path.abspath(current_app.config["UPLOAD_FOLDER"])
         os.makedirs(upload_dir, exist_ok=True)
+        
         # prefijo con timestamp para evitar colisiones
         ts = datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
         final_name = f"{ts}_{name}"

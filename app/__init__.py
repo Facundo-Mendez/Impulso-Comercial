@@ -17,9 +17,9 @@ def create_app():
     migrate.init_app(app, db)
 
     # Importar modelos para que Alembic los detecte
-    from .models import models  # noqa: F401
+    from .models import models  
 
-    # ===== Blueprints (REGISTRAR UNA SOLA VEZ) =====
+    # Blueprints (REGISTRAR UNA SOLA VEZ) 
     from .auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
@@ -28,7 +28,7 @@ def create_app():
         from .forms import forms_bp
         app.register_blueprint(forms_bp, url_prefix="/api")
     except Exception:
-        # Si aún no existe forms.py, podés ignorar
+        # Si aún no existe forms.py, se ignora
         pass
 
     # Crear carpeta de uploads si existe la config

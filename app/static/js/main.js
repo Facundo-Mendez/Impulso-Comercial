@@ -1,6 +1,6 @@
 // =========================
 // MENU MOBILE
-// =========================
+
 (() => {
   const btn = document.getElementById('menuBtn');
   const nav = document.getElementById('mainNav');
@@ -12,7 +12,7 @@
 
 // =========================
 /* ACORDEONES (index) */
-// =========================
+
 (() => {
   const items = document.querySelectorAll('.accordion-item .accordion-header');
   items.forEach(h => {
@@ -28,7 +28,7 @@
 
 // =========================
 /* Tabs en postulantes (si existe) */
-// =========================
+
 (() => {
   const tabs = document.getElementById('postTabs');
   if (!tabs) return;
@@ -48,8 +48,8 @@
   activate('#formEmpresa'); // por defecto
 })();
 
-// ==================================================
-// ===============  AUTENTICACIÓN  ==================
+
+// AUTENTICACIÓN  
 // ==================================================
 
 // Helpers de ruta según si estamos en /pages/ o en /
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // =========================
 /* Pestañas y formularios en login.html */
-// =========================
+
 (() => {
   const modeTabs = document.getElementById('modeTabs');
   const loginTypeTabs = document.getElementById('loginTypeTabs');
