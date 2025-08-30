@@ -174,5 +174,18 @@
 
   <!-- ruta al JS -->
   <script src="../js/main.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      document.body.innerHTML = `
+        <main class="container page-content">
+          <h2>Acceso restringido</h2>
+          <p>Debes <a href="./login.html">iniciar sesión</a> para usar este panel.</p>
+        </main>
+      `;
+    }
+  });
+  </script>
 </body>
 </html>

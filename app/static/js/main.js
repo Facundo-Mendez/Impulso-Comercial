@@ -284,3 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+document.addEventListener('DOMContentLoaded', () => {
+  const btnPostular = document.getElementById('btnPostularme');
+  const btnTalento = document.getElementById('btnBuscoTalento');
+
+  function destino() {
+    // si hay token => postulantes, si no => login
+    return localStorage.getItem('token') ? './pages/postulantes.html' : './pages/login.html';
+  }
+
+  if (btnPostular) {
+    btnPostular.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = destino();
+    });
+  }
+
+  if (btnTalento) {
+    btnTalento.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = destino();
+    });
+  }
+});
