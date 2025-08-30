@@ -1,62 +1,108 @@
-from .models import Usuario, Empresa
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-import jwt, datetime, os
-from . import db
+from datetime import datetime, timedelta, timezone
+import jwt, os
 
+from . import db
+from .models.models import Usuario, Empresa
 
 auth_bp = Blueprint("auth", __name__)
 SECRET = os.getenv("SECRET_KEY", "cambia_esta_clave")
 
 def make_token(payload: dict, hours=12):
-    exp = datetime.datetime.utcnow() + datetime.timedelta(hours=hours)
+    exp = datetime.now(timezone.utc) + timedelta(hours=hours)
     payload = {**payload, "exp": exp}
     return jwt.encode(payload, SECRET, algorithm="HS256")
 
+def decode_token(token: str):
+    return jwt.decode(token, SECRET, algorithms=["HS256"])
+
 @auth_bp.post("/signup")
 def signup():
-    data = request.get_json() or {}
-    nombre = (data.get("nombre") or "").strip()
-    correo = (data.get("correo") or "").strip().lower()
-    password = data.get("password") or ""
-    if not (nombre and correo and password):
-        return jsonify({"error": "Faltan datos"}), 400
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    correo = data.get("correo")
+    password = data.get("password")
+    tipo = (data.get("tipo") or "usuario").lower()  # 'usuario' | 'empresa'
+    nombre_empresa = data.get("nombre_empresa")
+    descripcion = data.get("descripcion")
 
+    if not all([nombre, correo, password]):
+        return jsonify({"error": "Faltan campos"}), 400
+    if tipo not in ("usuario", "empresa"):
+        return jsonify({"error": "Tipo inválido (usuario|empresa)"}), 400
     if Usuario.query.filter_by(correo=correo).first():
-        return jsonify({"error": "El correo ya está registrado"}), 409
+        return jsonify({"error": "Ese correo ya existe"}), 409
 
-    hashed = generate_password_hash(password)  # pbkdf2:sha256
-    user = Usuario(nombre=nombre, correo=correo, password=hashed)
-    db.session.add(user)
+    u = Usuario(
+        nombre=nombre,
+        correo=correo,
+        password=generate_password_hash(password),
+        rol=tipo
+    )
+    db.session.add(u)
+    db.session.flush()  # obtenemos u.id_usuario sin cerrar transacción
+
+    empresa_json = None
+    if tipo == "empresa":
+        if not nombre_empresa:
+            return jsonify({"error": "Falta nombre de la empresa"}), 400
+        emp = Empresa(
+            nombre_empresa=nombre_empresa,
+            descripcion=descripcion,
+            usuario_id=u.id_usuario
+        )
+        db.session.add(emp)
+        db.session.flush()
+        empresa_json = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}
+
     db.session.commit()
 
-    token = make_token({"sub": user.id_usuario, "type": "usuario", "email": user.correo})
-    return jsonify({"ok": True, "token": token})
+    token = make_token({"sub": u.id_usuario, "type": tipo, "email": u.correo})
+    resp = {"token": token, "type": tipo, "nombre": u.nombre, "rol": u.rol}
+    if empresa_json:
+        resp["empresa"] = empresa_json
+    return jsonify(resp)
 
 @auth_bp.post("/login")
 def login():
-    data = request.get_json() or {}
-    user_type = (data.get("userType") or "").strip()  # "empresa" | "usuario"
-    email = (data.get("email") or "").strip().lower()
-    password = data.get("password") or ""
-    if user_type not in ("empresa", "usuario"):
-        return jsonify({"error": "Tipo inválido"}), 400
+    data = request.get_json(force=True)
+    correo = data.get("correo")
+    password = data.get("password")
+    if not all([correo, password]):
+        return jsonify({"error": "Faltan credenciales"}), 400
 
-    if user_type == "usuario":
-        u = Usuario.query.filter_by(correo=email).first()
-        if not u or not check_password_hash(u.password, password):
-            return jsonify({"error": "Credenciales inválidas"}), 401
-        token = make_token({"sub": u.id_usuario, "type": "usuario", "email": u.correo})
-        return jsonify({"token": token, "type": "usuario"})
+    u = Usuario.query.filter_by(correo=correo).first()
+    if u and check_password_hash(u.password, password):
+        token = make_token({"sub": u.id_usuario, "type": u.rol, "email": u.correo})
+        resp = {"token": token, "type": u.rol, "nombre": u.nombre, "rol": u.rol}
+        # incluir empresa si corresponde
+        if u.rol == "empresa" and u.empresas:
+            emp = u.empresas[0]
+            resp["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}
+        return jsonify(resp)
 
-    # Login de empresa: busca por correo del usuario dueño de la empresa
-    # (ajusta si tu modelo real guarda correo separado de la empresa)
-    emp = (db.session.query(Empresas)
-           .join(Usuario, Empresas.usuario_id == Usuario.id_usuario)
-           .filter(Usuario.correo == email)
-           .first())
-    if not emp or not check_password_hash(emp.usuario.password, password):
-        return jsonify({"error": "Credenciales inválidas"}), 401
+    return jsonify({"error": "Credenciales inválidas"}), 401
 
-    token = make_token({"sub": emp.id_empresas, "type": "empresa", "email": email})
-    return jsonify({"token": token, "type": "empresa"})
+@auth_bp.get("/me")
+def me():
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return jsonify({"error": "Falta token"}), 401
+    token = auth.split(" ", 1)[1]
+    try:
+        payload = decode_token(token)
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expirado"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Token inválido"}), 401
+
+    u = Usuario.query.get(payload["sub"])
+    if not u:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    out = {"id": u.id_usuario, "nombre": u.nombre, "correo": u.correo, "rol": u.rol}
+    if u.rol == "empresa" and u.empresas:
+        emp = u.empresas[0]
+        out["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}
+    return jsonify(out)
