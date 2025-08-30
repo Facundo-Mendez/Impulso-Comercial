@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear Cuenta - Impulso Comercial</title>
+  <link rel="icon" href="../img/logo.png" type="image/png" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="../index.html">
+        <img src="../img/logo.png" alt="Logo Impulso Comercial" class="logo-img" />
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="../index.html">Inicio</a></li>
+          <li><a href="./contacto.html">Contacto</a></li>
+          <li><a href="./postulantes.html">Postulantes</a></li>
+          <li><a href="./login.html" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+        </ul>
+        <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-content">
+    <h2 class="page-title">Crear cuenta</h2>
+    <form id="signupForm" class="simple-form" autocomplete="on">
+      <label>Tipo de cuenta
+        <select name="tipo" id="signupTipo" required>
+          <option value="usuario" selected>Usuario</option>
+          <option value="empresa">Empresa</option>
+        </select>
+      </label>
+
+      <div id="empresaFields" style="display:none">
+        <label>Nombre de la empresa
+          <input name="nombre_empresa" type="text" />
+        </label>
+        <label>Descripción (opcional)
+          <textarea name="descripcion" rows="3"></textarea>
+        </label>
+      </div>
+
+      <label>Nombre <input name="nombre" type="text" required /></label>
+      <label>Email <input name="correo" type="email" required /></label>
+      <label>Contraseña <input name="password" type="password" required /></label>
+
+      <button type="submit" class="cta-btn primary">Crear cuenta</button>
+      <p id="signupMsg" style="margin:4px 0 0;color:var(--muted);"></p>
+      <p style="margin-top:8px;">¿Ya tenés cuenta? <a href="./login.html">Iniciar sesión</a></p>
+    </form>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="../img/logo.png" alt="Logo Impulso Comercial" class="footer-logo" />
+        <p>Especialistas en reclutamiento de talento comercial.</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contacto</h4>
+        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+      </div>
+      <div class="footer-social">
+        <h4>Seguinos</h4>
+        <div class="social-links">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+  (function(){
+    const form = document.getElementById('signupForm');
+    const msg = document.getElementById('signupMsg');
+    const tipoSel = document.getElementById('signupTipo');
+    const empresaBox = document.getElementById('empresaFields');
+
+    function setToken(t){ localStorage.setItem('token', t); }
+    function getToken(){ return localStorage.getItem('token'); }
+    function rootIndexPath(){ return '../index.html'; }
+
+    // Navbar dinámico
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginLink = document.querySelector('.login-btn');
+      if (!loginLink) return;
+      if (getToken()) {
+        loginLink.textContent = 'Cerrar sesión';
+        loginLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          localStorage.removeItem('token');
+          location.href = rootIndexPath();
+        });
+      } else {
+        loginLink.setAttribute('href', './login.html');
+      }
+    });
+
+    // Mostrar/ocultar campos de empresa
+    const toggleEmpresa = () => {
+      empresaBox.style.display = (tipoSel.value === 'empresa') ? '' : 'none';
+      const nombreEmpresaInput = empresaBox.querySelector('input[name="nombre_empresa"]');
+      if (nombreEmpresaInput) nombreEmpresaInput.required = (tipoSel.value === 'empresa');
+    };
+    tipoSel.addEventListener('change', toggleEmpresa);
+    toggleEmpresa();
+
+    // Enviar signup
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const body = {
+        tipo: (fd.get('tipo') || 'usuario').toLowerCase(),
+        nombre: fd.get('nombre'),
+        correo: fd.get('correo'),
+        password: fd.get('password'),
+      };
+      if (body.tipo === 'empresa') {
+        body.nombre_empresa = fd.get('nombre_empresa');
+        body.descripcion = fd.get('descripcion') || null;
+      }
+      msg.textContent = 'Creando cuenta...';
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        setToken(data.token);
+        msg.textContent = '¡Cuenta creada! Redirigiendo...';
+        location.href = rootIndexPath();
+      } catch (err) {
+        msg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
