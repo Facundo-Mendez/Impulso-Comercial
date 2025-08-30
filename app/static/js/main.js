@@ -225,3 +225,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 })();
+document.addEventListener('DOMContentLoaded', () => {
+  // --- Emparejar IDs de formularios ---
+  const formEmpresa = document.getElementById('formEmpresa');
+  const formPostulante = document.getElementById('formPostulante');
+
+  // helper de token
+  const token = localStorage.getItem('token');
+  const authHeader = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+  // ENVIAR FORM EMPRESA (JSON)
+  if (formEmpresa) {
+    formEmpresa.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(formEmpresa);
+      const body = {
+        empresa_cargo: fd.get('empresa_cargo'),
+        empresa_requisitos: fd.get('empresa_requisitos') || null,
+        empresa_expectativa: fd.get('empresa_expectativa') || null,
+        empresa_modalidad: fd.get('empresa_modalidad') || null,
+        empresa_skills: fd.get('empresa_skills') || null,
+        empresa_extra: fd.get('empresa_extra') || null
+      };
+      try {
+        const res = await fetch('/api/empresa/solicitud', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw data;
+        alert('¡Solicitud enviada! ID: ' + data.id);
+        formEmpresa.reset();
+      } catch (err) {
+        alert(err && err.error ? err.error : 'No se pudo enviar la solicitud');
+      }
+    });
+  }
+
+  // ENVIAR FORM POSTULANTE (FormData con archivo)
+  if (formPostulante) {
+    formPostulante.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(formPostulante); // incluye el file "cv" si lo adjuntó
+      try {
+        const res = await fetch('/api/postulante', {
+          method: 'POST',
+          headers: { ...authHeader }, // no pongas Content-Type: multipart lo arma fetch
+          body: fd
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw data;
+        alert('¡Postulación enviada! ID: ' + data.id);
+        formPostulante.reset();
+      } catch (err) {
+        alert(err && err.error ? err.error : 'No se pudo enviar la postulación');
+      }
+    });
+  }
+});
