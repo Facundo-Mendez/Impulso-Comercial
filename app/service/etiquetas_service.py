@@ -14,9 +14,23 @@ class EtiquetaService:
         return etiqueta
 
     @staticmethod
-    def get_all_etiquetas() -> List[dict]:
-        etiquetas = Etiqueta.query.all()
-        return [{"id": e.id, "nombre": e.nombre} for e in etiquetas]
+    def update_etiquetas(etiqueta_id: int, data: dict) -> Optional[Etiqueta]:
+        etiqueta = Etiqueta.query.get(etiqueta_id)
+        if not etiqueta:
+            return None
+        if 'nombre' in data:
+            etiqueta.nombre = data['nombre']
+
+        db.session.commit()
+        return etiqueta
+
+    @staticmethod
+    def get_all_etiquetas() -> List[Etiqueta]:
+        return Etiqueta.query.all()
+
+    @staticmethod
+    def get_etiquetas_by_id(etiqueta_id: int) -> Optional[Etiqueta]:
+        return Etiqueta.query.get(etiqueta_id)
 
     @staticmethod
     def delete_etiqueta(etiqueta_id: int) -> bool:

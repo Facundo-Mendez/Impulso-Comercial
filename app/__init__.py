@@ -6,10 +6,12 @@ from flask_cors import CORS
 db = SQLAlchemy()
 migrate = Migrate()
 
+# Función para crear la aplicación Flask
 def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    # Configuración de la base de datos desde variables de entorno
     DB_USER = os.environ.get('DB_USER', 'root')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', 'root')
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
@@ -22,6 +24,7 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+    #
 
     # Importa modelo para registrar las tablas
     from app.models import usuario, empresas, curriculums, etiquetas
@@ -38,6 +41,7 @@ def create_app():
     app.register_blueprint(curriculums_bp, url_prefix='/api')
     app.register_blueprint(etiquetas_bp, url_prefix='/api')
 
+    # Rutas para renderizar plantillas HTML
     @app.route('/')
     def index():
         return render_template('index.html')
