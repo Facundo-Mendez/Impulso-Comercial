@@ -142,7 +142,8 @@ El proyecto ahora permite:
   
   
 ## 🚀 Flujo de uso de ramas back-end Git Flow
-```Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalmente, hasta que se termina la tarea y se elimina esa rama```
+```Vamos a trabajar en la rama develop, pero cada vez que trabajemos en una tarea se va a crear una rama feature/nomre de la tarea.```
+```Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalmente, hasta que se termina la tarea y se elimina esa rama.```
 
 1. **Cuando se termina la tarea:**
 - git add .
