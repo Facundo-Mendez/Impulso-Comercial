@@ -48,7 +48,7 @@ def create_app():
                 'endpoint': request.endpoint,
                 'remote_addr': request.remote_addr,
                 'user_agent': request.headers.get('User-Agent', ''),
-                'args': dict(request.args),
+                'request_args': dict(request.args),
                 'form_keys': list(request.form.keys()) if request.form else []
             })
     
