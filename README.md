@@ -154,10 +154,10 @@ Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalm
 - git push origin develop
 
 ```Borrar local (se espera aprobación de Facundo o Ignacio)```
-git branch -d feature/implementacion-ia  
+- git branch -d feature/implementacion-ia  
 
 ```Borrar en remoto (se espera aprobación de Facundo o Ignacio)```
-git push origin --delete feature/implementacion-ia
+- git push origin --delete feature/implementacion-ia
 
 2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
 - git checkout main
