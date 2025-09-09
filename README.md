@@ -152,3 +152,14 @@ El proyecto ahora permite:
 - git pull origin develop
 - git merge feature/implementacion-ia
 - git push origin develop
+
+# Borrar local (se espera aprobación de Facundo o Ignacio)
+git branch -d feature/implementacion-ia  
+
+# Borrar en remoto (se espera aprobación de Facundo o Ignacio)
+git push origin --delete feature/implementacion-ia
+
+2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
+- git checkout main
+- git merge develop
+- git push origin main
