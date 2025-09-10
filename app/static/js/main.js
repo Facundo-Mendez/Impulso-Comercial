@@ -82,6 +82,10 @@ async function getMe() {
   if (!token) return null;
   try {
     const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (res.status === 401) {
+         logout(); // token inválido, limpiar y redirigir
+         return null;
+    }
     if (!res.ok) throw new Error();
     return await res.json();
   } catch { return null; }

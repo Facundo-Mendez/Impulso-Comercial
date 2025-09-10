@@ -34,10 +34,10 @@ SECRET = get_secret_key()
 def make_token(payload: dict, hours=12):
     exp = datetime.now(timezone.utc) + timedelta(hours=hours)
     payload = {**payload, "exp": exp}
-    return jwt.encode(payload, SECRET, algorithm="HS256")
+    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
 
 def decode_token(token: str):
-    return jwt.decode(token, SECRET, algorithms=["HS256"])
+    return jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
 
 def require_auth(f):
     """Decorador para proteger rutas que requieren autenticación"""
@@ -169,35 +169,40 @@ def login():
         usuario = Usuario.query.filter_by(correo=correo).first()
         if not usuario:
             # Log intento de login con email inexistente
-            security_monitor.log_event('login_attempt_invalid_email', {
-                'email': correo,
-                'ip': request.remote_addr,
-                'user_agent': request.headers.get('User-Agent', '')
-            })
+            # security_monitor.log_event('login_attempt_invalid_email', {
+            #     'email': correo,
+            #     'ip': request.remote_addr,
+            #     'user_agent': request.headers.get('User-Agent', '')
+            # })
+            security_monitor.log_failed_login(request.remote_addr, email=correo)
+
             raise AuthenticationError("Credenciales inválidas")
         
         # Verificar contraseña
         if not check_password_hash(usuario.password, password):
             # Log intento de login con contraseña incorrecta
-            security_monitor.log_event('login_attempt_invalid_password', {
-                'user_id': usuario.id_usuario,
-                'email': correo,
-                'ip': request.remote_addr,
-                'user_agent': request.headers.get('User-Agent', '')
-            })
+            # security_monitor.log_event('login_attempt_invalid_password', {
+            #     'user_id': usuario.id_usuario,
+            #     'email': correo,
+            #     'ip': request.remote_addr,
+            #     'user_agent': request.headers.get('User-Agent', '')
+            # })
+            security_monitor.log_failed_login(request.remote_addr, email=correo)
+
             raise AuthenticationError("Credenciales inválidas")
         
         # Generar token JWT
-        token = make_token({"sub": usuario.id_usuario, "type": usuario.rol, "email": usuario.correo})
+        token = make_token({"sub": str(usuario.id_usuario), "type": usuario.rol, "email": usuario.correo})
         
         # Log login exitoso
-        security_monitor.log_event('login_success', {
-            'user_id': usuario.id_usuario,
-            'email': correo,
-            'ip': request.remote_addr,
-            'user_agent': request.headers.get('User-Agent', '')
-        })
-        
+        # security_monitor.log_event('login_success', {
+        #     'user_id': usuario.id_usuario,
+        #     'email': correo,
+        #     'ip': request.remote_addr,
+        #     'user_agent': request.headers.get('User-Agent', '')
+        # })
+        security_monitor.log_successful_login(request.remote_addr, usuario.id_usuario, correo)
+
         logger.info(f"Login exitoso para usuario {correo}")
         
         resp = {
@@ -238,11 +243,12 @@ def me():
         except jwt.InvalidTokenError:
             raise AuthenticationError("Token inválido")
 
-        u = Usuario.query.get(payload["sub"])
+        usuario_id = int(payload["sub"])
+        u = Usuario.query.get(usuario_id)
         if not u:
             raise NotFoundError("Usuario no encontrado")
 
-        out = {"id": u.id_usuario, "nombre": u.nombre, "correo": u.correo, "rol": u.rol}
+        out = {"id": usuario_id, "nombre": u.nombre, "correo": u.correo, "rol": u.rol}
         if u.rol == "empresa" and u.empresas:
             emp = u.empresas[0]
             out["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}

@@ -107,7 +107,7 @@ def create_error_response(error, error_id=None):
     response_data = {
         'error': True,
         'error_id': error_id,
-        'message': error.message,
+        'error_message': error.message,
         'error_code': error.error_code,
         'timestamp': error.timestamp.isoformat() + 'Z'
     }
@@ -125,7 +125,7 @@ def handle_validation_errors(errors):
     response = {
         'error': True,
         'error_id': error_id,
-        'message': 'Errores de validación',
+        'error_message': 'Errores de validación',
         'error_code': 'VALIDATION_ERRORS',
         'errors': errors,
         'timestamp': datetime.utcnow().isoformat() + 'Z'
@@ -145,7 +145,7 @@ def setup_error_handlers(app):
         log_data = {
             'error_id': error_id,
             'error_code': error.error_code,
-            'message': error.message,
+            'error_message': error.message,
             'status_code': error.status_code,
             'details': error.details
         }
@@ -166,7 +166,7 @@ def setup_error_handlers(app):
             return jsonify({
                 'error': True,
                 'error_id': error_id,
-                'message': 'Endpoint no encontrado',
+                'error_message': 'Endpoint no encontrado',
                 'error_code': 'NOT_FOUND',
                 'timestamp': datetime.utcnow().isoformat() + 'Z'
             }), 404
@@ -189,7 +189,7 @@ def setup_error_handlers(app):
             return jsonify({
                 'error': True,
                 'error_id': error_id,
-                'message': 'Error interno del servidor',
+                'error_message': 'Error interno del servidor',
                 'error_code': 'INTERNAL_ERROR',
                 'timestamp': datetime.utcnow().isoformat() + 'Z'
             }), 500
@@ -210,7 +210,7 @@ def setup_error_handlers(app):
         return jsonify({
             'error': True,
             'error_id': error_id,
-            'message': 'Demasiadas solicitudes. Intente más tarde.',
+            'error_message': 'Demasiadas solicitudes. Intente más tarde.',
             'error_code': 'RATE_LIMIT_ERROR',
             'retry_after': retry_after,
             'timestamp': datetime.utcnow().isoformat() + 'Z'
@@ -231,7 +231,7 @@ def setup_error_handlers(app):
             return jsonify({
                 'error': True,
                 'error_id': error_id,
-                'message': 'Error inesperado del servidor',
+                'error_message': 'Error inesperado del servidor',
                 'error_code': 'UNEXPECTED_ERROR',
                 'timestamp': datetime.utcnow().isoformat() + 'Z'
             }), 500

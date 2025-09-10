@@ -73,10 +73,10 @@ def create_app():
 
     # Si tenés el blueprint de formularios:
     try:
-        from .forms import forms_bp
-        app.register_blueprint(forms_bp, url_prefix="/api")
+        from .routes import routes_bp
+        app.register_blueprint(routes_bp, url_prefix="/api")
     except Exception:
-        # Si aún no existe forms.py, se ignora
+        # Si aún no existe routes.py, se ignora
         pass
 
     # Crear carpeta de uploads si existe la config

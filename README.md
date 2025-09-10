@@ -16,9 +16,7 @@ Impulso-Comercial/
 │   ├── config.py            # Configuración general (SQLite, uploads, claves)
 │   ├── models/models.py     # Definición de modelos SQLAlchemy
 │   ├── auth.py              # Blueprint de autenticación (registro, login)
-│   ├── forms.py             # Blueprint de formularios 
-|   ├── run.py               # Punto de arranque de la app 
-(empresa y postulante)
+│   ├── forms.py             # Blueprint de formularios (empresa y postulante)
 │   └── static/              # Archivos frontend (css, js, img)
 │       ├── css/styles.css
 │       ├── js/main.js
@@ -29,7 +27,8 @@ Impulso-Comercial/
 ├── impulso_comercial.db     # Base SQLite (se genera después del upgrade)
 ├── templates/               # Páginas HTML (index, login, postulantes, etc.)
 │
-└──.env                      #Muy importante para lo que es la conexion
+└──.env                      # Muy importante para lo que es la conexion
+└── run.py                   # Punto de arranque de la app 
               
 Flask
 ```

@@ -5,7 +5,7 @@ import os
 from . import db
 from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario
 
-forms_bp = Blueprint("forms", __name__)
+routes_bp = Blueprint("routes", __name__)
 
 def _get_user_from_auth():
     """Devuelve Usuario o None si no hay token válido. No obligatorio."""
@@ -22,7 +22,7 @@ def _get_user_from_auth():
     except Exception:
         return None
 
-@forms_bp.post("/empresa/solicitud")
+@routes_bp.post("/empresa/solicitud")
 def empresa_solicitud():
     """
     Espera JSON o form-url-encoded con keys:
@@ -47,7 +47,7 @@ def empresa_solicitud():
     db.session.commit()
     return jsonify({"ok": True, "id": sol.id})
 
-@forms_bp.post("/postulante")
+@routes_bp.post("/postulante")
 def postulante_registro():
     """
     multipart/form-data:
