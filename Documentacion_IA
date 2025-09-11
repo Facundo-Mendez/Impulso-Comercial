@@ -1,5 +1,3 @@
-Claro, aquí tenés un resumen perfecto para que lo uses como documentación al subir tus cambios a Git.
-
 Resumen de la Integración de IA para Análisis de CV
 Se ha implementado un sistema de Inteligencia Artificial para analizar automáticamente los currículums que se suben a la plataforma. El objetivo es extraer palabras clave relevantes (habilidades, roles, etc.) y convertirlas en "etiquetas" para facilitar la búsqueda y el filtrado de candidatos por parte de Recursos Humanos.
 
