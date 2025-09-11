@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
+
 from . import db
-from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario
+from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario, Etiqueta # <-- 1. Importar Etiqueta
+from .ia_service import analizar_cv_y_extraer_etiquetas # <-- 2. Importar el servicio de IA
 
 forms_bp = Blueprint("forms", __name__)
 
@@ -13,7 +15,6 @@ def _get_user_from_auth():
     if not auth.startswith("Bearer "):
         return None
     token = auth.split(" ", 1)[1]
-    # decode acá sin importar si expira; si rompe, devolvemos None
     try:
         import jwt, os
         SECRET = os.getenv("SECRET_KEY", "cambia_esta_clave")
@@ -47,6 +48,7 @@ def empresa_solicitud():
     db.session.commit()
     return jsonify({"ok": True, "id": sol.id})
 
+# --- FUNCIÓN ACTUALIZADA CON IA ---
 @forms_bp.post("/postulante")
 def postulante_registro():
     """
@@ -64,6 +66,7 @@ def postulante_registro():
     cv_filename = None
     cv_mime = None
     cv_size = None
+    contenido_cv_binario = None  # Variable para guardar los bytes del archivo
 
     if cv and cv.filename:
         name = secure_filename(cv.filename)
@@ -75,10 +78,12 @@ def postulante_registro():
         upload_dir = os.path.abspath(current_app.config["UPLOAD_FOLDER"])
         os.makedirs(upload_dir, exist_ok=True)
         
-        # prefijo con timestamp para evitar colisiones
         ts = datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
         final_name = f"{ts}_{name}"
         path = os.path.join(upload_dir, final_name)
+        
+        contenido_cv_binario = cv.read()
+        cv.seek(0) 
         cv.save(path)
 
         cv_filename = final_name
@@ -87,7 +92,6 @@ def postulante_registro():
             cv_size = os.path.getsize(path)
         except OSError:
             cv_size = None
-
     reg = PostulanteRegistro(
         usuario_id=u.id_usuario if u else None,
         descripcion=descripcion,
@@ -100,5 +104,18 @@ def postulante_registro():
         creado_en=datetime.utcnow(),
     )
     db.session.add(reg)
+
+    # --- INICIO DE LA LÓGICA DE IA ---
+    if contenido_cv_binario and cv_mime:
+        # Llamar al servicio de IA para obtener las etiquetas
+        nombres_etiquetas = analizar_cv_y_extraer_etiquetas(contenido_cv_binario, cv_mime)
+        
+    #  Asociar las etiquetas al registro del postulante
+        for nombre_etiqueta in nombres_etiquetas:
+            etiqueta = Etiqueta.query.filter_by(nombre=nombre_etiqueta).first()
+            if not etiqueta:
+                etiqueta = Etiqueta(nombre=nombre_etiqueta)
+                db.session.add(etiqueta)
+            reg.etiquetas.append(etiqueta)
     db.session.commit()
     return jsonify({"ok": True, "id": reg.id})
