@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -64,3 +65,21 @@ uploads/
 # Temporary files
 *.tmp
 *.temp
+=======
+venv/
+.venv/
+env/
+ENV/
+
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.env
+.env.*
+
+.vscode/
+.idea/
+>>>>>>> b1b65eb46a334bda144e7af9906c89e5d09265c4
