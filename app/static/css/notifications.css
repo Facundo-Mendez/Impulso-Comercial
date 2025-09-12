@@ -1,0 +1,32 @@
+.toast {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 6px solid;
+    padding: .8rem 1rem;
+    border-radius: .7rem;
+    min-width: 260px;
+    box-shadow: var(--shadow);
+    color: var(--fg)
+}
+
+.toast.success {
+    border-left-color: #22c55e
+}
+
+.toast.error {
+    border-left-color: #ef4444
+}
+
+.toast.info {
+    border-left-color: var(--primary)
+}
+
+.toast .title {
+    font-weight: 700;
+    margin-bottom: .2rem
+}
+
+.toast .desc {
+    opacity: .9;
+    font-size: .92rem
+}
