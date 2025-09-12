@@ -37,8 +37,14 @@ def create_app():
     # Setup error handlers
     from .error_handler import setup_error_handlers
     setup_error_handlers(app)
-    
-    # Middleware for request/response logging
+
+    print("=== Rutas registradas en Flask ===")
+    for rule in app.url_map.iter_rules():
+        print(rule, rule.methods)
+    print("=================================")
+
+
+# Middleware for request/response logging
     @app.before_request
     def before_request():
         from .logger import get_logger
@@ -75,9 +81,9 @@ def create_app():
     try:
         from .routes import routes_bp
         app.register_blueprint(routes_bp, url_prefix="/api")
-    except Exception:
+    except Exception as e:
+        print("⚠️ No se pudo registrar routes_bp:", e)
         # Si aún no existe routes.py, se ignora
-        pass
 
     # Crear carpeta de uploads si existe la config
     if hasattr(app.config, "UPLOAD_FOLDER"):

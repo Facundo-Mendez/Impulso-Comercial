@@ -7,7 +7,7 @@ from . import db
 from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario, Etiqueta # <-- 1. Importar Etiqueta
 from .ia_service import analizar_cv_y_extraer_etiquetas # <-- 2. Importar el servicio de IA
 
-forms_bp = Blueprint("forms", __name__)
+routes_bp = Blueprint("routes", __name__)
 
 def _get_user_from_auth():
     """Devuelve Usuario o None si no hay token válido. No obligatorio."""
@@ -23,7 +23,7 @@ def _get_user_from_auth():
     except Exception:
         return None
 
-@forms_bp.post("/empresa/solicitud")
+@routes_bp.post("/empresa/solicitud")
 def empresa_solicitud():
     """
     Espera JSON o form-url-encoded con keys:
@@ -42,14 +42,14 @@ def empresa_solicitud():
         modalidad=data.get("empresa_modalidad"),
         skills=data.get("empresa_skills"),
         extra=data.get("empresa_extra"),
-        creado_en=datetime.utcnow(),
+        creado_en=datetime.now(timezone.utc),
     )
     db.session.add(sol)
     db.session.commit()
     return jsonify({"ok": True, "id": sol.id})
 
 # --- FUNCIÓN ACTUALIZADA CON IA ---
-@forms_bp.post("/postulante")
+@routes_bp.post("/postulante")
 def postulante_registro():
     """
     multipart/form-data:
@@ -78,7 +78,7 @@ def postulante_registro():
         upload_dir = os.path.abspath(current_app.config["UPLOAD_FOLDER"])
         os.makedirs(upload_dir, exist_ok=True)
         
-        ts = datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
         final_name = f"{ts}_{name}"
         path = os.path.join(upload_dir, final_name)
         
@@ -101,7 +101,7 @@ def postulante_registro():
         cv_filename=cv_filename,
         cv_mime=cv_mime,
         cv_size=cv_size,
-        creado_en=datetime.utcnow(),
+        creado_en=datetime.now(timezone.utc),
     )
     db.session.add(reg)
 
