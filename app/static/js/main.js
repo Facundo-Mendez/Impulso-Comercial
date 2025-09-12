@@ -50,17 +50,16 @@
 
 
 // AUTENTICACIÓN  
-// ==================================================
 
 // Helpers de ruta según si estamos en /pages/ o en /
 function rootIndexPath() {
-  return window.location.pathname.includes('/pages/') ? '../index.html' : './index.html';
+  return '/index.html';
 }
 function loginPagePath() {
-  return window.location.pathname.includes('/pages/') ? './login.html' : './pages/login.html';
+  return '/pages/login.html';
 }
 
-// --- Helpers Auth ---
+// Helpers Auth 
 async function api(path, options = {}) {
   const token = localStorage.getItem('token');
   const headers = { ...(options.headers || {}) };
@@ -89,12 +88,32 @@ async function getMe() {
 
 // Navbar dinámica: mostrar nombre (o empresa) si hay sesión
 document.addEventListener('DOMContentLoaded', async () => {
+  // Creaamos mapa SOLO si existe el div#map
+  const mapContainer = document.getElementById('map');
+  if (mapContainer && window.L) {
+    // Evitamos doble inicialización si se recarga
+    if (mapContainer._leaflet_id) {
+      try { mapContainer._leaflet_id = null; } catch (e) {}
+    }
+    const map = L.map(mapContainer).setView([-32.89, -68.85], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([-32.89, -68.85]).addTo(map).bindPopup('Mendoza, Argentina');
+    setTimeout(() => map.invalidateSize(), 0);
+    window.__mendozaMap = map; // por si se usa en otro lado
+  }
+
+  // Resto de la lógica de la navbar 
   const loginLink = document.querySelector('.login-btn');
   if (loginLink) {
     if (isLoggedIn()) {
       const me = await getMe();
       if (me) {
-        const display = (me.rol === 'empresa' && me.empresa) ? me.empresa.nombre_empresa : me.nombre || 'Mi cuenta';
+        const display = (me.rol === 'empresa' && me.empresa)
+          ? me.empresa.nombre_empresa
+          : me.nombre || 'Mi cuenta';
         loginLink.innerHTML = `<i class="fas fa-user-circle"></i> ${display}`;
       } else {
         loginLink.innerHTML = `<i class="fas fa-user-circle"></i> Mi cuenta`;
@@ -112,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// =========================
+
 /* Pestañas y formularios en login.html */
 
 (() => {
@@ -173,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const body = {
       correo: fd.get('email'),    // backend espera "correo"
       password: fd.get('password')
-      // loginUserType.value está por si luego diferenciás flujos
+      // loginUserType.value está por si luego se diferenciá flujos
     };
     if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
     try {
@@ -185,8 +204,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const data = await res.json();
       if (!res.ok) throw data;
       localStorage.setItem('token', data.token);
+      sessionStorage.setItem('token', data.token);
       if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
-      location.href = rootIndexPath();
+      location.href = '/campus';
     } catch (err) {
       if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
     }
@@ -219,14 +239,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!res.ok) throw data;
       localStorage.setItem('token', data.token);
       if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-      location.href = rootIndexPath();
+      location.href = '/campus';
     } catch (err) {
       if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
     }
   });
 })();
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Emparejar IDs de formularios ---
+  // --- Emparejamos IDs de formularios ---
   const formEmpresa = document.getElementById('formEmpresa');
   const formPostulante = document.getElementById('formPostulante');
 
@@ -234,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token');
   const authHeader = token ? { 'Authorization': 'Bearer ' + token } : {};
 
-  // ENVIAR FORM EMPRESA (JSON)
+  // ENVIAMOS FORM EMPRESA (JSON)
   if (formEmpresa) {
     formEmpresa.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -263,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ENVIAR FORM POSTULANTE (FormData con archivo)
+  // ENVIAMOS FORM POSTULANTE (FormData con archivo)
   if (formPostulante) {
     formPostulante.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -271,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const res = await fetch('/api/postulante', {
           method: 'POST',
-          headers: { ...authHeader }, // no pongas Content-Type: multipart lo arma fetch
+          headers: { ...authHeader }, 
           body: fd
         });
         const data = await res.json();
@@ -284,9 +304,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
 document.addEventListener('DOMContentLoaded', () => {
   const btnPostular = document.getElementById('btnPostularme');
   const btnTalento = document.getElementById('btnBuscoTalento');
+  const btnCompletar = document.getElementById('btnCompletarFormulario'); // 👈 nuevo botón
 
   function destino() {
     // si hay token => postulantes, si no => login
@@ -306,4 +328,14 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = destino();
     });
   }
+
+  if (btnCompletar) {
+    btnCompletar.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = destino(); 
+    });
+  }
 });
+
+
+
