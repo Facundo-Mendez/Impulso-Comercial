@@ -13,17 +13,17 @@ from .error_handler import (
 from .logger import get_logger
 from .security import security_monitor
 
-# Import limiter from __init__.py
+# Importamos limiter from __init__.py
 from app import limiter
 
 auth_bp = Blueprint("auth", __name__)
 logger = get_logger('auth')
 
-# Generar SECRET_KEY segura si no existe
+# Generamos SECRET_KEY segura si no existe
 def get_secret_key():
     secret = os.getenv("SECRET_KEY")
     if not secret or secret == "cambia_esta_clave":
-        # Generar una clave segura automáticamente
+        # Generamos una clave segura automáticamente
         new_secret = secrets.token_urlsafe(32)
         print("⚠️  ADVERTENCIA: SECRET_KEY generada automáticamente. Configure una clave permanente en producción.")
         return new_secret
@@ -50,12 +50,12 @@ def require_auth(f):
         token = auth_header.split(' ', 1)[1]
         try:
             payload = decode_token(token)
-            # Verificar que el usuario aún existe
+            # Verificamos que el usuario aún existe
             user = Usuario.query.get(payload.get('sub'))
             if not user:
                 raise AuthenticationError("Usuario no válido")
             
-            # Agregar usuario a request context
+            # Agregamos usuario a request context
             request.current_user = user
             return f(*args, **kwargs)
             
@@ -88,7 +88,7 @@ def signup():
         nombre_empresa = data.get("nombre_empresa", "").strip()
         descripcion = data.get("descripcion", "").strip()
 
-        # Validaciones básicas
+        # Validaciones 
         if not all([nombre, correo, password]):
             raise ValidationError("Nombre, correo y contraseña son requeridos")
         
@@ -101,11 +101,11 @@ def signup():
         if tipo not in ["usuario", "empresa"]:
             raise ValidationError("Tipo debe ser 'usuario' o 'empresa'")
         
-        # Verificar si el usuario ya existe
+        # Verificamos si el usuario ya existe
         if Usuario.query.filter_by(correo=correo).first():
             raise ConflictError("El email ya está registrado")
         
-        # Crear nuevo usuario
+        # Creaamos nuevo usuario
         nuevo_usuario = Usuario(
             nombre=nombre,
             correo=correo,
@@ -115,7 +115,7 @@ def signup():
         db.session.add(nuevo_usuario)
         db.session.flush()  # Para obtener el ID antes del commit
         
-        # Si es empresa, crear registro de empresa
+        # Si es empresa, creamos registro de empresa
         if tipo == "empresa" and nombre_empresa:
             empresa = Empresa(
                 usuario_id=nuevo_usuario.id_usuario,
@@ -158,14 +158,14 @@ def login():
         correo = data.get("correo", "").strip()
         password = data.get("password", "")
         
-        # Validaciones básicas
+        # Validaciones 
         if not correo or not password:
             raise ValidationError("Correo y contraseña son requeridos")
         
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
             raise ValidationError("Formato de email inválido")
         
-        # Buscar usuario
+        # Buscamos usuario
         usuario = Usuario.query.filter_by(correo=correo).first()
         if not usuario:
             # Log intento de login con email inexistente
@@ -176,7 +176,7 @@ def login():
             })
             raise AuthenticationError("Credenciales inválidas")
         
-        # Verificar contraseña
+        # Verificamos contraseña
         if not check_password_hash(usuario.password, password):
             # Log intento de login con contraseña incorrecta
             security_monitor.log_event('login_attempt_invalid_password', {
@@ -187,7 +187,7 @@ def login():
             })
             raise AuthenticationError("Credenciales inválidas")
         
-        # Generar token JWT
+        # Generamos token JWT
         token = make_token({"sub": usuario.id_usuario, "type": usuario.rol, "email": usuario.correo})
         
         # Log login exitoso
@@ -208,7 +208,7 @@ def login():
             "rol": usuario.rol
         }
         
-        # Incluir empresa si corresponde
+        # Incluimos empresa si corresponde
         if usuario.rol == "empresa" and usuario.empresas:
             emp = usuario.empresas[0]
             resp["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}

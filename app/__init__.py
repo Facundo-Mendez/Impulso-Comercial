@@ -17,7 +17,7 @@ limiter = Limiter(
 )
 
 def create_app():
-    # Sirve /css, /js, /img directamente como espera tu front
+    # Sirve /css, /js, /img directamente como espera el front
     app = Flask(__name__, static_url_path="", static_folder="static", template_folder="templates")
     app.config.from_object(Config)
     CORS(app)
@@ -36,21 +36,26 @@ def create_app():
     
     # Setup error handlers
     from .error_handler import setup_error_handlers
-    setup_error_handlers(app)
+    if app.config.get("ENV") not in ("development", "debug"):
+        setup_error_handlers(app)
     
-    # Middleware for request/response logging
+    # Middleware para logging de request/response
     @app.before_request
     def before_request():
         from .logger import get_logger
         logger = get_logger('app')
         if request.endpoint and not request.endpoint.startswith('static'):
-            logger.info(f"Request: {request.method} {request.path}", extra={
-                'endpoint': request.endpoint,
-                'remote_addr': request.remote_addr,
-                'user_agent': request.headers.get('User-Agent', ''),
-                'args': dict(request.args),
-                'form_keys': list(request.form.keys()) if request.form else []
-            })
+            logger.info(
+                f"Request: {request.method} {request.path}",
+                extra={
+                    'endpoint': request.endpoint,
+                    'remote_addr': request.remote_addr,
+                    'user_agent': request.headers.get('User-Agent', ''),
+                    # NO usaremos 'args' porque es reservado por logging
+                    'query_params': request.args.to_dict(flat=False),
+                    'form_keys': list(request.form.keys()) if request.form else []
+                }
+            )
     
     @app.after_request
     def after_request(response):
@@ -62,28 +67,39 @@ def create_app():
                 'response_size': response.content_length,
                 'endpoint': request.endpoint
             })
+
+        # === Headers de seguridad ===
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['Referrer-Policy'] = 'no-referrer-when-downgrade'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; img-src 'self' data:; "
+            "style-src 'self' 'unsafe-inline'; script-src 'self'"
+        )
         return response
 
-    # Importar modelos para que Alembic los detecte
+    # Importamos modelos para que Alembic los detecte
     from .models import models  
 
-    # Blueprints (REGISTRAR UNA SOLA VEZ) 
+    # Blueprints principales
     from .auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
-    # Si tenés el blueprint de formularios:
     try:
         from .forms import forms_bp
         app.register_blueprint(forms_bp, url_prefix="/api")
     except Exception:
-        # Si aún no existe forms.py, se ignora
         pass
 
-    # Crear carpeta de uploads si existe la config
+    #  Import y registro tardío de Campus para evitar circular import 
+    from .blueprints.campus import campus_bp
+    app.register_blueprint(campus_bp)
+
+    # Creamos carpeta de uploads si existe la config
     if hasattr(app.config, "UPLOAD_FOLDER"):
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    # ===== Rutas para tus páginas =====
+    # Rutas para tus páginas estáticas 
     @app.get("/")
     def home():
         return render_template("index.html")
