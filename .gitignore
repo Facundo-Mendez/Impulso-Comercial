@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Python
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,34 +22,33 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Flask
+# --- Flask ---
 instance/
 .webassets-cache
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# --- Virtual Envs ---
+venv/
+.venv/
+env/
+ENV/
 
-# Database
+# --- Database ---
 *.db
 *.sqlite
 *.sqlite3
 
-# Logs
+# --- Logs ---
 logs/
 *.log
 
-# IDE
+# --- IDEs & Editors ---
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# --- OS ---
 .DS_Store
 .DS_Store?
 ._*
@@ -59,27 +57,16 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Uploads (archivos subidos por usuarios)
+# --- Env vars ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Uploads ---
 uploads/
 
-# Temporary files
+# --- Temp ---
 *.tmp
 *.temp
-=======
-venv/
-.venv/
-env/
-ENV/
-
-
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-.env
-.env.*
-
-.vscode/
-.idea/
->>>>>>> b1b65eb46a334bda144e7af9906c89e5d09265c4
