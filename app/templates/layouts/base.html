@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Impulso Comercial{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo-img">
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="{{ url_for('home') }}">Inicio</a></li>
+          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='login') }}" class="btn btn-primary">Iniciar Sesión</a></li>
+        </ul>
+        <button class="mobile-menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
+      </nav>
+    </div>
+  </header>
+
+  {% block content %}{% endblock %}
+
+  <div id="toast-root" class="toast-root"></div>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

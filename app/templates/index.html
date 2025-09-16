@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Impulso Comercial - Especialistas en Talento Comercial</title>
-  <link rel="icon" href="./img/logo.png" type="image/png" />
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
 <body>
   <header class="main-header">
     <div class="container header-inner">
-      <a class="logo-container" href="./index.html">
-        <img src="./img/logo.png" alt="Logo Impulso Comercial" class="logo-img" />
+      <a class="logo-container" href="{{ url_for('home_alias') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img">
         <div class="logo-text">
           <h1>IMPULSO COMERCIAL</h1>
           <p>Especialistas en talento comercial</p>
@@ -20,10 +20,11 @@
       </a>
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
-          <li><a href="./index.html" class="active">Inicio</a></li>
-          <li><a href="./pages/contacto.html">Contacto</a></li>
-          <li><a href="./pages/postulantes.html">Postulantes</a></li>
-          <li><a href="./pages/login.html" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+          <li><a href="{{ url_for('home_alias') }}" class="active">Inicio</a></li>
+          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="/campus">Ir al Campus</a></li>
+          <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
         <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
           <i class="fas fa-bars"></i>
@@ -37,14 +38,13 @@
       <h2>IMPULSAMOS TU EQUIPO COMERCIAL</h2>
       <p>Conectamos empresas con los mejores profesionales comerciales del mercado</p>
       <div class="cta-buttons">
-        <a href="./pages/login.html" class="cta-btn primary" id="btnPostularme">Quiero postularme</a>
-        <a href="./pages/login.html" class="cta-btn secondary" id="btnBuscoTalento">Busco talento comercial</a>
+        <a href="{{ url_for('pages', page='login') }}" class="cta-btn primary" id="btnPostularme">Quiero postularme</a>
+        <a href="{{ url_for('pages', page='login') }}" class="cta-btn secondary" id="btnBuscoTalento">Busco talento comercial</a>
       </div>
     </div>
   </section>
 
   <main class="main-content container">
-
     <!-- QUIÉNES SOMOS -->
     <section class="about-us">
       <h2 class="section-title">Quiénes somos</h2>
@@ -137,7 +137,7 @@
                   En nuestra agencia conectamos empresas con perfiles para atención al cliente, ventas presenciales, telefónicas y comerciales de campo.
                   Si sos proactivo, tenés habilidades comunicativas y buscás nuevas oportunidades, ¡sumate a nuestra base de talentos!
                   👉 Cargá tus datos y experiencia. Te contactaremos cuando haya oportunidades que se ajusten a tu perfil.</p>
-                <a href="./pages/login.html" class="apply-btn">Completar formulario</a>
+                <a href="#" class="apply-btn" id="btnCompletarFormulario">Completar formulario</a>
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@
   <footer class="main-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <img src="./img/logo.png" alt="Logo Impulso Comercial" class="footer-logo" />
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo" />
         <p>Especialistas en reclutamiento de talento comercial.</p>
       </div>
       <div class="footer-contact">
@@ -172,6 +172,6 @@
     </div>
   </footer>
 
-  <script src="./js/main.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

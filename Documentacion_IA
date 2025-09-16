@@ -1,0 +1,40 @@
+Resumen de la Integración de IA para Análisis de CV
+Se ha implementado un sistema de Inteligencia Artificial para analizar automáticamente los currículums que se suben a la plataforma. El objetivo es extraer palabras clave relevantes (habilidades, roles, etc.) y convertirlas en "etiquetas" para facilitar la búsqueda y el filtrado de candidatos por parte de Recursos Humanos.
+
+El proceso se desarrolló en 4 fases principales:
+
+1. Ampliación de la Base de Datos
+Se modificó la estructura de la base de datos para poder almacenar los resultados del análisis.
+
+Se creó una nueva tabla, etiqueta, para guardar las palabras clave.
+
+Se añadió una tabla de asociación, postulante_etiquetas, para crear una relación de muchos a muchos, permitiendo que un CV tenga múltiples etiquetas y que una etiqueta pueda estar en múltiples CVs.
+
+2. Incorporación de Librerías de IA
+Se instalaron las herramientas necesarias para el procesamiento de lenguaje natural (NLP) y la lectura de documentos:
+
+spaCy: Una potente librería de IA para el análisis de texto. Se utilizó un modelo pre-entrenado en español.
+
+PyMuPDF y python-docx: Librerías para extraer el texto crudo de los archivos de CV en formato PDF y DOCX.
+
+3. Creación de un Servicio de IA (ia_service.py)
+Para mantener el código organizado, toda la lógica de la inteligencia artificial se centralizó en un nuevo módulo. Este servicio tiene dos funciones principales:
+
+Extraer el Texto: Lee el contenido binario de un archivo (PDF o DOCX) y lo convierte en texto plano.
+
+Analizar y Etiquetar: Toma el texto extraído y utiliza spaCy para identificar y extraer palabras clave relevantes (habilidades, roles, etc.), devolviendo una lista de etiquetas sugeridas.
+
+4. Integración en el Flujo de Subida de CVs
+Finalmente, se modificó el endpoint de la API que maneja la subida de currículums (/api/postulante). Ahora, el proceso es el siguiente:
+
+El usuario sube un archivo de CV.
+
+El backend guarda el archivo en el servidor.
+
+Inmediatamente después, se llama al servicio de IA con el contenido del archivo.
+
+El servicio de IA devuelve una lista de etiquetas.
+
+El backend guarda estas etiquetas en la base de datos y las asocia con el perfil del postulante.
+
+Este sistema permite que la plataforma enriquezca automáticamente cada perfil de postulante con datos estructurados y relevantes, optimizando futuros procesos de búsqueda y selección.
