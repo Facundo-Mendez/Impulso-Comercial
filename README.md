@@ -138,3 +138,27 @@ El proyecto ahora permite:
 - Formularios que almacenan datos en SQLite y suben archivos.
 - Migraciones consistentes con Alembic.
 - Protección de acceso a secciones restringidas.
+  
+  
+## 🚀 Flujo de uso de ramas back-end Git Flow
+Vamos a trabajar en la rama develop, pero cada vez que trabajemos en una tarea se va a crear una rama feature/nomre de la tarea.
+Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalmente, hasta que se termina la tarea y se elimina esa rama.
+
+1. **Cuando se termina la tarea:**
+- git add .
+- git commit -m "Implementación IA completada"
+- git checkout develop
+- git pull origin develop
+- git merge feature/implementacion-ia
+- git push origin develop
+
+```Borrar local (se espera aprobación de Facundo o Ignacio)```
+- git branch -d feature/implementacion-ia  
+
+```Borrar en remoto (se espera aprobación de Facundo o Ignacio)```
+- git push origin --delete feature/implementacion-ia
+
+2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
+- git checkout main
+- git merge develop
+- git push origin main
