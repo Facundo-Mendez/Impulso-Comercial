@@ -77,7 +77,7 @@ def postulante_registro():
 
         upload_dir = os.path.abspath(current_app.config["UPLOAD_FOLDER"])
         os.makedirs(upload_dir, exist_ok=True)
-        
+
         ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
         final_name = f"{ts}_{name}"
         path = os.path.join(upload_dir, final_name)
@@ -119,3 +119,17 @@ def postulante_registro():
             reg.etiquetas.append(etiqueta)
     db.session.commit()
     return jsonify({"ok": True, "id": reg.id})
+
+@routes_bp.get("/postulante/etiquetas")
+def get_all_etiquetas():
+    """Devuelve todas las etiquetas disponibles"""
+    etiquetas = Etiqueta.query.order_by(Etiqueta.nombre).all()
+    lista = [{"id": e.id, "nombre": e.nombre} for e in etiquetas]
+    return jsonify({"ok": True, "etiquetas": lista})
+
+@routes_bp.get("/postulante/<int:id>/etiquetas")
+def get_etiquetas_by_postulante(id):
+    """Devuelve las etiquetas asociadas a un postulante específico"""
+    postulante = PostulanteRegistro.query.get_or_404(id)
+    lista = [{"id": e.id, "nombre": e.nombre} for e in postulante.etiquetas]
+    return jsonify({"ok": True, "etiquetas": lista}), 200
