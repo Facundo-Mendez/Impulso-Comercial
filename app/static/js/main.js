@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem('token', data.token);
       sessionStorage.setItem('token', data.token);
       if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
-      location.href = '/campus';
+      location.href = '/';
     } catch (err) {
       if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
     }
