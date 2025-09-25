@@ -84,7 +84,7 @@ def signup():
         nombre = data.get("nombre", "").strip()
         correo = data.get("correo", "").strip()
         password = data.get("password", "")
-        tipo = (data.get("tipo") or "usuario").lower()
+        tipo = (data.get("tipo") or "postulante" or "rrhh").lower()
         nombre_empresa = data.get("nombre_empresa", "").strip()
         descripcion = data.get("descripcion", "").strip()
 
@@ -98,10 +98,10 @@ def signup():
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
             raise ValidationError("Formato de email inválido")
         
-        if tipo not in ["usuario", "empresa"]:
-            raise ValidationError("Tipo debe ser 'usuario' o 'empresa'")
+        if tipo not in ["postulante", "empresa", "rrhh"]:
+            raise ValidationError("Tipo debe ser 'postulante' o 'empresa' o 'rrhh'")
         
-        # Verificar si el usuario ya existe
+        # Verificar si el postulante ya existe
         if Usuario.query.filter_by(correo=correo).first():
             raise ConflictError("El email ya está registrado")
         
@@ -146,6 +146,7 @@ def signup():
         db.session.rollback()
         logger.error(f"Error inesperado en registro: {str(e)}", exc_info=True)
         raise AppError("Error interno del servidor durante el registro")
+
 @auth_bp.post("/login")
 @limiter.limit("5 per minute")
 def login():

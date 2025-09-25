@@ -36,13 +36,17 @@
   <main class="page-content container">
     <h2 class="page-title">Crear Cuenta</h2>
 
+    <div id="modeTabs" style="display:none"></div>
+    <div id="loginTypeTabs" style="display:none"></div>
+
     <form id="signupForm" class="simple-form" autocomplete="on">
       <div class="grid-2">
         <label>
           Tipo de cuenta
           <select id="signupTipo" name="tipo" required>
             <option value="empresa" selected>Empresa</option>
-            <option value="usuario">Usuario</option>
+            <option value="postulante">Postulante</option>
+            <option value="rrhh">RRHH</option>
           </select>
         </label>
         <label>
@@ -78,7 +82,6 @@
       <div class="actions">
         <button type="submit" class="cta-btn primary">Crear cuenta</button>
       </div>
-      <p id="signupMsg" class="muted"></p>
     </form>
   </main>
 

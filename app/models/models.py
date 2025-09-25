@@ -19,7 +19,7 @@ class Usuario(db.Model):
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
     correo: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)   
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    rol: Mapped[str] = mapped_column(String(20), nullable=False, default="usuario")
+    rol: Mapped[str] = mapped_column(String(20), nullable=False, default="postulante")
     empresas = relationship("Empresa", back_populates="owner", lazy="selectin")
 
 class Empresa(db.Model):
