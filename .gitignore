@@ -64,6 +64,9 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
+# --- Security ---
+.secret_key
+
 # --- Uploads ---
 uploads/
 
