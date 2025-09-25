@@ -187,9 +187,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       const nombreEmpresaInput = empresaFields.querySelector('input[name="nombre_empresa"]');
       if (nombreEmpresaInput) nombreEmpresaInput.required = empresa;
     };
+
     if (signupTipo) {
       signupTipo.addEventListener('change', toggleEmpresa);
       toggleEmpresa();
+
+    if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw data;
+      localStorage.setItem('token', data.token);
+      sessionStorage.setItem('token', data.token);
+      if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
+      location.href = '/';
+    } catch (err) {
+   main
     }
 
     signupForm.addEventListener('submit', async (e) => {
