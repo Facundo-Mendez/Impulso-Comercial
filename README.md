@@ -2,7 +2,7 @@
 # Proyecto Impulso Comercial - Documentación
 
 Este proyecto implementa un portal para conectar **empresas** y **postulantes** en el ámbito comercial.  
-Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en desarrollo y mas simple que mysql.Ademas un frontend en **HTML, CSS, JS**.
+Usa Flask (Python) para el backend, SQLite para desarrollo (más simple que MySQL) y un frontend en HTML, CSS y JS.
 
 ---
 
@@ -21,11 +21,13 @@ Impulso-Comercial/
 │       ├── css/styles.css
 │       ├── js/main.js
 │       └── img/logo.png
+│   ├── templates/           # Páginas HTML (index, login, postulantes, etc.)
 │
+├── instance/                # Base de datos SQLite
 ├── migrations/              # Archivos de control de migraciones Alembic
 ├── uploads/                 # Aca se almacenan los formularios
 ├── impulso_comercial.db     # Base SQLite (se genera después del upgrade)
-├── templates/               # Páginas HTML (index, login, postulantes, etc.)
+
 │
 └──.env                      # Muy importante para lo que es la conexion
 └── run.py                   # Punto de arranque de la app 
@@ -38,15 +40,15 @@ Flask
 ## 🔑 Funcionalidades implementadas
 
 ### 1. Autenticación de usuarios
-- Registro (`/api/auth/signup`) y login (`/api/auth/login`) con JWT.
-- Usuarios pueden ser **empresa** o **postulante** (`tipo` y `rol` en DB).
+- Registro (`/api/auth/signup`) genera un JWT válido automáticamente (no hace falta login manual después de registrarse) y login (`/api/auth/login`) con JWT.
+- Usuarios pueden ser **empresa**, **postulante** o **rrhh** (`tipo` y `rol` en DB).
 - El estado de sesión se guarda en `localStorage` (token).
 
 ### 2. Rutas y páginas principales
 - `index.html`: landing con botones principales.
   - **Quiero postularme** → redirige a login si no hay sesión, a `postulantes.html` si ya hay sesión.
   - **Busco talento comercial** → igual lógica.
-- `login.html`: formulario para iniciar sesión o registrarse (empresa/usuario).
+- `login.html`: formulario para iniciar sesión o registrarse (empresa/usuario/rrhh).
 - `postulantes.html`: panel con formularios de:
   - Solicitud de empresas (cargar perfil requerido).
   - Postulación de usuarios (cargar CV, links, descripción).
@@ -133,7 +135,7 @@ flask db upgrade
 ##  Resumen
 
 El proyecto ahora permite:
-- Registro/login con roles (empresa o postulante).
+- Registro/login con roles (empresa, postulante o rrhh).
 - Redirección dinámica según sesión.
 - Formularios que almacenan datos en SQLite y suben archivos.
 - Migraciones consistentes con Alembic.
@@ -152,13 +154,13 @@ Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalm
 - git merge feature/implementacion-ia
 - git push origin develop
 
-```Borrar local (se espera aprobación de Facundo o Ignacio)```
+```Borrar local (se espera aprobación de Natalia o Ignacio)```
 - git branch -d feature/implementacion-ia  
 
-```Borrar en remoto (se espera aprobación de Facundo o Ignacio)```
+```Borrar en remoto (se espera aprobación de Natalia o Ignacio)```
 - git push origin --delete feature/implementacion-ia
 
-2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
+2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Natalia o Ignacio):**
 - git checkout main
 - git merge develop
 - git push origin main
