@@ -3,7 +3,7 @@ import secrets
 import string
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///impulso_comercial.db.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///impulso_comercial.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     def get_secret_key():

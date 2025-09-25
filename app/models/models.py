@@ -5,9 +5,9 @@ from datetime import datetime
 from sqlalchemy import DateTime
 
 postulante_etiquetas = Table('postulante_etiquetas', db.metadata,
-    db.Column('postulante_id', Integer, ForeignKey('postulante_registro.id'), primary_key=True),
-    db.Column('etiqueta_id', Integer, ForeignKey('etiqueta.id'), primary_key=True)
-)
+                             db.Column('postulante_id', Integer, ForeignKey('postulante_registro.id'), primary_key=True),
+                             db.Column('etiqueta_id', Integer, ForeignKey('etiqueta.id'), primary_key=True)
+                             )
 class Etiqueta(db.Model):
     __tablename__ = "etiqueta"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -17,7 +17,7 @@ class Usuario(db.Model):
     __tablename__ = "usuario"
     id_usuario: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
-    correo: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)   
+    correo: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     rol: Mapped[str] = mapped_column(String(20), nullable=False, default="postulante")
     empresas = relationship("Empresa", back_populates="owner", lazy="selectin")
