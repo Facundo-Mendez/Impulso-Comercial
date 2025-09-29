@@ -146,6 +146,7 @@ def signup():
         db.session.rollback()
         logger.error(f"Error inesperado en registro: {str(e)}", exc_info=True)
         raise AppError("Error interno del servidor durante el registro")
+
 @auth_bp.post("/login")
 @limiter.limit("5 per minute")
 def login():
