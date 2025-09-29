@@ -43,6 +43,10 @@ img {
   top: 0;
   z-index: 50;
   background: rgba(11, 15, 25, .8);
+  /* Fallback para navegadores que no soportan backdrop-filter */
+  background: rgba(11, 15, 25, .95);
+  /* Prefijos para compatibilidad */
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border)
 }
@@ -638,6 +642,8 @@ body {
 .main-header {
   background: rgba(255, 255, 255, .9) !important;
   border-bottom: 1px solid var(--border) !important;
+  /* Prefijos para compatibilidad */
+  -webkit-backdrop-filter: saturate(120%) blur(8px);
   backdrop-filter: saturate(120%) blur(8px);
 }
 

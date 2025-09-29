@@ -135,119 +135,95 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-
 /* Pestañas y formularios en login.html */
 
 (() => {
-  const modeTabs = document.getElementById('modeTabs');
-  const loginTypeTabs = document.getElementById('loginTypeTabs');
   const loginForm = document.getElementById('loginForm');
   const signupForm = document.getElementById('signupForm');
   const loginUserType = document.getElementById('loginUserType');
   const signupTipo = document.getElementById('signupTipo');
   const empresaFields = document.getElementById('empresaFields');
-  if (!modeTabs) return; // no estamos en login.html
 
-  // Cambio Login / Signup
-  modeTabs.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modeTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const mode = btn.dataset.mode;
-      if (mode === 'login') {
-        loginForm.style.display = '';
-        signupForm.style.display = 'none';
-        loginTypeTabs.style.display = '';
-      } else {
-        loginForm.style.display = 'none';
-        signupForm.style.display = '';
-        loginTypeTabs.style.display = 'none';
+  // --- LOGIN ---
+  if (loginForm) {
+    const loginMsg = document.getElementById('loginMsg');
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(loginForm);
+      const body = {
+        correo: fd.get('correo') || fd.get('email'), // soporta ambos nombres
+        password: fd.get('password'),
+        tipo: loginUserType ? loginUserType.value : 'usuario'
+      };
+      if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        localStorage.setItem('token', data.token);
+        sessionStorage.setItem('token', data.token);
+        if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
+//        location.href = '/campus';
+        location.href = '/';
+      } catch (err) {
+        if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
       }
     });
-  });
-
-  // Cambio Empresa / Usuario (solo login)
-  loginTypeTabs.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      loginTypeTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (loginUserType) loginUserType.value = btn.dataset.type || 'empresa';
-    });
-  });
-
-  // Mostrar/ocultar campos de empresa en SIGNUP
-  const toggleEmpresa = () => {
-    if (!signupTipo || !empresaFields) return;
-    const empresa = signupTipo.value === 'empresa';
-    empresaFields.style.display = empresa ? '' : 'none';
-    const nombreEmpresaInput = empresaFields.querySelector('input[name="nombre_empresa"]');
-    if (nombreEmpresaInput) nombreEmpresaInput.required = empresa;
-  };
-  if (signupTipo) {
-    signupTipo.addEventListener('change', toggleEmpresa);
-    toggleEmpresa();
   }
 
-  // Handler LOGIN
-  const loginMsg = document.getElementById('loginMsg');
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(loginForm);
-    const body = {
-      correo: fd.get('email'),    // backend espera "correo"
-      password: fd.get('password')
-      // loginUserType.value está por si luego se diferenciá flujos
-    };
-    if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      localStorage.setItem('token', data.token);
-      sessionStorage.setItem('token', data.token);
-      if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
-      location.href = '/';
-    } catch (err) {
-      if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
-    }
-  });
+  // --- SIGNUP ---
+  if (signupForm) {
+    const signupMsg = document.getElementById('signupMsg');
 
-  // Handler SIGNUP
-  const signupMsg = document.getElementById('signupMsg');
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(signupForm);
-    const tipo = (fd.get('tipo') || 'usuario').toLowerCase();
-    const body = {
-      tipo,
-      nombre: fd.get('nombre'),
-      correo: fd.get('correo'),
-      password: fd.get('password'),
+    // Mostrar/ocultar campos de empresa
+    const toggleEmpresa = () => {
+      if (!signupTipo || !empresaFields) return;
+      const empresa = signupTipo.value === 'empresa';
+      empresaFields.style.display = empresa ? '' : 'none';
+      const nombreEmpresaInput = empresaFields.querySelector('input[name="nombre_empresa"]');
+      if (nombreEmpresaInput) nombreEmpresaInput.required = empresa;
     };
-    if (tipo === 'empresa') {
-      body.nombre_empresa = fd.get('nombre_empresa');
-      body.descripcion = fd.get('descripcion') || null;
+    if (signupTipo) {
+      signupTipo.addEventListener('change', toggleEmpresa);
+      toggleEmpresa();
     }
-    if (signupMsg) signupMsg.textContent = 'Creando cuenta...';
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      localStorage.setItem('token', data.token);
-      if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-      location.href = '/campus';
-    } catch (err) {
-      if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
-    }
-  });
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(signupForm);
+      const tipo = (fd.get('tipo') || 'postulante' || 'rrhh').toLowerCase();
+      const body = {
+        tipo,
+        nombre: fd.get('nombre'),
+        correo: fd.get('correo'),
+        password: fd.get('password')
+      };
+      if (tipo === 'empresa') {
+        body.nombre_empresa = fd.get('nombre_empresa');
+        body.descripcion = fd.get('descripcion') || null;
+      }
+      if (signupMsg) signupMsg.textContent = 'Creando cuenta...';
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        localStorage.setItem('token', data.token);
+        if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
+//        location.href = '/campus';
+        location.href = '/';
+      } catch (err) {
+        if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
+      }
+    });
+  }
 })();
 document.addEventListener('DOMContentLoaded', () => {
   // --- Emparejamos IDs de formularios ---
@@ -340,6 +316,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
-
-
