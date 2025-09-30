@@ -1,8 +1,7 @@
 from flask import jsonify, request, current_app
-import traceback
 import uuid
 from datetime import datetime
-from .logger import get_logger
+from app.exceptions.logger import get_logger
 
 logger = get_logger('error_handler')
 

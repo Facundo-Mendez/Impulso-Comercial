@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from .config import Config
+from app.security.config.config import Config
 
 # Global objects
 db = SQLAlchemy()
@@ -31,11 +31,11 @@ def create_app():
     limiter.storage_uri = app.config.get('RATELIMIT_STORAGE_URL', 'memory://')
     
     # Setup logging system
-    from .logger import setup_logging
+    from app.exceptions.logger import setup_logging
     setup_logging(app)
     
     # Setup error handlers
-    from .error_handler import setup_error_handlers
+    from app.exceptions.error_handler import setup_error_handlers
     setup_error_handlers(app)
 
     print("=== Rutas registradas en Flask ===")
@@ -47,7 +47,7 @@ def create_app():
 # Middleware for request/response logging
     @app.before_request
     def before_request():
-        from .logger import get_logger
+        from app.exceptions.logger import get_logger
         logger = get_logger('app')
         if request.endpoint and not request.endpoint.startswith('static'):
             logger.info(f"Request: {request.method} {request.path}", extra={
@@ -60,7 +60,7 @@ def create_app():
     
     @app.after_request
     def after_request(response):
-        from .logger import get_logger
+        from app.exceptions.logger import get_logger
         logger = get_logger('app')
         if request.endpoint and not request.endpoint.startswith('static'):
             logger.info(f"Response: {response.status_code} for {request.method} {request.path}", extra={
@@ -74,7 +74,7 @@ def create_app():
     from .models import models  
 
     # Blueprints (REGISTRAR UNA SOLA VEZ) 
-    from .auth import auth_bp
+    from app.security.service.jwt_utils import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     # Si tenés el blueprint de formularios:

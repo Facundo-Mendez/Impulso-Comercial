@@ -16,4 +16,3 @@ from . import empresa
 from . import etiqueta
 from . import postulante
 from . import solicitud
-from . import usuario

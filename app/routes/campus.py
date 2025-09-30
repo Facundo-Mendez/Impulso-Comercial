@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify
-from app.auth import require_auth
+from app.security.service.jwt_utils import require_auth
 from app import limiter
 
 campus_bp = Blueprint('campus', __name__)

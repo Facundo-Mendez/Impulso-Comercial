@@ -1,5 +1,5 @@
 from app.models.curriculums import Curriculums
-from app.service.ia_service import IAService
+from app.services.ia_service import IAService
 from app.models.etiquetas import Etiqueta
 from typing import Optional, List
 from app import db
