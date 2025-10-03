@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 from . import db
@@ -133,3 +133,65 @@ def get_etiquetas_by_postulante(id):
     postulante = PostulanteRegistro.query.get_or_404(id)
     lista = [{"id": e.id, "nombre": e.nombre} for e in postulante.etiquetas]
     return jsonify({"ok": True, "etiquetas": lista}), 200
+
+# ===== Endpoints soporte para módulo perfil =====
+@routes_bp.get("/perfil/jobs")
+def perfil_jobs():
+    """Devuelve lista de trabajos recomendados (mock/simple)."""
+    trabajos = [
+        {
+            "id": "job1",
+            "titulo": "Desarrollador Frontend Senior",
+            "empresa": "TechCorp Argentina",
+            "compatibilidad": 95,
+            "etiquetas_requeridas": ["React", "JavaScript", "HTML/CSS", "3+ años"],
+            "ubicacion": "Buenos Aires - Remoto",
+        },
+        {
+            "id": "job2",
+            "titulo": "Full Stack Developer",
+            "empresa": "StartupTech",
+            "compatibilidad": 78,
+            "etiquetas_requeridas": ["Node.js", "React", "MongoDB", "2+ años"],
+            "ubicacion": "Córdoba - Híbrido",
+        },
+        {
+            "id": "job3",
+            "titulo": "Frontend Developer",
+            "empresa": "DesignStudio",
+            "compatibilidad": 65,
+            "etiquetas_requeridas": ["Vue.js", "JavaScript", "CSS", "1+ años"],
+            "ubicacion": "Mendoza - Presencial",
+        },
+    ]
+    return jsonify({"ok": True, "trabajos": trabajos})
+
+
+# En memoria simple para postulaciones durante la sesión del servidor
+_APLICACIONES_MEM = []
+
+@routes_bp.post("/perfil/apply-job")
+def perfil_apply_job():
+    data = request.get_json() or {}
+    job_id = data.get("job_id")
+    if not job_id:
+        return jsonify({"ok": False, "error": "job_id es requerido"}), 400
+    # Buscar info del job mock para enriquecer
+    jobs_resp = perfil_jobs().json
+    trabajo = next((j for j in jobs_resp["trabajos"] if j["id"] == job_id), None)
+    if not trabajo:
+        return jsonify({"ok": False, "error": "Trabajo no encontrado"}), 404
+    registro = {
+        "job_id": job_id,
+        "trabajo_titulo": trabajo["titulo"],
+        "empresa": trabajo["empresa"],
+        "fecha_postulacion": datetime.now(timezone.utc).isoformat(),
+        "estado": "En revisión",
+    }
+    _APLICACIONES_MEM.append(registro)
+    return jsonify({"ok": True})
+
+
+@routes_bp.get("/perfil/applications")
+def perfil_applications():
+    return jsonify({"ok": True, "postulaciones": _APLICACIONES_MEM})

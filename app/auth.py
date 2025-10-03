@@ -25,7 +25,7 @@ def get_secret_key():
     if not secret or secret == "cambia_esta_clave":
         # Generar una clave segura automáticamente
         new_secret = secrets.token_urlsafe(32)
-        print("⚠️  ADVERTENCIA: SECRET_KEY generada automáticamente. Configure una clave permanente en producción.")
+        print("ADVERTENCIA: SECRET_KEY generada automaticamente. Configure una clave permanente en produccion.")
         return new_secret
     return secret
 

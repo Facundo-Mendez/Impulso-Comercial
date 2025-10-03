@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Perfil | Impulso Comercial</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  
+  <style>
+    /* Estilos específicos para Mi Perfil */
+    .profile-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      min-height: 70vh;
+    }
+
+    .profile-sidebar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      height: fit-content;
+      position: sticky;
+      top: 1rem;
+    }
+
+    .profile-avatar {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .profile-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .profile-nav li {
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .profile-nav a:hover,
+    .profile-nav a.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .profile-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: between;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-title {
+      color: var(--primary);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .cv-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      margin-bottom: 2rem;
+    }
+
+    .cv-upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .cv-upload-area.dragover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .cv-upload-icon {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .cv-current {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .tag-skill { background: linear-gradient(135deg, #059669, #047857); }
+    .tag-experience { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+    .tag-education { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+
+    .job-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .job-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+    .job-header {
+      display: flex;
+      justify-content: between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .job-title { margin: 0 0 0.5rem 0; color: var(--primary); }
+    .job-company { color: var(--text-muted); font-size: 0.95rem; }
+
+    .compatibility-score { padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem; }
+    .score-high { background: rgba(34, 197, 94, 0.2); color: #059669; }
+    .score-medium { background: rgba(245, 158, 11, 0.2); color: #d97706; }
+    .score-low { background: rgba(239, 68, 68, 0.2); color: #dc2626; }
+
+    .job-requirements { margin: 1rem 0; }
+    .job-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+
+    .btn-apply { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .btn-apply:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-apply:disabled { background: var(--text-muted); cursor: not-allowed; transform: none; }
+
+    .btn-secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .btn-secondary:hover { background: var(--primary); color: white; }
+
+    .applications-list { display: flex; flex-direction: column; gap: 1rem; }
+    .application-card { border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .application-status { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem; font-weight: 500; }
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #d97706; }
+    .status-reviewing { background: rgba(59, 130, 246, 0.2); color: #2563eb; }
+    .status-accepted { background: rgba(34, 197, 94, 0.2); color: #059669; }
+    .status-rejected { background: rgba(239, 68, 68, 0.2); color: #dc2626; }
+
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+    @media (max-width: 768px) {
+      .profile-container { grid-template-columns: 1fr; gap: 1rem; }
+      .profile-sidebar { position: static; }
+      .job-header { flex-direction: column; gap: 1rem; }
+      .job-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="{{ url_for('home_alias') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img"/>
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="/campus">Ir al Campus</a></li>
+          <li><a href="{{ url_for('pages', page='perfil') }}" class="active">Mi Perfil</a></li>
+          <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+        </ul>
+        <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content container">
+    <h2 class="page-title">Mi Perfil</h2>
+    
+    <div class="profile-container">
+      <aside class="profile-sidebar">
+        <div class="profile-avatar">
+          <div class="avatar-circle" id="userAvatar">JD</div>
+          <h3 id="userName">Juan Pérez</h3>
+          <p class="muted">Desarrollador Frontend</p>
+        </div>
+        
+        <nav>
+          <ul class="profile-nav">
+            <li><a href="#" class="nav-link active" data-section="curriculum"><i class="fas fa-file-alt"></i> Mi Currículum</a></li>
+            <li><a href="#" class="nav-link" data-section="etiquetas"><i class="fas fa-tags"></i> Mis Etiquetas</a></li>
+            <li><a href="#" class="nav-link" data-section="trabajos"><i class="fas fa-search"></i> Buscar Empleos</a></li>
+            <li><a href="#" class="nav-link" data-section="postulaciones"><i class="fas fa-paper-plane"></i> Mis Postulaciones</a></li>
+            <li><a href="#" class="nav-link" data-section="configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="profile-content">
+        
+        <section id="curriculum" class="section active">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-file-alt"></i> Mi Currículum</h2>
+          </div>
+          
+          <div id="cvCurrent" style="display: none;">
+            <div class="cv-current">
+              <i class="fas fa-file-pdf" style="color: #dc2626; font-size: 2rem;"></i>
+              <div>
+                <h4 id="cvFileName">curriculum.pdf</h4>
+                <p class="muted">Subido el <span id="cvDate">15/09/2024</span></p>
+              </div>
+              <button class="btn-secondary" onclick="downloadCV()">
+                <i class="fas fa-download"></i> Descargar
+              </button>
+            </div>
+          </div>
+
+          <div class="cv-upload-area" id="cvUpload">
+            <div class="cv-upload-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>Subir Currículum</h3>
+            <p>Arrastra tu CV aquí o haz clic para seleccionar</p>
+            <p class="muted">Formato PDF - Máximo 5MB</p>
+            <input type="file" id="cvFile" accept=".pdf" style="display: none;">
+            <button class="cta-btn primary" onclick="document.getElementById('cvFile').click()">
+              Seleccionar archivo
+            </button>
+          </div>
+
+          <div class="simple-form">
+            <div class="grid-2">
+              <label>
+                Nombre completo
+                <input type="text" id="profileName" placeholder="Tu nombre completo" value="Juan Pérez">
+              </label>
+              <label>
+                Teléfono
+                <input type="tel" id="profilePhone" placeholder="+54 9 ..." value="+54 9 261 123-4567">
+              </label>
+            </div>
+            <label>
+              Email
+              <input type="email" id="profileEmail" placeholder="tu@email.com" value="juan.perez@email.com">
+            </label>
+            <label>
+              Título profesional
+              <input type="text" id="profileTitle" placeholder="Ej: Desarrollador Frontend" value="Desarrollador Frontend">
+            </label>
+            <button class="cta-btn primary" onclick="updateProfile()">Guardar cambios</button>
+          </div>
+        </section>
+
+        <section id="etiquetas" class="section">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-tags"></i> Mis Etiquetas</h2>
+            <button class="btn-secondary" onclick="extractTags()">
+              <i class="fas fa-magic"></i> Extraer con IA
+            </button>
+          </div>
+          
+          <div class="tags-section">
+            <h4><i class="fas fa-code"></i> Habilidades Técnicas</h4>
+            <div class="tags-container" id="skillTags"></div>
+          </div>
+
+          <div class="tags-section" style="margin-top: 2rem;">
+            <h4><i class="fas fa-briefcase"></i> Experiencia</h4>
+            <div class="tags-container" id="experienceTags"></div>
+          </div>
+
+          <div class="tags-section" style="margin-top: 2rem;">
+            <h4><i class="fas fa-graduation-cap"></i> Educación</h4>
+            <div class="tags-container" id="educationTags"></div>
+          </div>
+        </section>
+
+        <section id="trabajos" class="section">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-search"></i> Empleos Recomendados</h2>
+          </div>
+          <div class="jobs-list" id="jobsList"></div>
+        </section>
+
+        <section id="postulaciones" class="section">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-paper-plane"></i> Mis Postulaciones</h2>
+          </div>
+          <div class="applications-list" id="applicationsList"></div>
+        </section>
+
+        <section id="configuracion" class="section">
+          <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-cog"></i> Configuración</h2>
+          </div>
+          <div class="simple-form">
+            <h4>Preferencias de notificaciones</h4>
+            <label class="checkbox-label"><input type="checkbox" checked> Recibir emails sobre nuevas oportunidades</label>
+            <label class="checkbox-label"><input type="checkbox" checked> Notificar cuando una empresa vea mi perfil</label>
+            <label class="checkbox-label"><input type="checkbox"> Recibir newsletter semanal</label>
+
+            <h4 style="margin-top: 2rem;">Privacidad</h4>
+            <label class="checkbox-label"><input type="checkbox" checked> Perfil visible para empresas</label>
+            <label class="checkbox-label"><input type="checkbox"> Permitir contacto directo</label>
+            <button class="cta-btn primary" style="margin-top: 2rem;">Guardar configuración</button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+        <p>Especialistas en reclutamiento de talento comercial.</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contacto</h4>
+        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+      </div>
+      <div class="footer-social">
+        <h4>Seguinos</h4>
+        <div class="social-links">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <div id="toast-root" class="toast-root"></div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      const sections = document.querySelectorAll('.section');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          navLinks.forEach(nl => nl.classList.remove('active'));
+          sections.forEach(s => s.classList.remove('active'));
+          this.classList.add('active');
+          const targetSection = document.getElementById(this.dataset.section);
+          if (targetSection) { targetSection.classList.add('active'); }
+        });
+      });
+      setupCVUpload();
+      loadUserData();
+      loadRecommendedJobs();
+      loadUserApplications();
+    });
+
+    function setupCVUpload() {
+      const uploadArea = document.getElementById('cvUpload');
+      const fileInput = document.getElementById('cvFile');
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => uploadArea.addEventListener(eventName, preventDefaults, false));
+      function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+      ['dragenter', 'dragover'].forEach(eventName => uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false));
+      ['dragleave', 'drop'].forEach(eventName => uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false));
+      uploadArea.addEventListener('drop', (e) => { const dt = e.dataTransfer; const files = dt.files; handleFiles(files); }, false);
+      fileInput.addEventListener('change', function() { handleFiles(this.files); });
+      function handleFiles(files) {
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.type === 'application/pdf') { uploadCV(file); }
+          else { showToast('Por favor, selecciona un archivo PDF', 'error'); }
+        }
+      }
+    }
+
+    function uploadCV(file) {
+      showToast('Subiendo CV...', 'info');
+      const formData = new FormData();
+      formData.append('cv', file);
+      fetch('/api/perfil/extract-tags', { method: 'POST', body: formData, headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
+      .then(r => r.json()).then(data => {
+        if (data.ok) {
+          document.getElementById('cvCurrent').style.display = 'block';
+          document.getElementById('cvFileName').textContent = file.name;
+          document.getElementById('cvDate').textContent = new Date().toLocaleDateString();
+          document.getElementById('cvUpload').style.display = 'none';
+          showToast('CV subido exitosamente. Etiquetas extraídas con IA!', 'success');
+          updateTagsFromAPI(data.etiquetas);
+          loadRecommendedJobs();
+        } else { showToast(data.error || 'Error subiendo CV', 'error'); }
+      }).catch(() => showToast('Error conectando con el servidor', 'error'));
+    }
+
+    function extractTags() {
+      showToast('Extrayendo etiquetas con IA...', 'info');
+      setTimeout(extractTagsFromCV, 1500);
+    }
+
+    function extractTagsFromCV() {
+      const skillTags = document.getElementById('skillTags');
+      const newSkills = ['TypeScript', 'Vue.js', 'Docker'];
+      newSkills.forEach(skill => {
+        if (!skillTags.textContent.includes(skill)) {
+          const tag = document.createElement('span');
+          tag.className = 'tag tag-skill';
+          tag.textContent = skill;
+          skillTags.appendChild(tag);
+        }
+      });
+      showToast('Nuevas etiquetas extraídas exitosamente', 'success');
+      calculateJobCompatibility();
+    }
+
+    function updateTagsFromAPI(etiquetas) {
+      if (!etiquetas || etiquetas.length === 0) return;
+      const skillTags = document.getElementById('skillTags');
+      const experienceTags = document.getElementById('experienceTags');
+      const educationTags = document.getElementById('educationTags');
+      etiquetas.forEach(etiqueta => {
+        const nombre = (etiqueta.nombre || '').toLowerCase();
+        let container = skillTags;
+        if (nombre.includes('año') || nombre.includes('experiencia') || nombre.includes('senior') || nombre.includes('junior')) container = experienceTags;
+        else if (nombre.includes('universidad') || nombre.includes('carrera') || nombre.includes('título') || nombre.includes('certificación')) container = educationTags;
+        if (!container.textContent.includes(etiqueta.nombre)) {
+          const tag = document.createElement('span');
+          tag.className = container === skillTags ? 'tag tag-skill' : container === experienceTags ? 'tag tag-experience' : 'tag tag-education';
+          tag.textContent = etiqueta.nombre;
+          container.appendChild(tag);
+        }
+      });
+    }
+
+    function loadRecommendedJobs() {
+      fetch('/api/perfil/jobs', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
+      .then(r => r.json()).then(data => { if (data.ok) displayJobs(data.trabajos); else showToast(data.error || 'Error cargando trabajos', 'error'); })
+      .catch(() => showToast('Error conectando con el servidor', 'error'));
+    }
+
+    function displayJobs(trabajos) {
+      const jobsList = document.getElementById('jobsList');
+      if (!trabajos || trabajos.length === 0) { jobsList.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>No hay trabajos disponibles</p></div>'; return; }
+      jobsList.innerHTML = trabajos.map(trabajo => `
+        <div class="job-card" data-job-id="${trabajo.id}">
+          <div class="job-header">
+            <div>
+              <h3 class="job-title">${trabajo.titulo}</h3>
+              <p class="job-company">${trabajo.empresa}</p>
+            </div>
+            <div class="compatibility-score ${getCompatibilityClass(trabajo.compatibilidad)}">${trabajo.compatibilidad}% Compatible</div>
+          </div>
+          <div class="job-requirements">
+            <div class="tags-container">${trabajo.etiquetas_requeridas.map(tag => `<span class=\"tag tag-skill\">${tag}</span>`).join('')}</div>
+          </div>
+          <p><i class="fas fa-map-marker-alt"></i> ${trabajo.ubicacion}</p>
+          <div class="job-actions">
+            <button class="btn-apply" onclick="applyToJobAPI('${trabajo.id}', this)">Postularme</button>
+            <button class="btn-secondary" onclick="viewJob('${trabajo.id}')">Ver detalles</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getCompatibilityClass(compatibilidad) {
+      if (compatibilidad >= 80) return 'score-high';
+      if (compatibilidad >= 60) return 'score-medium';
+      return 'score-low';
+    }
+
+    function applyToJobAPI(jobId, buttonElement) {
+      showToast('Enviando postulación...', 'info');
+      fetch('/api/perfil/apply-job', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }, body: JSON.stringify({ job_id: jobId }) })
+      .then(r => r.json()).then(data => {
+        if (data.ok) { buttonElement.disabled = true; buttonElement.textContent = 'Postulado'; buttonElement.classList.add('disabled'); showToast('¡Postulación enviada exitosamente!', 'success'); loadUserApplications(); }
+        else { showToast(data.error || 'Error enviando postulación', 'error'); }
+      }).catch(() => showToast('Error conectando con el servidor', 'error'));
+    }
+
+    function loadUserApplications() {
+      fetch('/api/perfil/applications', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
+      .then(r => r.json()).then(data => { if (data.ok) displayApplications(data.postulaciones); })
+      .catch(() => {});
+    }
+
+    function displayApplications(postulaciones) {
+      const applicationsList = document.getElementById('applicationsList');
+      if (!postulaciones || postulaciones.length === 0) { applicationsList.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>No tienes postulaciones aún</p></div>'; return; }
+      applicationsList.innerHTML = postulaciones.map(app => `
+        <div class="application-card">
+          <div class="job-header">
+            <div>
+              <h3 class="job-title">${app.trabajo_titulo}</h3>
+              <p class="job-company">${app.empresa}</p>
+              <p class="muted">Postulado el ${new Date(app.fecha_postulacion).toLocaleDateString()}</p>
+            </div>
+            <div class="application-status ${getStatusClass(app.estado)}">${app.estado}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getStatusClass(estado) {
+      switch ((estado || '').toLowerCase()) {
+        case 'pendiente': return 'status-pending';
+        case 'en revisión': return 'status-reviewing';
+        case 'aceptada': return 'status-accepted';
+        case 'rechazada': return 'status-rejected';
+        default: return 'status-pending';
+      }
+    }
+
+    function updateProfile() {
+      const name = document.getElementById('profileName').value;
+      const phone = document.getElementById('profilePhone').value;
+      const email = document.getElementById('profileEmail').value;
+      const title = document.getElementById('profileTitle').value;
+      if (!name || !email) { showToast('Por favor completa los campos obligatorios', 'error'); return; }
+      showToast('Actualizando perfil...', 'info');
+      fetch('/api/perfil/update', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }, body: JSON.stringify({ nombre: name, telefono: phone, email: email, titulo: title }) })
+      .then(r => r.json()).then(data => {
+        if (data.ok) { document.getElementById('userName').textContent = name; const initials = name.split(' ').map(n => n[0]).join('').toUpperCase(); document.getElementById('userAvatar').textContent = initials; showToast('Perfil actualizado exitosamente', 'success'); }
+        else { showToast(data.error || 'Error actualizando perfil', 'error'); }
+      }).catch(() => showToast('Error conectando con el servidor', 'error'));
+    }
+
+    function downloadCV() { showToast('Descargando CV...', 'info'); setTimeout(() => showToast('CV descargado exitosamente', 'success'), 500); }
+
+    function showToast(message, type = 'info') {
+      const toastRoot = document.getElementById('toast-root');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      const icon = { success: 'fas fa-check-circle', error: 'fas fa-times-circle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+      toast.innerHTML = `<i class="${icon[type]}"></i><span>${message}</span><button onclick="this.parentElement.remove()"><i class=\"fas fa-times\"></i></button>`;
+      toastRoot.appendChild(toast);
+      setTimeout(() => { if (toast.parentElement) toast.remove(); }, 5000);
+      setTimeout(() => { toast.classList.add('show'); }, 100);
+    }
+
+    function loadUserData() {
+      const userData = { name: 'Juan Pérez', email: 'juan.perez@email.com', phone: '+54 9 261 123-4567', title: 'Desarrollador Frontend' };
+      document.getElementById('profileName').value = userData.name;
+      document.getElementById('profileEmail').value = userData.email;
+      document.getElementById('profilePhone').value = userData.phone;
+      document.getElementById('profileTitle').value = userData.title;
+      document.getElementById('userName').textContent = userData.name;
+      const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase();
+      document.getElementById('userAvatar').textContent = initials;
+    }
+  </script>
+
+  <style>
+    .toast-root { position: fixed; top: 1rem; right: 1rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: white; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; min-width: 300px; transform: translateX(100%); opacity: 0; transition: all 0.3s ease; border-left: 4px solid; }
+    .toast.show { transform: translateX(0); opacity: 1; }
+    .toast-success { border-left-color: #059669; color: #059669; }
+    .toast-error { border-left-color: #dc2626; color: #dc2626; }
+    .toast-info { border-left-color: #2563eb; color: #2563eb; }
+    .toast-warning { border-left-color: #d97706; color: #d97706; }
+    .toast button { background: none; border: none; cursor: pointer; opacity: 0.5; margin-left: auto; padding: 0.25rem; }
+    .toast button:hover { opacity: 1; }
+    .checkbox-label { display: flex !important; align-items: center; gap: 0.5rem; margin-bottom: 1rem !important; cursor: pointer; }
+    .checkbox-label input[type="checkbox"] { width: auto !important; margin: 0 !important; }
+    @media (max-width: 480px) { .toast { min-width: auto; width: calc(100vw - 2rem); margin: 0 1rem; } .toast-root { left: 0; right: 0; top: 1rem; } .tags-container { justify-content: center; } .job-actions, .application-card .job-header { text-align: center; } }
+    .job-card { animation: fadeInUp 0.5s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .tag { animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    .loading { position: relative; pointer-events: none; }
+    .loading::after { content: ''; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border: 2px solid #f3f3f3; border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .nav-link:focus, .btn-apply:focus, .btn-secondary:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .tag[tabindex="0"]:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+    .application-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    .profile-nav a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  </style>
+
+</body>
+</html>
+
+
