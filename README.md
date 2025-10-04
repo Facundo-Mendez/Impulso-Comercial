@@ -29,7 +29,7 @@ Impulso-Comercial/
 |       └── solicitud_routes.py
 │   ├── security/
 |       ├── config/
-│           └── config.py    # Configuración general (SQLite, uploads, claves)
+│           └── config.py                   # Configuración general (SQLite, uploads, claves)
 |       ├── model/
 |           ├── __init__.py
 |           └── usuario.py
@@ -44,7 +44,7 @@ Impulso-Comercial/
 |       ├── empresa_service.py
 |       ├── ia_service.py
 |       └── postulante_service.py
-│   └── static/              # Archivos frontend (css, js, img)
+│   └── static/                             # Archivos frontend (css, js, img)
 │       ├── css/
 |           ├── base.css
 |           ├── campus.css
@@ -63,7 +63,7 @@ Impulso-Comercial/
 |                   └── sidebar.js
 |           ├── campus.main.js
 |           └── main.js
-│   └── templates/              # Archivos frontend (html)
+│   └── templates/                          # Archivos frontend (html)
 │       ├── layouts/
 |           └── base.html
 │       ├── pages/
@@ -73,13 +73,13 @@ Impulso-Comercial/
 |           ├── postulantes.html
 |           └── registro.html
 |       └── index.html
-|   └── __init__.py          # Configuración de Flask y registro de blueprints/routes    
+|   └── __init__.py                         # Configuración de Flask y registro de blueprints/routes    
 │
-├── migrations/              # Archivos de control de migraciones Alembic (solo localmente)
-├── uploads/                 # Aca se almacenan los formularios
-├── instance/                # Base SQLite (solo localmente)
-|   └── impulso_comercial.db # (se genera después del upgrade) 
-└── run.py                   # Punto de arranque de la app 
+├── migrations/                             # Archivos de control de migraciones Alembic (solo localmente)
+├── uploads/                                # Aca se almacenan los formularios
+├── instance/                               # Base SQLite (solo localmente)
+|   └── impulso_comercial.db                  # (se genera después del upgrade) 
+└── run.py                                  # Punto de arranque de la app 
               
 Flask
 ```
