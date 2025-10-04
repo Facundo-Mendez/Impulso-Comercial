@@ -1,5 +1,3 @@
-from pyexpat import model
-
 from flask import request, current_app
 from datetime import datetime, timedelta, timezone
 from functools import wraps

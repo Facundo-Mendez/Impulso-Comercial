@@ -1,14 +1,18 @@
+from flask import request
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 from ..model.usuario import Usuario
 from ...models.empresa import Empresa
+from . import jwt_utils
 
 from typing import Optional, List
 from app.exceptions.error_handler import (
-    AuthenticationError, ValidationError, ConflictError,
-    NotFoundError, AppError
+    AuthenticationError, ValidationError, ConflictError
 )
+
+from ..security import security_monitor
 from app.exceptions.logger import get_logger
 
 logger = get_logger('auth')
@@ -20,7 +24,7 @@ class UserService:
         nombre = data.get("nombre", "").strip()
         correo = data.get("correo", "").strip()
         password = data.get("password", "")
-        tipo = (data.get("tipo") or "usuario").lower()
+        tipo = (data.get("tipo") or "postulante" or "rrhh").lower()
         nombre_empresa = data.get("nombre_empresa", "").strip()
         descripcion = data.get("descripcion", "").strip()
 
@@ -34,7 +38,7 @@ class UserService:
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
             raise ValidationError("Formato de email inválido")
 
-        if tipo not in ["usuario", "empresa"]:
+        if tipo not in ["postulante", "empresa", "rrhh"]:
             raise ValidationError("Tipo debe ser 'usuario' o 'empresa'")
 
         # Verificar si el usuario ya existe
@@ -66,39 +70,79 @@ class UserService:
         return nuevo_usuario
 
     @staticmethod
-    def update_usuarios(usuario_id: int, data: dict) -> Optional[Usuario]:
-        usuario = Usuario.query.get(usuario_id)
-        if not usuario:
-            return None
-        if 'nombre' in data:
-            usuario.nombre = data['nombre']
-        if 'email' in data:
-            usuario.email = data['email']
+    def login_usuario(data: dict) -> Usuario:
+        correo = data.get("correo", "").strip()
+        password = data.get("password", "")
 
-        db.session.commit()
-        return usuario
+        # Validaciones básicas
+        if not correo or not password:
+            raise ValidationError("Correo y contraseña son requeridos")
+
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
+            raise ValidationError("Formato de email inválido")
+
+        # Buscar usuario
+        user = Usuario.query.filter_by(correo=correo).first()
+        if not user:
+            security_monitor.log_failed_login(request.remote_addr, email=correo)
+
+            raise AuthenticationError("Credenciales inválidas")
+
+        # Verificar contraseña
+        if not check_password_hash(user.password, password):
+            security_monitor.log_failed_login(request.remote_addr, email=correo)
+
+            raise AuthenticationError("Credenciales inválidas")
+
+        security_monitor.log_successful_login(request.remote_addr, user.id, correo)
+
+        logger.info(f"Login exitoso para usuario {correo}")
+
+        return user
 
     @staticmethod
-    def get_usuario_by_id(usuario_id: int) -> Optional[Usuario]:
-        return Usuario.query.get(usuario_id)
+    def me(user: Usuario) -> dict:
 
-    @staticmethod
-    def get_usuario_by_mail(email: str) -> Optional[Usuario]:
-        return Usuario.query.filter_by(email=email).first()
+        out = {
+            "id": user.id,
+            "nombre": user.nombre,
+            "correo": user.correo,
+            "rol": user.rol
+        }
 
-    @staticmethod
-    def get_all_usuarios() -> List[Usuario]:
-        return Usuario.query.all()
+        if user.rol == "empresa" and user.empresas:
+            emp = user.empresas[0]
+            out["empresa"] = {
+                "id_empresa": emp.id,
+                "nombre_empresa": emp.nombre_empresa
+            }
 
-    @staticmethod
-    def validar_password(usuario: Usuario, password: str) -> bool:
-        return check_password_hash(usuario.password_hash, password)
+        return out
 
-    @staticmethod
-    def delete_usuarios(usuario_id: int) -> bool:
-        usuario = Usuario.query.get(usuario_id)
-        if not usuario:
-            return False
-        db.session.delete(usuario)
-        db.session.commit()
-        return True
+    # @staticmethod
+    # def get_usuario_by_id(user_id: int) -> Optional[Usuario]:
+    #     return Usuario.query.get(user_id)
+    #
+    # @staticmethod
+    # def get_all_usuarios() -> List[Usuario]:
+    #     return Usuario.query.all()
+    #
+    # @staticmethod
+    # def update_usuario(user_id: int, nombre: str = None, correo: str = None) -> Optional[Usuario]:
+    #     usuario = Usuario.query.get(user_id)
+    #     if usuario:
+    #         if nombre:
+    #             usuario.nombre = nombre
+    #         if correo:
+    #             usuario.correo = correo
+    #         db.session.commit()
+    #     return usuario
+    #
+    # @staticmethod
+    # def delete_usuario(user_id: int) -> bool:
+    #     usuario = Usuario.query.get(user_id)
+    #     if usuario:
+    #         db.session.delete(usuario)
+    #         db.session.commit()
+    #         return True
+    #     return False

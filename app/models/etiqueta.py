@@ -16,7 +16,7 @@ class Etiqueta(db.Model):
         back_populates="etiquetas"
     )
 
-    empresas = db.relationship(
+    empresas = relationship(
         'Empresa',
         secondary=empresa_etiquetas,
         back_populates='etiquetas'

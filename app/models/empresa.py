@@ -14,7 +14,7 @@ class Empresa(db.Model):
     owner = relationship("Usuario", back_populates="empresas")
     solicitudes = relationship("Solicitud", back_populates="empresa", cascade="all, delete-orphan")
 
-    etiquetas = db.relationship(
+    etiquetas = relationship(
         "Etiqueta",
         secondary=empresa_etiquetas,
         back_populates='empresas'

@@ -9,128 +9,75 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body>
-  <header class="main-header">
-    <div class="container header-inner">
-      <a class="logo-container" href="{{ url_for('home_alias') }}">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img" />
-        <div class="logo-text">
-          <h1>IMPULSO COMERCIAL</h1>
-          <p>Especialistas en talento comercial</p>
-        </div>
-      </a>
-      <nav class="main-nav" id="mainNav">
-        <ul class="nav-list">
-          <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
-          <li><a href="/campus">Ir al Campus</a></li>
-          <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
-        </ul>
-        <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
-          <i class="fas fa-bars"></i>
-        </button>
-      </nav>
+<header class="main-header">
+  <div class="container header-inner">
+    <a class="logo-container" href="{{ url_for('home_alias') }}">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img" />
+      <div class="logo-text">
+        <h1>IMPULSO COMERCIAL</h1>
+        <p>Especialistas en talento comercial</p>
+      </div>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <ul class="nav-list">
+        <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+        <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+        <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+        <li><a href="/campus">Ir al Campus</a></li>
+        <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+      </ul>
+      <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="page-content container">
+  <h2 class="page-title">Acceso</h2>
+
+  <div id="modeTabs" style="display:none"></div>
+  <div id="loginTypeTabs" style="display:none"></div>
+
+  <!-- LOGIN -->
+  <form id="loginForm" class="simple-form" autocomplete="off">
+    <input type="hidden" id="loginUserType" value="empresa" />
+    <label>Correo
+      <input type="email" name="email" required placeholder="tu@correo.com"/>
+    </label>
+    <label>Contraseña
+      <input type="password" name="password" required placeholder="••••••••"/>
+    </label>
+    <button type="submit">Ingresar</button>
+  </form>
+  <p><a href="{{ url_for('pages', page='registro') }}">¿No tienes una cuenta? Registrarse acá</a></p>
+</main>
+
+<footer class="main-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+      <p>Especialistas en reclutamiento de talento comercial.</p>
     </div>
-  </header>
-
-  <main class="page-content container">
-    <h2 class="page-title">Acceso</h2>
-
-    <div id="modeTabs" class="tab-toggle small" role="tablist" aria-label="Modo de acceso">
-      <button class="tab-btn active" data-mode="login" aria-selected="true">Iniciar sesión</button>
-      <button class="tab-btn" data-mode="signup" aria-selected="false">Crear cuenta</button>
+    <div class="footer-contact">
+      <h4>Contacto</h4>
+      <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+      <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
     </div>
-
-    <div id="loginTypeTabs" class="tab-toggle small" role="tablist" aria-label="Tipo de usuario">
-      <button class="tab-btn active" data-type="empresa" aria-selected="true">Empresa</button>
-      <button class="tab-btn" data-type="usuario" aria-selected="false">Usuario</button>
-    </div>
-
-    <!-- LOGIN -->
-    <form id="loginForm" class="simple-form" autocomplete="on">
-      <input type="hidden" id="loginUserType" value="empresa" />
-      <label>
-        Correo
-        <input type="email" name="email" required placeholder="tu@correo.com"/>
-      </label>
-      <label>
-        Contraseña
-        <input type="password" name="password" required placeholder="••••••••"/>
-      </label>
-      <button type="submit">Ingresar</button>
-      <p id="loginMsg" class="muted"></p>
-    </form>
-
-    <!-- SIGNUP -->
-    <form id="signupForm" class="simple-form" style="display:none" autocomplete="on">
-      <div class="grid-2">
-        <label>
-          Tipo de cuenta
-          <select id="signupTipo" name="tipo" required>
-            <option value="empresa" selected>Empresa</option>
-            <option value="usuario">Usuario</option>
-          </select>
-        </label>
-        <label>
-          Nombre
-          <input type="text" name="nombre" required placeholder="Tu nombre"/>
-        </label>
-      </div>
-      <div class="grid-2">
-        <label>
-          Correo
-          <input type="email" name="correo" required placeholder="tu@correo.com"/>
-        </label>
-        <label>
-          Contraseña
-          <input type="password" name="password" required placeholder="••••••••"/>
-        </label>
-      </div>
-
-      <fieldset id="empresaFields">
-        <legend>Datos de la empresa</legend>
-        <div class="grid-2">
-          <label>
-            Nombre de la empresa
-            <input type="text" name="nombre_empresa" placeholder="Mi Empresa S.A."/>
-          </label>
-          <label>
-            Descripción
-            <input type="text" name="descripcion" placeholder="¿A qué se dedican?"/>
-          </label>
-        </div>
-      </fieldset>
-
-      <button type="submit">Crear cuenta</button>
-      <p id="signupMsg" class="muted"></p>
-    </form>
-  </main>
-
-  <footer class="main-footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
-        <p>Especialistas en reclutamiento de talento comercial.</p>
-      </div>
-      <div class="footer-contact">
-        <h4>Contacto</h4>
-        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
-        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
-      </div>
-      <div class="footer-social">
-        <h4>Seguinos</h4>
-        <div class="social-links">
-          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        </div>
+    <div class="footer-social">
+      <h4>Seguinos</h4>
+      <div class="social-links">
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
-    </div>
-  </footer>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+  </div>
+</footer>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

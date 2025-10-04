@@ -71,19 +71,19 @@ def create_app():
         return response
 
     # Importar modelos para que Alembic los detecte
-    from .models import models  
+    from . import models
 
     # Blueprints (REGISTRAR UNA SOLA VEZ) 
-    from app.security.service.jwt_utils import auth_bp
+    from app.security.routes.usuario_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     # Si tenés el blueprint de formularios:
-    try:
-        from .routes import routes_bp
-        app.register_blueprint(routes_bp, url_prefix="/api")
-    except Exception as e:
-        print("⚠️ No se pudo registrar routes_bp:", e)
-        # Si aún no existe routes.py, se ignora
+    # try:
+    #     from .routes import routes_bp
+    #     app.register_blueprint(routes_bp, url_prefix="/api")
+    # except Exception as e:
+    #     print("⚠️ No se pudo registrar routes_bp:", e)
+    #     # Si aún no existe postulante_service.py, se ignora
 
     # Crear carpeta de uploads si existe la config
     if hasattr(app.config, "UPLOAD_FOLDER"):
