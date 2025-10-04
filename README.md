@@ -12,37 +12,37 @@ Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en
 Impulso-Comercial/
 │
 ├── app/
-│   ├── exceptions/
+│   ├── exceptions/                         # Manejo de errores (mensajes, etc)
 |       ├── error_handler.py
 |       └── logger.py
-│   ├── models/
-|       ├── __init__.py
+│   ├── models/                             # Modelos general del proyecto
+|       ├── __init__.py                     # Manejo de tablas intermedias e importación de modelos
 |       ├── empresa.py
 |       ├── etiqueta.py
 |       ├── postulante.py
 |       └── solicitud.py
-│   ├── routes/
+│   ├── routes/                             # Rutas general del proyecto (endpoints)
 |       ├── campus.py
 |       ├── empresa_routes.py
 |       ├── etiqueta_routes.py
 |       ├── postulante_routes.py
 |       └── solicitud_routes.py
-│   ├── security/
-|       ├── config/
-│           └── config.py                   # Configuración general (SQLite, uploads, claves)
-|       ├── model/
-|           ├── __init__.py
+│   ├── security/                           # Configuración (Autenticación, token, clave, seguridad)
+|       ├── config/                         # Configuración general (SQLite, uploads, claves)
+│           └── config.py                   
+|       ├── model/                          # Modelos de usuario
+|           ├── __init__.py                 # importación de modelo
 |           └── usuario.py
-|       ├── routes/
+|       ├── routes/                         # Ruta de usuario, donde se recibe la información del front (endpoints)
 |           └── usuario_routes.py
-|       ├── service/
-|           ├── jwt_utils.py
+|       ├── service/                        # Manejo de lógica de autenticación, que se recibe de los endpoints
+|           ├── jwt_utils.py                # Manejo de lógica de tokens
 |           └── user_service.py
-|       └── security.py
-|   ├── service/
+|       └── security.py                     # Manejo de lógica de seguridad
+|   ├── service/                            # Manejo de lógica general, que se recibe de los endpoints
 |       ├── curriculums_service.py
 |       ├── empresa_service.py
-|       ├── ia_service.py
+|       ├── ia_service.py                   # Manejo de lógica de la IA
 |       └── postulante_service.py
 │   └── static/                             # Archivos frontend (css, js, img)
 │       ├── css/
