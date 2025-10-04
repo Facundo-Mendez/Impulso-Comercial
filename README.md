@@ -1,7 +1,7 @@
 
 # Proyecto Impulso Comercial - Documentación
 
-Este proyecto implementa un portal para conectar **empresas** y **postulantes** en el ámbito comercial.  
+Este proyecto implementa un portal para conectar **empresas**, **rrhh** y **postulantes** en el ámbito comercial.  
 Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en desarrollo y mas simple que mysql.Ademas un frontend en **HTML, CSS, JS**.
 
 ---
@@ -12,22 +12,73 @@ Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en
 Impulso-Comercial/
 │
 ├── app/
-│   ├── __init__.py          # Configuración de Flask y registro de blueprints
-│   ├── config.py            # Configuración general (SQLite, uploads, claves)
-│   ├── models/models.py     # Definición de modelos SQLAlchemy
-│   ├── auth.py              # Blueprint de autenticación (registro, login)
-│   ├── forms.py             # Blueprint de formularios (empresa y postulante)
+│   ├── exceptions/
+|       ├── error_handler.py
+|       └── logger.py
+│   ├── models/
+|       ├── __init__.py
+|       ├── empresa.py
+|       ├── etiqueta.py
+|       ├── postulante.py
+|       └── solicitud.py
+│   ├── routes/
+|       ├── campus.py
+|       ├── empresa_routes.py
+|       ├── etiqueta_routes.py
+|       ├── postulante_routes.py
+|       └── solicitud_routes.py
+│   ├── security/
+|       ├── config/
+│           └── config.py    # Configuración general (SQLite, uploads, claves)
+|       ├── model/
+|           ├── __init__.py
+|           └── usuario.py
+|       ├── routes/
+|           └── usuario_routes.py
+|       ├── service/
+|           ├── jwt_utils.py
+|           └── user_service.py
+|       └── security.py
+|   ├── service/
+|       ├── curriculums_service.py
+|       ├── empresa_service.py
+|       ├── ia_service.py
+|       └── postulante_service.py
 │   └── static/              # Archivos frontend (css, js, img)
-│       ├── css/styles.css
-│       ├── js/main.js
-│       └── img/logo.png
+│       ├── css/
+|           ├── base.css
+|           ├── campus.css
+|           ├── notifications.css
+|           └── styles.css
+│       ├── img/
+|           └── logo.png
+│       └── js/
+│           └── modules/
+│               └── core/
+|                   ├── apiClient.js
+|                   ├── auth.js
+|                   └── notifications.js
+│               └── ui/
+|                   ├── campusRouter.js
+|                   └── sidebar.js
+|           ├── campus.main.js
+|           └── main.js
+│   └── templates/              # Archivos frontend (html)
+│       ├── layouts/
+|           └── base.html
+│       ├── pages/
+|           ├── campus.html
+|           ├── contacto.html
+|           ├── login.html
+|           ├── postulantes.html
+|           └── registro.html
+|       └── index.html
+|   └── __init__.py          # Configuración de Flask y registro de blueprints/routes    
 │
-├── migrations/              # Archivos de control de migraciones Alembic
+├── migrations/              # Archivos de control de migraciones Alembic (solo localmente)
 ├── uploads/                 # Aca se almacenan los formularios
-├── impulso_comercial.db     # Base SQLite (se genera después del upgrade)
-├── templates/               # Páginas HTML (index, login, postulantes, etc.)
-│
-└──.env                      # Muy importante para lo que es la conexion
+├── instance/                # Base SQLite (solo localmente)
+|   └── impulso_comercial.db # (se genera después del upgrade) 
 └── run.py                   # Punto de arranque de la app 
               
 Flask
@@ -39,7 +90,7 @@ Flask
 
 ### 1. Autenticación de usuarios
 - Registro (`/api/auth/signup`) y login (`/api/auth/login`) con JWT.
-- Usuarios pueden ser **empresa** o **postulante** (`tipo` y `rol` en DB).
+- Usuarios pueden ser **empresa**, **rrhh** o **postulante** (`tipo` y `rol` en DB).
 - El estado de sesión se guarda en `localStorage` (token).
 
 ### 2. Rutas y páginas principales
@@ -54,8 +105,8 @@ Flask
 
 ### 3. Formularios y base de datos
 - **Modelos creados:**
-  - `SolicitudEmpresa`: solicitudes de personal por parte de empresas.
-  - `PostulanteRegistro`: registros de postulantes con datos y CV.
+  - `Solicitud`: solicitudes de personal por parte de empresas.
+  - `Postulante`: registros de postulantes con datos y CV.
 - **Almacenamiento de archivos:** los CV subidos se guardan en `/uploads/`.
 
 ### 4. JS dinámico (`main.js`)
