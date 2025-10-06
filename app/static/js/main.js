@@ -73,7 +73,19 @@ function isLoggedIn() {
   return !!localStorage.getItem('token');
 }
 function logout() {
+  // Limpiar tokens
   localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+  
+  // Remover enlace "Mi Perfil" si existe
+  const navList = document.querySelector('.nav-list');
+  if (navList) {
+    const existingProfileLink = navList.querySelector('a[href*="perfil"]');
+    if (existingProfileLink) {
+      existingProfileLink.parentElement.remove();
+    }
+  }
+  
   location.href = rootIndexPath();
 }
 async function getMe() {
@@ -109,10 +121,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.__mendozaMap = map; // por si se usa en otro lado
   }
 
-  // Resto de la lógica de la navbar 
+  // Lógica de la navbar dinámica
+  const navList = document.querySelector('.nav-list');
   const loginLink = document.querySelector('.login-btn');
-  if (loginLink) {
+  
+  if (navList && loginLink) {
     if (isLoggedIn()) {
+      // Agregar enlace "Mi Perfil" si no existe
+      const existingProfileLink = navList.querySelector('a[href*="perfil"]');
+      if (!existingProfileLink) {
+        const profileLi = document.createElement('li');
+        profileLi.innerHTML = `<a href="/pages/modulo_postulante.html">Mi Perfil</a>`;
+        // Insertar antes del enlace de login
+        navList.insertBefore(profileLi, loginLink.parentElement);
+      }
+      
+      // Actualizar el enlace de login para mostrar información del usuario
       const me = await getMe();
       if (me) {
         const display = (me.rol === 'empresa' && me.empresa)
@@ -129,6 +153,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (confirm("¿Cerrar sesión?")) logout();
       });
     } else {
+      // Remover enlace "Mi Perfil" si existe
+      const existingProfileLink = navList.querySelector('a[href*="perfil"]');
+      if (existingProfileLink) {
+        existingProfileLink.parentElement.remove();
+      }
+      
+      // Restaurar enlace de login normal
       loginLink.setAttribute('href', loginPagePath());
       loginLink.innerHTML = `Iniciar Sesión <i class="fas fa-sign-in-alt"></i>`;
     }
