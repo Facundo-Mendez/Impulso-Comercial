@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const res = await fetch('/api/postulante', {
           method: 'POST',
-          headers: { ...authHeader }, 
+          headers: { ...authHeader },
           body: fd
         });
         const data = await res.json();
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCompletar) {
     btnCompletar.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = destino(); 
+      window.location.href = destino();
     });
   }
 });

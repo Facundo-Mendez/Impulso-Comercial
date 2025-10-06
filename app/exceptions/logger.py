@@ -37,7 +37,7 @@ class StructuredFormatter(logging.Formatter):
                 # Agregar usuario si está autenticado
                 if hasattr(request, 'current_user') and request.current_user:
                     log_data['user'] = {
-                        'id': request.current_user.id_usuario,
+                        'id': request.current_user.id,
                         'email': request.current_user.correo,
                         'role': request.current_user.rol
                     }

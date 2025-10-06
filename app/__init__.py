@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from .config import Config
+from app.security.config.config import Config
 
 # Global objects
 db = SQLAlchemy()
@@ -31,11 +31,11 @@ def create_app():
     limiter.storage_uri = app.config.get('RATELIMIT_STORAGE_URL', 'memory://')
     
     # Setup logging system
-    from .logger import setup_logging
+    from app.exceptions.logger import setup_logging
     setup_logging(app)
     
     # Setup error handlers
-    from .error_handler import setup_error_handlers
+    from app.exceptions.error_handler import setup_error_handlers
     setup_error_handlers(app)
 
     print("=== Rutas registradas en Flask ===")
@@ -47,7 +47,7 @@ def create_app():
 # Middleware for request/response logging
     @app.before_request
     def before_request():
-        from .logger import get_logger
+        from app.exceptions.logger import get_logger
         logger = get_logger('app')
         if request.endpoint and not request.endpoint.startswith('static'):
             logger.info(f"Request: {request.method} {request.path}", extra={
@@ -60,7 +60,7 @@ def create_app():
     
     @app.after_request
     def after_request(response):
-        from .logger import get_logger
+        from app.exceptions.logger import get_logger
         logger = get_logger('app')
         if request.endpoint and not request.endpoint.startswith('static'):
             logger.info(f"Response: {response.status_code} for {request.method} {request.path}", extra={
@@ -71,23 +71,30 @@ def create_app():
         return response
 
     # Importar modelos para que Alembic los detecte
-    from .models import models  
+    from . import models
 
     # Blueprints (REGISTRAR UNA SOLA VEZ) 
-    from .auth import auth_bp
+    from app.security.routes.usuario_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     # Si tenés el blueprint de formularios:
     try:
-        from .routes import routes_bp
-        app.register_blueprint(routes_bp, url_prefix="/api")
+        from .routes.postulante_routes import postulante_bp
+        app.register_blueprint(postulante_bp, url_prefix="/api")
     except Exception as e:
-        print("⚠️ No se pudo registrar routes_bp:", e)
-        # Si aún no existe routes.py, se ignora
+        print("⚠️ No se pudo registrar postulante_bp:", e)
+        # Si aún no existe postulante_service.py, se ignora
 
     # Crear carpeta de uploads si existe la config
     if hasattr(app.config, "UPLOAD_FOLDER"):
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    # Si tenés el blueprint de formularios:
+    try:
+        from .routes.empresa_routes import empresas_bp
+        app.register_blueprint(empresas_bp, url_prefix="/api")
+    except Exception as e:
+        print("⚠️ No se pudo registrar empresas_bp:", e)
 
     # ===== Rutas para tus páginas =====
     @app.get("/")

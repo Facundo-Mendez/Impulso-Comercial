@@ -1,8 +1,8 @@
 
 # Proyecto Impulso Comercial - Documentación
 
-Este proyecto implementa un portal para conectar **empresas** y **postulantes** en el ámbito comercial.  
-Usa Flask (Python) para el backend, SQLite para desarrollo (más simple que MySQL) y un frontend en HTML, CSS y JS.
+Este proyecto implementa un portal para conectar **empresas**, **rrhh** y **postulantes** en el ámbito comercial.  
+Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en desarrollo y mas simple que mysql.Ademas un frontend en **HTML, CSS, JS**.
 
 ---
 
@@ -12,25 +12,72 @@ Usa Flask (Python) para el backend, SQLite para desarrollo (más simple que MySQ
 Impulso-Comercial/
 │
 ├── app/
-│   ├── __init__.py          # Configuración de Flask y registro de blueprints
-│   ├── config.py            # Configuración general (SQLite, uploads, claves)
-│   ├── models/models.py     # Definición de modelos SQLAlchemy
-│   ├── auth.py              # Blueprint de autenticación (registro, login)
-│   ├── forms.py             # Blueprint de formularios (empresa y postulante)
-│   └── static/              # Archivos frontend (css, js, img)
-│       ├── css/styles.css
-│       ├── js/main.js
-│       └── img/logo.png
-│   ├── templates/           # Páginas HTML (index, login, postulantes, etc.)
+│   ├── exceptions/                         # Manejo de errores (mensajes, etc)
+|       ├── error_handler.py
+|       └── logger.py
+│   ├── models/                             # Modelos general del proyecto
+|       ├── __init__.py                     # Manejo de tablas intermedias e importación de modelos
+|       ├── empresa.py
+|       ├── etiqueta.py
+|       ├── postulante.py
+|       └── solicitud.py
+│   ├── routes/                             # Rutas general del proyecto (endpoints)
+|       ├── campus.py
+|       ├── empresa_routes.py
+|       └── postulante_routes.py
+│   ├── security/                           # Configuración (Autenticación, token, clave, seguridad)
+|       ├── config/                         # Configuración general (SQLite, uploads, claves)
+│           └── config.py                   
+|       ├── model/                          # Modelos de usuario
+|           ├── __init__.py                 # importación de modelo
+|           └── usuario.py
+|       ├── routes/                         # Ruta de usuario, donde se recibe la información del front (endpoints)
+|           └── usuario_routes.py
+|       ├── service/                        # Manejo de lógica de autenticación, que se recibe de los endpoints
+|           ├── jwt_utils.py                # Manejo de lógica de tokens
+|           └── user_service.py
+|       └── security.py                     # Manejo de lógica de seguridad
+|   ├── service/                            # Manejo de lógica general, que se recibe de los endpoints
+|       ├── curriculums_service.py
+|       ├── empresa_service.py
+|       ├── ia_service.py                   # Manejo de lógica de la IA
+|       └── postulante_service.py
+│   └── static/                             # Archivos frontend (css, js, img)
+│       ├── css/
+|           ├── base.css
+|           ├── campus.css
+|           ├── notifications.css
+|           └── styles.css
+│       ├── img/
+|           └── logo.png
+│       └── js/
+│           └── modules/
+│               └── core/
+|                   ├── apiClient.js
+|                   ├── auth.js
+|                   └── notifications.js
+│               └── ui/
+|                   ├── campusRouter.js
+|                   └── sidebar.js
+|           ├── campus.main.js
+|           └── main.js
+│   └── templates/                          # Archivos frontend (html)
+│       ├── layouts/
+|           └── base.html
+│       ├── pages/
+|           ├── campus.html
+|           ├── contacto.html
+|           ├── login.html
+|           ├── postulantes.html
+|           └── registro.html
+|       └── index.html
+|   └── __init__.py                         # Configuración de Flask y registro de blueprints/routes    
 │
-├── instance/                # Base de datos SQLite
-├── migrations/              # Archivos de control de migraciones Alembic
-├── uploads/                 # Aca se almacenan los formularios
-├── impulso_comercial.db     # Base SQLite (se genera después del upgrade)
-
-│
-└──.env                      # Muy importante para lo que es la conexion
-└── run.py                   # Punto de arranque de la app 
+├── migrations/                             # Archivos de control de migraciones Alembic (solo localmente)
+├── uploads/                                # Aca se almacenan los formularios
+├── instance/                               # Base SQLite (solo localmente)
+|   └── impulso_comercial.db                  # (se genera después del upgrade) 
+└── run.py                                  # Punto de arranque de la app 
               
 Flask
 ```
@@ -40,15 +87,15 @@ Flask
 ## 🔑 Funcionalidades implementadas
 
 ### 1. Autenticación de usuarios
-- Registro (`/api/auth/signup`) genera un JWT válido automáticamente (no hace falta login manual después de registrarse) y login (`/api/auth/login`) con JWT.
-- Usuarios pueden ser **empresa**, **postulante** o **rrhh** (`tipo` y `rol` en DB).
+- Registro (`/api/auth/signup`) y login (`/api/auth/login`) con JWT.
+- Usuarios pueden ser **empresa**, **rrhh** o **postulante** (`tipo` y `rol` en DB).
 - El estado de sesión se guarda en `localStorage` (token).
 
 ### 2. Rutas y páginas principales
 - `index.html`: landing con botones principales.
   - **Quiero postularme** → redirige a login si no hay sesión, a `postulantes.html` si ya hay sesión.
   - **Busco talento comercial** → igual lógica.
-- `login.html`: formulario para iniciar sesión o registrarse (empresa/usuario/rrhh).
+- `login.html`: formulario para iniciar sesión o registrarse (empresa/usuario).
 - `postulantes.html`: panel con formularios de:
   - Solicitud de empresas (cargar perfil requerido).
   - Postulación de usuarios (cargar CV, links, descripción).
@@ -56,8 +103,8 @@ Flask
 
 ### 3. Formularios y base de datos
 - **Modelos creados:**
-  - `SolicitudEmpresa`: solicitudes de personal por parte de empresas.
-  - `PostulanteRegistro`: registros de postulantes con datos y CV.
+  - `Solicitud`: solicitudes de personal por parte de empresas.
+  - `Postulante`: registros de postulantes con datos y CV.
 - **Almacenamiento de archivos:** los CV subidos se guardan en `/uploads/`.
 
 ### 4. JS dinámico (`main.js`)
@@ -67,42 +114,6 @@ Flask
   - Cambiar el link de "Iniciar Sesión" → "Cerrar sesión" si hay token.
   - Enviar formularios al backend con `fetch` (incluyendo token si existe).
 - Redirecciones dinámicas de los botones en `index.html`.
-
----
-
-## 🔒 Mejoras de Seguridad Implementadas
-
-### 1. Autenticación JWT Robusta
-- **Algoritmo**: HS256 (más seguro que el anterior)
-- **Expiración**: Tokens con vida útil de 1 hora
-- **Issuer**: Verificación con `impulso-comercial`
-- **Cookies HttpOnly**: Previene acceso desde JavaScript malicioso (XSS)
-
-### 2. Gestión de Secret Key
-- **Generación automática**: Clave de 64 caracteres aleatorios
-- **Persistencia**: Se guarda en `.secret_key` (no se regenera cada reinicio)
-- **Seguridad**: Eliminación de claves débiles o por defecto
-- **Protección**: Archivo excluido del control de versiones
-
-### 3. Validación de Contraseñas Estricta
-- **Mínimo 8 caracteres** obligatorios
-- **Al menos una letra mayúscula** requerida
-- **Al menos un símbolo** obligatorio (`!@#$%^&*()_+-=[]{}|;:,.<>?`)
-- **Validación doble**: Frontend (JavaScript) + Backend (Python)
-
-### 4. Cookies Seguras
-- **HttpOnly**: Previene acceso desde JavaScript malicioso
-- **SameSite=Lax**: Protección contra ataques CSRF
-- **Expiración automática**: Sincronizada con el token JWT
-- **Configuración segura**: `secure=False` en desarrollo (cambiar a `True` en producción)
-
-### 5. Rate Limiting
-- **Flask-Limiter**: Implementado para prevenir ataques de fuerza bruta
-- **Protección de endpoints**: Login y registro con límites de intentos
-
-### 6. Validación Robusta
-- **Frontend**: Validación en tiempo real con feedback visual
-- **Backend**: Validación estricta antes de procesar datos
 
 ---
 
@@ -161,27 +172,21 @@ flask db upgrade
 
 - Variables importantes en `.env` o `config.py`: 'No tocar'
   ```env
-  SECRET_KEY="clave_secreta_segura"  # Se genera automáticamente si no existe
+  SECRET_KEY="clave_secreta_segura"
   SQLALCHEMY_DATABASE_URI="sqlite:///../impulso_comercial.db"
   UPLOAD_FOLDER="uploads"
   ```
-
-- **Nota sobre SECRET_KEY**: 
-  - Se genera automáticamente una clave de 64 caracteres si no existe
-  - Se guarda en `.secret_key` para persistencia entre reinicios
-  - **No modificar** manualmente para mantener la seguridad
 
 ---
 
 ##  Resumen
 
 El proyecto ahora permite:
-- Registro/login con roles (empresa, postulante o rrhh).
+- Registro/login con roles (empresa o postulante).
 - Redirección dinámica según sesión.
 - Formularios que almacenan datos en SQLite y suben archivos.
 - Migraciones consistentes con Alembic.
 - Protección de acceso a secciones restringidas.
-- **Seguridad robusta**: JWT con HS256, contraseñas complejas, cookies HttpOnly, rate limiting.
   
   
 ## 🚀 Flujo de uso de ramas back-end Git Flow
@@ -196,13 +201,13 @@ Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalm
 - git merge feature/implementacion-ia
 - git push origin develop
 
-```Borrar local (se espera aprobación de Natalia o Ignacio)```
+```Borrar local (se espera aprobación de Facundo o Ignacio)```
 - git branch -d feature/implementacion-ia  
 
-```Borrar en remoto (se espera aprobación de Natalia o Ignacio)```
+```Borrar en remoto (se espera aprobación de Facundo o Ignacio)```
 - git push origin --delete feature/implementacion-ia
 
-2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Natalia o Ignacio):**
+2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
 - git checkout main
 - git merge develop
 - git push origin main
