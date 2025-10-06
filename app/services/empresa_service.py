@@ -1,6 +1,6 @@
 from app import db
 from flask import Blueprint, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 import jwt, os
 
 from ..security.model.usuario import Usuario
@@ -34,7 +34,7 @@ class EmpresaService:
             return jsonify({"ok": False, "error": "Falta el cargo/perfil solicitado"}), 400
 
         sol = Solicitud(
-            usuario_id=user.id,   # ya tenés el user autenticado
+            empresa_id=user.id,   # ya tenés el user autenticado
             cargo=cargo,
             requisitos=data.get("empresa_requisitos"),
             expectativa=data.get("empresa_expectativa"),

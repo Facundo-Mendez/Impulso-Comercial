@@ -5,7 +5,6 @@ import re
 
 from ..model.usuario import Usuario
 from ...models.empresa import Empresa
-from . import jwt_utils
 
 from typing import Optional, List
 from app.exceptions.error_handler import (
@@ -118,31 +117,3 @@ class UserService:
             }
 
         return out
-
-    # @staticmethod
-    # def get_usuario_by_id(user_id: int) -> Optional[Usuario]:
-    #     return Usuario.query.get(user_id)
-    #
-    # @staticmethod
-    # def get_all_usuarios() -> List[Usuario]:
-    #     return Usuario.query.all()
-    #
-    # @staticmethod
-    # def update_usuario(user_id: int, nombre: str = None, correo: str = None) -> Optional[Usuario]:
-    #     usuario = Usuario.query.get(user_id)
-    #     if usuario:
-    #         if nombre:
-    #             usuario.nombre = nombre
-    #         if correo:
-    #             usuario.correo = correo
-    #         db.session.commit()
-    #     return usuario
-    #
-    # @staticmethod
-    # def delete_usuario(user_id: int) -> bool:
-    #     usuario = Usuario.query.get(user_id)
-    #     if usuario:
-    #         db.session.delete(usuario)
-    #         db.session.commit()
-    #         return True
-    #     return False

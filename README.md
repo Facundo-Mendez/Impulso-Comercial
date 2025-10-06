@@ -24,9 +24,7 @@ Impulso-Comercial/
 │   ├── routes/                             # Rutas general del proyecto (endpoints)
 |       ├── campus.py
 |       ├── empresa_routes.py
-|       ├── etiqueta_routes.py
-|       ├── postulante_routes.py
-|       └── solicitud_routes.py
+|       └── postulante_routes.py
 │   ├── security/                           # Configuración (Autenticación, token, clave, seguridad)
 |       ├── config/                         # Configuración general (SQLite, uploads, claves)
 │           └── config.py                   

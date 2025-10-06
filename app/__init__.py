@@ -78,16 +78,23 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
     # Si tenés el blueprint de formularios:
-    # try:
-    #     from .routes import routes_bp
-    #     app.register_blueprint(routes_bp, url_prefix="/api")
-    # except Exception as e:
-    #     print("⚠️ No se pudo registrar routes_bp:", e)
-    #     # Si aún no existe postulante_service.py, se ignora
+    try:
+        from .routes.postulante_routes import postulante_bp
+        app.register_blueprint(postulante_bp, url_prefix="/api")
+    except Exception as e:
+        print("⚠️ No se pudo registrar postulante_bp:", e)
+        # Si aún no existe postulante_service.py, se ignora
 
     # Crear carpeta de uploads si existe la config
     if hasattr(app.config, "UPLOAD_FOLDER"):
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    # Si tenés el blueprint de formularios:
+    try:
+        from .routes.empresa_routes import empresas_bp
+        app.register_blueprint(empresas_bp, url_prefix="/api")
+    except Exception as e:
+        print("⚠️ No se pudo registrar empresas_bp:", e)
 
     # ===== Rutas para tus páginas =====
     @app.get("/")

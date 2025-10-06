@@ -1,17 +1,34 @@
 from flask import request, jsonify, current_app
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 from app import db
 from ..models.postulante import Postulante
 from ..models.etiqueta import Etiqueta
 from ..services.ia_service import IAService
+from ..security.service import jwt_utils
+from ..security.service.user_service import Usuario
 
 class PostulanteService:
 
     @staticmethod
+    def _get_user_from_auth() -> Usuario | None:
+        """Devuelve el usuario autenticado a partir del token, o None si no hay/ no es válido"""
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return None
+
+        token = auth.split(" ", 1)[1]
+        try:
+            payload = jwt_utils.decode_token(token)
+            return Usuario.query.get(int(payload["sub"]))
+        except Exception:
+            return None
+
+    @staticmethod
     def postulante_registro():
+        u = PostulanteService._get_user_from_auth()
         descripcion = request.form.get("descripcion")
         linkedin = request.form.get("linkedin")
         github = request.form.get("github")
@@ -48,7 +65,7 @@ class PostulanteService:
             except OSError:
                 cv_size = None
         reg = Postulante(
-            usuario_id=u.id_usuario if u else None,
+            usuario_id=u.id if u else None,
             descripcion=descripcion,
             linkedin=linkedin,
             github=github,
