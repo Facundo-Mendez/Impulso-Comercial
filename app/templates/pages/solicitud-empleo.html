@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear Solicitud de Empleo - Impulso Comercial</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/empresa.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+</head>
+<body>
+<header class="main-header">
+    <div class="container header-inner">
+        <a class="logo-container" href="{{ url_for('home_alias') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img" />
+            <div class="logo-text">
+                <h1>IMPULSO COMERCIAL</h1>
+                <p>Especialistas en talento comercial</p>
+            </div>
+        </a>
+        <nav class="main-nav" id="mainNav">
+            <ul class="nav-list">
+                <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+                <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+                <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+                <li><a href="/campus">Ir al Campus</a></li>
+                <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+            </ul>
+            <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </div>
+</header>
+
+<main class="page-content container">
+    <div class="page-header">
+        <h2 class="page-title">Crear Solicitud de Empleo</h2>
+        <p class="page-subtitle">Completa los datos para publicar tu búsqueda de talento</p>
+    </div>
+
+    <form id="solicitudForm" class="solicitud-form" autocomplete="on">
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-briefcase"></i>
+                Información del Puesto
+            </h3>
+
+            <div class="grid-2">
+                <label>
+                    Cargo / Puesto *
+                    <input type="text" name="cargo" required placeholder="Ej: Ejecutivo de Cuentas" />
+                </label>
+                <label>
+                    Modalidad de trabajo
+                    <select name="modalidad">
+                        <option value="">Seleccionar modalidad</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Híbrido">Híbrido</option>
+                        <option value="Remoto">Remoto</option>
+                    </select>
+                </label>
+            </div>
+
+            <label>
+                Expectativa salarial
+                <input type="text" name="expectativa" placeholder="Ej: $2.000.000 - $3.000.000" />
+            </label>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-list-check"></i>
+                Requisitos y Habilidades
+            </h3>
+
+            <label>
+                Requisitos del puesto
+                <textarea name="requisitos" rows="4" placeholder="Describe los requisitos, experiencia y competencias necesarias..."></textarea>
+            </label>
+
+            <label>
+                Habilidades específicas
+                <textarea name="skills" rows="3" placeholder="Lista las habilidades técnicas o soft skills específicas..."></textarea>
+            </label>
+        </div>
+
+        <div class="form-section">
+            <h3 class="form-section-title">
+                <i class="fas fa-plus-circle"></i>
+                Información Adicional
+            </h3>
+
+            <label>
+                Información extra
+                <textarea name="extra" rows="3" placeholder="Cualquier información adicional sobre la empresa, beneficios, horarios, etc."></textarea>
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="cta-btn secondary" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i>
+                Cancelar
+            </button>
+            <button type="submit" class="cta-btn primary">
+                <i class="fas fa-paper-plane"></i>
+                Crear Solicitud
+            </button>
+        </div>
+    </form>
+</main>
+
+<footer class="main-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+            <p>Especialistas en reclutamiento de talento comercial.</p>
+        </div>
+        <div class="footer-contact">
+            <h4>Contacto</h4>
+            <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+            <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+        </div>
+        <div class="footer-social">
+            <h4>Seguinos</h4>
+            <div class="social-links">
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<div id="toast-root" class="toast-root"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/empresa/solicitud-form.js') }}"></script>
+</body>
+</html>

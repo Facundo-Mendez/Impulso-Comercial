@@ -16,7 +16,7 @@ class Config:
                     with open(key_file, 'r') as f:
                         secret = f.read().strip()
                         if secret and len(secret) >= 32:
-                            print("✅ SECRET_KEY cargada desde archivo")
+                            print("[OK] SECRET_KEY cargada desde archivo")
                             return secret
                 except:
                     pass
@@ -26,9 +26,9 @@ class Config:
             try:
                 with open(key_file, 'w') as f:
                     f.write(new_secret)
-                print("✅ SECRET_KEY generada y guardada en .secret_key")
+                print("[OK] SECRET_KEY generada y guardada en .secret_key")
             except:
-                print("⚠️  ADVERTENCIA: No se pudo guardar SECRET_KEY. Se regenerará en cada reinicio.")
+                print("[WARNING] No se pudo guardar SECRET_KEY. Se regenerará en cada reinicio.")
             return new_secret
         return secret
     

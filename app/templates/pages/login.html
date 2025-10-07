@@ -43,13 +43,14 @@
   <form id="loginForm" class="simple-form" autocomplete="off">
     <input type="hidden" id="loginUserType" value="empresa" />
     <label>Correo
-      <input type="email" name="email" required placeholder="tu@correo.com"/>
+      <input type="email" name="correo" required placeholder="tu@correo.com"/>
     </label>
     <label>Contraseña
       <input type="password" name="password" required placeholder="••••••••"/>
     </label>
     <button type="submit">Ingresar</button>
   </form>
+  <div id="loginMsg" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; font-weight: 500;"></div>
   <p><a href="{{ url_for('pages', page='registro') }}">¿No tienes una cuenta? Registrarse acá</a></p>
 </main>
 

@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, current_app
 
-from ..models.postulante import Postulante
+from ..models.postulante_registro import Postulante
 from ..models.etiqueta import Etiqueta
 from ..services.postulante_service import PostulanteService # <-- 2. Importar el servicio de IA
+from app.exceptions.custom_errors import ValidationError, ConflictError, NotFoundError, PermissionError
 
 postulante_bp = Blueprint("postulante_bp", __name__)
 
@@ -31,3 +32,20 @@ def get_etiquetas_by_postulante(id):
     lista = PostulanteService.get_etiquetas_by_postulante()
 
     return jsonify({"ok": True, "etiquetas": lista}), 200
+
+@routes_bp.post("/postulante/postular/<int:solicitud_id>")
+def postular_a_solicitud(solicitud_id):
+    try:
+        resultado = PostulanteService.postular_a_solicitud(solicitud_id)
+        return jsonify({"ok": True, **resultado}), 201
+
+    except ValidationError as ve:
+        return jsonify({"ok": False, "error": str(ve)}), 400
+    except ConflictError as ce:
+        return jsonify({"ok": False, "error": str(ce)}), 409
+    except NotFoundError as nf:
+        return jsonify({"ok": False, "error": str(nf)}), 404
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error inesperado en postulación: {e}")
+        return jsonify({"ok": False, "error": "Error al procesar la postulación"}), 500

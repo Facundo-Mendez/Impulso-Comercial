@@ -10,4 +10,9 @@ class Usuario(db.Model):
     correo: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     rol: Mapped[str] = mapped_column(String(20), nullable=False, default="usuario")
-    empresas = relationship("Empresa", back_populates="owner", lazy="selectin")
+
+    empresas = relationship(
+        "Empresa",
+        back_populates="owner",
+        lazy="selectin"
+    )

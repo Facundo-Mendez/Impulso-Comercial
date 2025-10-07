@@ -20,7 +20,7 @@ auth_bp = Blueprint("auth", __name__)
 logger = get_logger('auth')
 
 @auth_bp.post("/signup")
-@limiter.limit("3 per minute")
+@limiter.limit("10 per minute")
 def signup():
     """Registro de nuevos usuarios con protección de rate limiting"""
     try:
@@ -53,7 +53,7 @@ def signup():
         raise AppError("Error interno del servidor durante el registro")
 
 @auth_bp.post("/login")
-@limiter.limit("5 per minute")
+@limiter.limit("15 per minute")
 def login():
     """Login de usuarios con protección de rate limiting"""
     try:

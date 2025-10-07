@@ -117,6 +117,42 @@ Flask
 
 ---
 
+## 🔒 Mejoras de Seguridad Implementadas
+
+### 1. Autenticación JWT Robusta
+- **Algoritmo**: HS256 (más seguro que el anterior)
+- **Expiración**: Tokens con vida útil de 1 hora
+- **Issuer**: Verificación con `impulso-comercial`
+- **Cookies HttpOnly**: Previene acceso desde JavaScript malicioso (XSS)
+
+### 2. Gestión de Secret Key
+- **Generación automática**: Clave de 64 caracteres aleatorios
+- **Persistencia**: Se guarda en `.secret_key` (no se regenera cada reinicio)
+- **Seguridad**: Eliminación de claves débiles o por defecto
+- **Protección**: Archivo excluido del control de versiones
+
+### 3. Validación de Contraseñas Estricta
+- **Mínimo 8 caracteres** obligatorios
+- **Al menos una letra mayúscula** requerida
+- **Al menos un símbolo** obligatorio (`!@#$%^&*()_+-=[]{}|;:,.<>?`)
+- **Validación doble**: Frontend (JavaScript) + Backend (Python)
+
+### 4. Cookies Seguras
+- **HttpOnly**: Previene acceso desde JavaScript malicioso
+- **SameSite=Lax**: Protección contra ataques CSRF
+- **Expiración automática**: Sincronizada con el token JWT
+- **Configuración segura**: `secure=False` en desarrollo (cambiar a `True` en producción)
+
+### 5. Rate Limiting
+- **Flask-Limiter**: Implementado para prevenir ataques de fuerza bruta
+- **Protección de endpoints**: Login y registro con límites de intentos
+
+### 6. Validación Robusta
+- **Frontend**: Validación en tiempo real con feedback visual
+- **Backend**: Validación estricta antes de procesar datos
+
+---
+
 ## 🗃️ Migraciones con  Alembic/Flask-Migrate'Esto en el caso de hacer una nueva implementacion en relacion con la base de datos'
 
 ### Inicialización
@@ -177,17 +213,22 @@ flask db upgrade
   UPLOAD_FOLDER="uploads"
   ```
 
+- **Nota sobre SECRET_KEY**:
+    - Se genera automáticamente una clave de 64 caracteres si no existe
+    - Se guarda en `.secret_key` para persistencia entre reinicios
+    - **No modificar** manualmente para mantener la seguridad
+
 ---
 
 ##  Resumen
 
 El proyecto ahora permite:
-- Registro/login con roles (empresa o postulante).
+- Registro/login con roles (empresa, postulante o rrhh).
 - Redirección dinámica según sesión.
 - Formularios que almacenan datos en SQLite y suben archivos.
 - Migraciones consistentes con Alembic.
 - Protección de acceso a secciones restringidas.
-  
+- **Seguridad robusta**: JWT con HS256, contraseñas complejas, cookies HttpOnly, rate limiting.
   
 ## 🚀 Flujo de uso de ramas back-end Git Flow
 Vamos a trabajar en la rama develop, pero cada vez que trabajemos en una tarea se va a crear una rama feature/nomre de la tarea.

@@ -90,6 +90,93 @@ async function getMe() {
   } catch { return null; }
 }
 
+// Función para crear el menú desplegable del usuario
+function createUserDropdown(loginElement, userData) {
+  const userName = userData
+    ? (userData.rol === 'empresa' && userData.empresa)
+      ? userData.empresa.nombre_empresa
+      : userData.nombre || 'Mi cuenta'
+    : 'Mi cuenta';
+
+  // Crear el contenedor del dropdown
+  const dropdownContainer = document.createElement('div');
+  dropdownContainer.className = 'user-dropdown';
+
+  // Crear el botón del dropdown
+  const dropdownBtn = document.createElement('button');
+  dropdownBtn.className = 'user-dropdown-btn';
+  dropdownBtn.innerHTML = `
+    <span class="user-name">${userName}</span>
+    <i class="fas fa-cog dropdown-icon"></i>
+  `;
+
+  // Crear el menú desplegable
+  const dropdownMenu = document.createElement('div');
+  dropdownMenu.className = 'user-dropdown-menu';
+
+  // Agregar opciones del menú según el rol
+  let menuItems = '';
+
+  if (userData && userData.rol === 'empresa') {
+    menuItems += `
+      <a href="/pages/dashboard-empresa.html" class="user-dropdown-item">
+        <i class="fas fa-building"></i>
+        <span>Mi empresa</span>
+      </a>
+      <div class="user-dropdown-divider"></div>
+    `;
+  } else if (userData && userData.rol === 'postulante') {
+    menuItems += `
+      <a href="/pages/postulantes.html" class="user-dropdown-item">
+        <i class="fas fa-user"></i>
+        <span>Mi Perfil</span>
+      </a>
+      <div class="user-dropdown-divider"></div>
+    `;
+  }
+
+  menuItems += `
+    <a href="#" class="user-dropdown-item" id="logoutOption">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Cerrar Sesión</span>
+    </a>
+  `;
+
+  dropdownMenu.innerHTML = menuItems;
+
+  // Ensamblar el dropdown
+  dropdownContainer.appendChild(dropdownBtn);
+  dropdownContainer.appendChild(dropdownMenu);
+
+  // Reemplazar el botón de login con el dropdown
+  loginElement.parentNode.replaceChild(dropdownContainer, loginElement);
+
+  // Agregar funcionalidad de toggle
+  dropdownBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropdownContainer.classList.toggle('active');
+  });
+
+  // Cerrar dropdown al hacer click fuera
+  document.addEventListener('click', (e) => {
+    if (!dropdownContainer.contains(e.target)) {
+      dropdownContainer.classList.remove('active');
+    }
+  });
+
+  // Agregar funcionalidad de logout
+  const logoutOption = dropdownMenu.querySelector('#logoutOption');
+  if (logoutOption) {
+    logoutOption.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm("¿Cerrar sesión?")) {
+        logout();
+      }
+    });
+  }
+}
+
 // Navbar dinámica: mostrar nombre (o empresa) si hay sesión
 document.addEventListener('DOMContentLoaded', async () => {
   // Creaamos mapa SOLO si existe el div#map
@@ -109,25 +196,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.__mendozaMap = map; // por si se usa en otro lado
   }
 
-  // Resto de la lógica de la navbar 
+  // Resto de la lógica de la navbar
   const loginLink = document.querySelector('.login-btn');
   if (loginLink) {
     if (isLoggedIn()) {
       const me = await getMe();
-      if (me) {
-        const display = (me.rol === 'empresa' && me.empresa)
-          ? me.empresa.nombre_empresa
-          : me.nombre || 'Mi cuenta';
-        loginLink.innerHTML = `<i class="fas fa-user-circle"></i> ${display}`;
-      } else {
-        loginLink.innerHTML = `<i class="fas fa-user-circle"></i> Mi cuenta`;
-      }
-      loginLink.removeAttribute('href');
-      loginLink.style.cursor = 'pointer';
-      loginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (confirm("¿Cerrar sesión?")) logout();
-      });
+      createUserDropdown(loginLink, me);
     } else {
       loginLink.setAttribute('href', loginPagePath());
       loginLink.innerHTML = `Iniciar Sesión <i class="fas fa-sign-in-alt"></i>`;
@@ -155,7 +229,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         password: fd.get('password'),
         tipo: loginUserType ? loginUserType.value : 'usuario'
       };
-      if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
+      if (loginMsg) {
+        loginMsg.textContent = 'Iniciando sesión...';
+        loginMsg.style.display = 'block';
+        loginMsg.style.background = '#e0f2fe';
+        loginMsg.style.color = '#0c2238';
+        loginMsg.style.border = '1px solid #0ea5e9';
+      }
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
@@ -166,11 +246,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!res.ok) throw data;
         localStorage.setItem('token', data.token);
         sessionStorage.setItem('token', data.token);
-        if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
-//        location.href = '/campus';
-        location.href = '/';
+        if (loginMsg) {
+          loginMsg.textContent = '¡Listo! Redirigiendo...';
+          loginMsg.style.background = '#d1fae5';
+          loginMsg.style.color = '#065f46';
+          loginMsg.style.border = '1px solid #16a34a';
+        }
+        // Redirigir según el tipo de usuario
+        // Actualizar navegación antes de redirigir
+        await updateNavigationForUser();
+
+        // Pequeño delay para asegurar que la navegación se actualice
+        setTimeout(() => {
+          if (data.rol === 'empresa') {
+            location.href = '/pages/dashboard-empresa.html';
+          } else {
+            location.href = '/';
+          }
+        }, 100);
       } catch (err) {
-        if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
+        console.error('Error en login:', err);
+        if (loginMsg) {
+          let errorMessage = 'No se pudo iniciar sesión';
+
+          if (err && err.error) {
+            errorMessage = err.error;
+          } else if (err && err.error_message) {
+            errorMessage = err.error_message;
+          } else if (err && err.message) {
+            errorMessage = err.message;
+          }
+
+          // Manejar errores específicos
+          if (errorMessage.includes('401') || errorMessage.includes('credenciales') || errorMessage.includes('incorrectas')) {
+            errorMessage = 'Correo o contraseña incorrectos. Verifica tus datos.';
+          } else if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+            errorMessage = 'Demasiados intentos. Espera 1 minuto antes de intentar nuevamente.';
+            // Deshabilitar el botón por 60 segundos
+            const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Espera 60 segundos...';
+              let countdown = 60;
+              const timer = setInterval(() => {
+                countdown--;
+                submitBtn.textContent = `Espera ${countdown} segundos...`;
+                if (countdown <= 0) {
+                  clearInterval(timer);
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = 'Ingresar';
+                }
+              }, 1000);
+            }
+          }
+
+          loginMsg.textContent = errorMessage;
+          loginMsg.style.background = '#fee2e2';
+          loginMsg.style.color = '#991b1b';
+          loginMsg.style.border = '1px solid #dc2626';
+        }
       }
     });
   }
@@ -195,18 +329,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(signupForm);
-      const tipo = (fd.get('tipo') || 'postulante' || 'rrhh').toLowerCase();
+      const tipo = (fd.get('tipo') || 'postulante').toLowerCase();
+      const password = fd.get('password');
+
+      // Validación de contraseña
+      if (password && password.length < 8) {
+        if (signupMsg) {
+          signupMsg.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+          signupMsg.style.background = '#fee2e2';
+          signupMsg.style.color = '#991b1b';
+          signupMsg.style.border = '1px solid #dc2626';
+          signupMsg.style.display = 'block';
+        }
+        return;
+      }
+
       const body = {
         tipo,
         nombre: fd.get('nombre'),
         correo: fd.get('correo'),
-        password: fd.get('password')
+        password: password
       };
       if (tipo === 'empresa') {
         body.nombre_empresa = fd.get('nombre_empresa');
         body.descripcion = fd.get('descripcion') || null;
       }
-      if (signupMsg) signupMsg.textContent = 'Creando cuenta...';
+      if (signupMsg) {
+        signupMsg.textContent = 'Creando cuenta...';
+        signupMsg.style.display = 'block';
+        signupMsg.style.background = '#e0f2fe';
+        signupMsg.style.color = '#0c2238';
+        signupMsg.style.border = '1px solid #0ea5e9';
+      }
       try {
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
@@ -216,11 +370,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await res.json();
         if (!res.ok) throw data;
         localStorage.setItem('token', data.token);
-        if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-//        location.href = '/campus';
-        location.href = '/';
+        if (signupMsg) {
+          signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
+          signupMsg.style.background = '#d1fae5';
+          signupMsg.style.color = '#065f46';
+          signupMsg.style.border = '1px solid #16a34a';
+        }
+        // Actualizar navegación antes de redirigir
+        await updateNavigationForUser();
+
+        // Pequeño delay para asegurar que la navegación se actualice
+        setTimeout(() => {
+          // Redirigir según el tipo de usuario
+          if (tipo === 'empresa') {
+            location.href = '/pages/dashboard-empresa.html';
+          } else {
+            location.href = '/';
+          }
+        }, 100);
       } catch (err) {
-        if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
+        console.error('Error en registro:', err);
+        if (signupMsg) {
+          let errorMessage = 'No se pudo crear la cuenta';
+
+          if (err && err.error) {
+            errorMessage = err.error;
+          } else if (err && err.error_message) {
+            errorMessage = err.error_message;
+          } else if (err && err.message) {
+            errorMessage = err.message;
+          }
+
+          // Manejar errores específicos
+          if (errorMessage.includes('409') || errorMessage.includes('conflicto') || errorMessage.includes('ya existe')) {
+            errorMessage = 'Este correo ya está registrado. Intenta con otro correo o inicia sesión.';
+          } else if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+            errorMessage = 'Demasiados intentos. Espera un momento antes de intentar nuevamente.';
+          } else if (errorMessage.includes('400') || errorMessage.includes('Bad Request')) {
+            errorMessage = 'Datos inválidos. Verifica que todos los campos estén completos y la contraseña tenga al menos 8 caracteres.';
+          } else if (errorMessage.includes('500') || errorMessage.includes('Internal')) {
+            errorMessage = 'Error del servidor. Intenta nuevamente en unos momentos.';
+          }
+
+          signupMsg.textContent = errorMessage;
+          signupMsg.style.background = '#fee2e2';
+          signupMsg.style.color = '#991b1b';
+          signupMsg.style.border = '1px solid #dc2626';
+        }
+      } finally {
+        // Asegurar que el botón se reactive
+        const submitBtn = signupForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Crear cuenta';
+        }
       }
     });
   }
@@ -285,6 +488,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Función global para actualizar la navegación según el tipo de usuario
+async function updateNavigationForUser() {
+  const token = localStorage.getItem('token');
+  const navPostulantes = document.getElementById('navPostulantes');
+
+  console.log('Actualizando navegación...', { token: !!token, navPostulantes: !!navPostulantes });
+
+  if (token && navPostulantes) {
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        console.log('Usuario obtenido:', user);
+
+        if (user.rol === 'empresa') {
+          navPostulantes.textContent = 'Nueva Solicitud de Empleo';
+          navPostulantes.href = '/pages/solicitud-empleo.html';
+          console.log('Navegación actualizada para empresa');
+        } else {
+          navPostulantes.textContent = 'Postulantes';
+          navPostulantes.href = '/pages/postulantes.html';
+          console.log('Navegación actualizada para no-empresa');
+        }
+      } else {
+        console.log('Error en respuesta:', response.status);
+      }
+    } catch (error) {
+      console.log('Error actualizando navegación:', error);
+    }
+  } else {
+    console.log('No hay token o elemento navPostulantes no encontrado');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const btnPostular = document.getElementById('btnPostularme');
   const btnTalento = document.getElementById('btnBuscoTalento');
@@ -294,6 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // si hay token => postulantes, si no => login
     return localStorage.getItem('token') ? './pages/postulantes.html' : './pages/login.html';
   }
+
+  // Actualizar navegación al cargar la página
+  updateNavigationForUser();
 
   if (btnPostular) {
     btnPostular.addEventListener('click', (e) => {

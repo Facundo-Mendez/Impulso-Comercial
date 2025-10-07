@@ -14,5 +14,5 @@ empresa_etiquetas = db.Table('empresa_etiquetas',
 # no borrar esto importa los modelos
 from . import empresa
 from . import etiqueta
-from . import postulante
+from . import postulante_registro
 from . import solicitud

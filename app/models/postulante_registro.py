@@ -5,8 +5,8 @@ from datetime import datetime
 from sqlalchemy import DateTime
 from . import postulante_etiquetas
 
-class Postulante(db.Model):
-    __tablename__ = "postulante"
+class PostulanteRegistro(db.Model):
+    __tablename__ = "postulante_registro"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     usuario_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("usuario.id"), nullable=True)

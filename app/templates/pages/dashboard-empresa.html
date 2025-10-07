@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Empresa - Impulso Comercial</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/empresa.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+</head>
+<body>
+<header class="main-header">
+    <div class="container header-inner">
+        <a class="logo-container" href="{{ url_for('home_alias') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img" />
+            <div class="logo-text">
+                <h1>IMPULSO COMERCIAL</h1>
+                <p>Especialistas en talento comercial</p>
+            </div>
+        </a>
+        <nav class="main-nav" id="mainNav">
+            <ul class="nav-list">
+                <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+                <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
+                <li><a href="{{ url_for('pages', page='postulantes') }}" id="navPostulantes">Postulantes</a></li>
+                <li><a href="/campus">Ir al Campus</a></li>
+                <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+            </ul>
+            <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3 id="empresaNombre">Mi Empresa</h3>
+                <p class="user-role">Panel de Empresa</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-section="solicitudes">
+                    <i class="fas fa-briefcase"></i>
+                    Mis Solicitudes
+                </button>
+                <button class="nav-btn" data-section="candidatos">
+                    <i class="fas fa-users"></i>
+                    Candidatos
+                </button>
+                <button class="nav-btn" data-section="estadisticas">
+                    <i class="fas fa-chart-bar"></i>
+                    Estadísticas
+                </button>
+                <button class="nav-btn" data-section="perfil">
+                    <i class="fas fa-cog"></i>
+                    Configuración
+                </button>
+            </nav>
+
+            <div class="sidebar-actions">
+                <a href="{{ url_for('pages', page='solicitud-empleo') }}" class="cta-btn primary full-width">
+                    <i class="fas fa-plus"></i>
+                    Nueva Solicitud
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="header-content">
+                    <h2 id="sectionTitle">Mis Solicitudes de Empleo</h2>
+                    <p id="sectionSubtitle">Gestiona tus búsquedas de talento</p>
+                </div>
+                <div class="header-actions">
+                    <button class="cta-btn primary" id="nuevaSolicitudBtn">
+                        <i class="fas fa-plus"></i>
+                        Nueva Solicitud
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="dashboard-content">
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <p class="stat-number" id="totalSolicitudes">0</p>
+                        <p class="stat-label">Total Solicitudes</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-number" id="solicitudesActivas">0</p>
+                        <p class="stat-label">Activas</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-number" id="totalCandidatos">0</p>
+                        <p class="stat-label">Candidatos</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-number" id="solicitudesPendientes">0</p>
+                        <p class="stat-label">Pendientes</p>
+                    </div>
+                </div>
+
+                <!-- Solicitudes Table -->
+                <div id="solicitudesSection">
+                    <div class="table-header">
+                        <h3>Solicitudes Recientes</h3>
+                        <div class="table-actions">
+                            <button class="btn-sm" onclick="refreshSolicitudes()">
+                                <i class="fas fa-sync-alt"></i>
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="solicitudes-table" id="solicitudesTable">
+                        <thead>
+                        <tr>
+                            <th>Cargo</th>
+                            <th>Modalidad</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Candidatos</th>
+                            <th>Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody id="solicitudesTableBody">
+                        <!-- Datos se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+
+                    <div id="emptyState" class="empty-state hidden">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>No tienes solicitudes aún</h3>
+                        <p>Crea tu primera solicitud de empleo para comenzar a buscar talento</p>
+                        <a href="{{ url_for('pages', page='solicitud-empleo') }}" class="cta-btn primary">
+                            <i class="fas fa-plus"></i>
+                            Crear Primera Solicitud
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Candidatos Section -->
+                <div id="candidatosSection" class="hidden">
+                    <div class="candidates-container">
+                        <!-- Header de Candidatos -->
+                        <div class="candidates-header">
+                            <div class="header-info">
+                                <h3><i class="fas fa-users"></i> Candidatos</h3>
+                                <p>Gestiona los postulantes a tus ofertas de empleo</p>
+                            </div>
+                            <div class="candidates-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="totalCandidatos">0</span>
+                                    <span class="stat-label">Total Candidatos</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="candidatosPendientes">0</span>
+                                    <span class="stat-label">Pendientes</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="candidatosAprobados">0</span>
+                                    <span class="stat-label">Aprobados</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="candidates-filters">
+                            <div class="filter-group">
+                                <label for="filtroSolicitudCandidatos">Filtrar por Solicitud:</label>
+                                <select id="filtroSolicitudCandidatos" class="filter-select" title="Filtrar candidatos por solicitud">
+                                    <option value="">Todas las solicitudes</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filtroEstadoCandidatos">Filtrar por Estado:</label>
+                                <select id="filtroEstadoCandidatos" class="filter-select" title="Filtrar candidatos por estado">
+                                    <option value="">Todos los estados</option>
+                                    <option value="cv_enviado">CV Enviado</option>
+                                    <option value="en_revision">En Revisión</option>
+                                    <option value="cv_aprobado">CV Aprobado</option>
+                                    <option value="notificado_rrhh">Notificado a RRHH</option>
+                                    <option value="espera_entrevista">En Espera de Entrevista</option>
+                                    <option value="entrevista_programada">Entrevista Programada</option>
+                                    <option value="proceso_completado">Proceso Completado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Candidatos -->
+                        <div class="candidates-list" id="candidatesList">
+                            <!-- Los candidatos se cargarán dinámicamente -->
+                        </div>
+
+                        <!-- Estado vacío -->
+                        <div id="emptyCandidates" class="empty-state hidden">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No hay candidatos aún</h3>
+                            <p>Cuando recibas postulaciones, los candidatos aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas Section -->
+                <div id="estadisticasSection" class="hidden">
+                    <div class="stats-container">
+                        <!-- Resumen de Postulaciones -->
+                        <div class="stats-summary">
+                            <div class="summary-card">
+                                <div class="summary-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <h3 id="totalPostulaciones">0</h3>
+                                    <p>Total Postulaciones</p>
+                                </div>
+                            </div>
+
+                            <div class="summary-card">
+                                <div class="summary-icon">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <h3 id="enRevision">0</h3>
+                                    <p>En Revisión</p>
+                                </div>
+                            </div>
+
+                            <div class="summary-card">
+                                <div class="summary-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <h3 id="aprobados">0</h3>
+                                    <p>Aprobados</p>
+                                </div>
+                            </div>
+
+                            <div class="summary-card">
+                                <div class="summary-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <h3 id="entrevistas">0</h3>
+                                    <p>Entrevistas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seguimiento de Postulaciones -->
+                        <div class="postulaciones-tracking">
+                            <div class="tracking-header">
+                                <h3><i class="fas fa-chart-line"></i> Seguimiento de Postulaciones</h3>
+                                <p>Estado actual de cada postulación recibida</p>
+                            </div>
+
+                            <div class="tracking-filters">
+                                <select id="filtroSolicitud" class="filter-select" title="Filtrar por solicitud">
+                                    <option value="">Todas las solicitudes</option>
+                                </select>
+                                <select id="filtroEstado" class="filter-select" title="Filtrar por estado">
+                                    <option value="">Todos los estados</option>
+                                    <option value="cv_enviado">CV Enviado</option>
+                                    <option value="en_revision">En Revisión</option>
+                                    <option value="cv_aprobado">CV Aprobado</option>
+                                    <option value="notificado_rrhh">Notificado a RRHH</option>
+                                    <option value="espera_entrevista">En Espera de Entrevista</option>
+                                    <option value="entrevista_programada">Entrevista Programada</option>
+                                    <option value="proceso_completado">Proceso Completado</option>
+                                </select>
+                            </div>
+
+                            <div class="postulaciones-list" id="postulacionesList">
+                                <!-- Las postulaciones se cargarán dinámicamente -->
+                            </div>
+
+                            <div id="emptyPostulaciones" class="empty-state hidden">
+                                <i class="fas fa-inbox"></i>
+                                <h3>No hay postulaciones aún</h3>
+                                <p>Cuando recibas postulaciones, aparecerán aquí con su progreso</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perfil Section -->
+                <div id="perfilSection" class="hidden">
+                    <div class="config-container">
+                        <!-- Logo/Foto de la Empresa -->
+                        <div class="config-card">
+                            <div class="config-header">
+                                <h3><i class="fas fa-image"></i> Logo de la Empresa</h3>
+                                <p>Sube el logo o foto de tu empresa</p>
+                            </div>
+                            <div class="logo-upload-section">
+                                <div class="current-logo">
+                                    <img id="currentLogo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo actual" class="company-logo-preview" />
+                                    <div class="logo-placeholder" id="logoPlaceholder">
+                                        <i class="fas fa-building"></i>
+                                        <p>Sin logo</p>
+                                    </div>
+                                </div>
+                                <div class="upload-controls">
+                                    <input type="file" id="logoUpload" accept="image/*" class="hidden-input" title="Seleccionar logo de empresa" />
+                                    <button type="button" class="btn-primary" onclick="document.getElementById('logoUpload').click()">
+                                        <i class="fas fa-upload"></i>
+                                        Subir Logo
+                                    </button>
+                                    <button type="button" class="btn-secondary" id="removeLogo">
+                                        <i class="fas fa-trash"></i>
+                                        Quitar Logo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de la Empresa -->
+                        <div class="config-card">
+                            <div class="config-header">
+                                <h3><i class="fas fa-building"></i> Información de la Empresa</h3>
+                                <p>Edita los datos básicos de tu empresa</p>
+                            </div>
+                            <form id="companyInfoForm" class="company-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="companyName">Nombre de la Empresa *</label>
+                                        <input type="text" id="companyName" name="nombre_empresa" required placeholder="Ingresa el nombre de tu empresa" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="companyDescription">Descripción de la Empresa</label>
+                                    <textarea id="companyDescription" name="descripcion" rows="4" placeholder="Describe tu empresa, sus servicios, misión, etc."></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Guardar Cambios
+                                    </button>
+                                    <button type="button" class="btn-secondary" id="cancelChanges">
+                                        <i class="fas fa-times"></i>
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="config-card">
+                            <div class="config-header">
+                                <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+                                <p>Datos de tu cuenta y configuración</p>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Usuario:</label>
+                                    <span id="userEmail">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Tipo de Cuenta:</label>
+                                    <span>Empresa</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Fecha de Registro:</label>
+                                    <span id="registrationDate">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Total de Solicitudes:</label>
+                                    <span id="totalSolicitudesInfo">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="main-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+            <p>Especialistas en reclutamiento de talento comercial.</p>
+        </div>
+        <div class="footer-contact">
+            <h4>Contacto</h4>
+            <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+            <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+        </div>
+        <div class="footer-social">
+            <h4>Seguinos</h4>
+            <div class="social-links">
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<div id="toast-root" class="toast-root"></div>
+
+<!-- Modal de Edición de Solicitud -->
+<div id="editSolicitudModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Solicitud de Empleo</h3>
+            <button class="modal-close" id="closeEditModal" title="Cerrar modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="editSolicitudForm" class="simple-form">
+                <input type="hidden" id="editSolicitudId" />
+
+                <div class="form-group">
+                    <label for="editCargo">Cargo/Posición *</label>
+                    <input type="text" id="editCargo" name="cargo" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editModalidad">Modalidad</label>
+                    <select id="editModalidad" name="modalidad">
+                        <option value="">Seleccionar modalidad</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Remoto">Remoto</option>
+                        <option value="Híbrido">Híbrido</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editRequisitos">Requisitos</label>
+                    <textarea id="editRequisitos" name="requisitos" rows="3" placeholder="Describe los requisitos del puesto..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editExpectativa">Expectativas</label>
+                    <input type="text" id="editExpectativa" name="expectativa" placeholder="Ej: Experiencia en ventas, proactividad..." />
+                </div>
+
+                <div class="form-group">
+                    <label for="editSkills">Habilidades Requeridas</label>
+                    <textarea id="editSkills" name="skills" rows="2" placeholder="Ej: Comunicación, negociación, CRM..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editExtra">Información Adicional</label>
+                    <textarea id="editExtra" name="extra" rows="2" placeholder="Cualquier información adicional..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="cancelEdit">Cancelar</button>
+            <button type="submit" form="editSolicitudForm" class="btn-primary">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/empresa/dashboard.js') }}"></script>
+</body>
+</html>

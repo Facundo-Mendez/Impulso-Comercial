@@ -9,10 +9,19 @@ class Empresa(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     nombre_empresa: Mapped[str] = mapped_column(String(255), nullable=False)
     descripcion: Mapped[str] = mapped_column(Text, nullable=True)
+    logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     usuario_id: Mapped[int] = mapped_column(Integer, ForeignKey("usuario.id"), nullable=True)
 
-    owner = relationship("Usuario", back_populates="empresas")
-    solicitudes = relationship("Solicitud", back_populates="empresa", cascade="all, delete-orphan")
+    owner = relationship(
+        "Usuario",
+        back_populates="empresas"
+    )
+
+    solicitudes = relationship(
+        "Solicitud",
+        back_populates="empresa",
+        cascade="all, delete-orphan"
+    )
 
     etiquetas = relationship(
         "Etiqueta",

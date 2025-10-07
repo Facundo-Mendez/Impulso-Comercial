@@ -24,8 +24,8 @@ class UserService:
         correo = data.get("correo", "").strip()
         password = data.get("password", "")
         tipo = (data.get("tipo") or "postulante" or "rrhh").lower()
-        nombre_empresa = data.get("nombre_empresa", "").strip()
-        descripcion = data.get("descripcion", "").strip()
+        nombre_empresa = data.get("nombre_empresa" or "").strip()
+        descripcion = data.get("descripcion" or "").strip()
 
         # Validaciones básicas
         if not all([nombre, correo, password]):
@@ -38,7 +38,7 @@ class UserService:
             raise ValidationError("Formato de email inválido")
 
         if tipo not in ["postulante", "empresa", "rrhh"]:
-            raise ValidationError("Tipo debe ser 'usuario' o 'empresa'")
+            raise ValidationError("Tipo debe ser 'postulante' o 'empresa' o 'rrhh'")
 
         # Verificar si el usuario ya existe
         if Usuario.query.filter_by(correo=correo).first():
