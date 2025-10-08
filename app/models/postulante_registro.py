@@ -23,5 +23,5 @@ class PostulanteRegistro(db.Model):
     etiquetas = relationship(
         "Etiqueta",
         secondary=postulante_etiquetas,
-        back_populates="postulantes"
+        back_populates="postulante_registro"
     )

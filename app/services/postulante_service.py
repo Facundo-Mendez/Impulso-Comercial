@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import os
 
 from app import db
-from ..models.postulante_registro import Postulante
+from ..models.postulante_registro import PostulanteRegistro
 from ..models.solicitud import Solicitud
 from ..models.postulante_registro import PostulanteRegistro
 from ..models.postulante_empresa import PostulacionEmpresa

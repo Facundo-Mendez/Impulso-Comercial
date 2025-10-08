@@ -10,8 +10,8 @@ class Etiqueta(db.Model):
     nombre: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
 
     # Relación inversa
-    postulantes = relationship(
-        "Postulante",
+    postulante_registro = relationship(
+        "PostulanteRegistro",
         secondary=postulante_etiquetas,
         back_populates="etiquetas"
     )

@@ -5,7 +5,7 @@ from ..services.empresa_service import EmpresaService
 
 from ..models.solicitud import Solicitud
 from ..security.model.usuario import Usuario
-from app.exceptions.custom_errors import ValidationError, ConflictError, NotFoundError, PermissionError
+from app.exceptions.error_handler import ValidationError, ConflictError, NotFoundError, AuthorizationError
 
 empresas_bp = Blueprint('empresas_bp', __name__)
 
@@ -37,7 +37,7 @@ def get_empresa_stats():
     try:
         stats = EmpresaService.get_empresa_stats()
         return jsonify({"ok": True, "stats": stats}), 200
-    except PermissionError as e:
+    except AuthorizationError as e:
         return jsonify({"ok": False, "error": str(e)}), 403
 
 
@@ -67,14 +67,14 @@ def get_empresa_config():
     try:
         config = EmpresaService.get_empresa_config()
         return jsonify({"ok": True, "config": config}), 200
-    except PermissionError as e:
+    except AuthorizationError as e:
         return jsonify({"ok": False, "error": str(e)}), 403
 
 
 @empresas_bp.put("/empresa/config")
 def update_empresa_config():
     try:
-        solicitud = EmpresaService.update_empresa_config()
+        EmpresaService.update_empresa_config()
 
         return jsonify({"ok": True, "message": "Configuración actualizada correctamente"})
     except Exception as e:
@@ -85,8 +85,12 @@ def update_empresa_config():
 @empresas_bp.post("/empresa/logo")
 def upload_empresa_logo():
     try:
-        logo = EmpresaService.upload_empresa_logo()
-        return jsonify({"ok": True, "message": "Logo subido correctamente", "logo": logo}), 200
+        empresa = EmpresaService.upload_empresa_logo()
+        return jsonify({
+            "ok": True,
+            "message": "Logo subido correctamente",
+            "empresa": empresa
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"ok": False, "error": f"Error al subir el logo: {str(e)}"}), 500
@@ -134,7 +138,7 @@ def update_postulacion_estado(postulacion_id):
 
     except ValidationError as ve:
         return jsonify({"ok": False, "error": str(ve)}), 400
-    except PermissionError as pe:
+    except AuthorizationError as pe:
         return jsonify({"ok": False, "error": str(pe)}), 403
     except NotFoundError as nf:
         return jsonify({"ok": False, "error": str(nf)}), 404
@@ -188,7 +192,7 @@ def notificar_rrhh(candidato_id):
         return jsonify({"ok": True, "message": "RRHH notificado correctamente"}), 200
     except ValidationError as ve:
         return jsonify({"ok": False, "error": str(ve)}), 400
-    except PermissionError as pe:
+    except AuthorizationError as pe:
         return jsonify({"ok": False, "error": str(pe)}), 403
     except NotFoundError as nf:
         return jsonify({"ok": False, "error": str(nf)}), 404

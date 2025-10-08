@@ -905,14 +905,15 @@ class EmpresaDashboard {
 
       const result = await response.json();
 
-      if (result.ok && result.logo_url) {
+      if (result.ok && result.empresa) {
         // Actualizar imagen en configuración
-        document.getElementById('currentLogo').src = result.logo_url;
+        const empresa = result.empresa;
+        document.getElementById('currentLogo').src = empresa.logo_url;
         document.getElementById('currentLogo').style.display = 'block';
         document.getElementById('logoPlaceholder').style.display = 'none';
 
         // Actualizar logo en el sidebar
-        this.updateSidebarLogo(result.logo_url);
+        this.updateSidebarLogo(empresa.logo_url);
 
         notifier.success(result.message);
       } else {

@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(signupForm);
-      const tipo = (fd.get('tipo') || 'postulante').toLowerCase();
+      const tipo = (fd.get('tipo') || 'postulante' || 'rrhh').toLowerCase();
       const password = fd.get('password');
 
       // Validación de contraseña

@@ -2,7 +2,7 @@ from app import db
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime, timezone
 from werkzeug.utils import secure_filename
-from app.exceptions.custom_errors import ValidationError, ConflictError, NotFoundError, PermissionError
+from app.exceptions.error_handler import ValidationError, ConflictError, NotFoundError, AuthorizationError
 import jwt, os
 
 from ..security.model.usuario import Usuario
@@ -61,7 +61,7 @@ class EmpresaService:
         """Obtiene todas las solicitudes de la empresa logueada"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         solicitudes = Solicitud.query.filter_by(empresa_id=user.id).order_by(Solicitud.creado_en.desc()).all()
 
@@ -92,7 +92,7 @@ class EmpresaService:
         user = EmpresaService._get_user_from_auth()
 
         if not user or user.rol != "empresa":
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         total_solicitudes = Solicitud.query.filter_by(empresa_id=user.id).count()
         total_candidatos = PostulanteRegistro.query.count()
@@ -110,7 +110,7 @@ class EmpresaService:
         """Actualiza una solicitud de empleo específica"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Buscar la solicitud y verificar que pertenece al usuario
         solicitud = Solicitud.query.filter_by(
@@ -152,7 +152,7 @@ class EmpresaService:
         """Elimina una solicitud de empleo específica"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Buscar la solicitud y verificar que pertenece al usuario
         solicitud = Solicitud.query.filter_by(
@@ -174,9 +174,9 @@ class EmpresaService:
         """Obtiene la configuración de la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
-        empresa = Empresa.query.filter_by(empresa_id=user.id).first()
+        empresa = Empresa.query.filter_by(id=user.id).first()
 
         if not empresa:
             # Si no existe empresa, crear una básica
@@ -201,7 +201,7 @@ class EmpresaService:
         """Actualiza la configuración de la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Obtener datos del request
         data = request.get_json()
@@ -233,11 +233,11 @@ class EmpresaService:
 
 
     @staticmethod
-    def upload_empresa_logo():
+    def upload_empresa_logo() -> dict:
         """Sube el logo de la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         if 'logo' not in request.files:
             raise NotFoundError("No se ha seleccionado ningún archivo")
@@ -287,7 +287,10 @@ class EmpresaService:
         db.session.commit()
 
         return {
-            "logo_url": logo_url
+            "id": empresa.id,
+            "nombre_empresa": empresa.nombre_empresa,
+            "descripcion": empresa.descripcion,
+            "logo_url": empresa.logo_url
         }
 
 
@@ -296,7 +299,7 @@ class EmpresaService:
         """Elimina el logo de la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         empresa = Empresa.query.filter_by(id=user.id).first()
 
@@ -322,7 +325,7 @@ class EmpresaService:
         """Obtiene las postulaciones reales para la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Obtener postulaciones para las solicitudes de esta empresa
         postulaciones = db.session.query(PostulacionEmpresa) \
@@ -389,7 +392,7 @@ class EmpresaService:
         """Actualiza el estado de una postulación"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         data = request.get_json()
         if not data or 'estado' not in data:
@@ -442,7 +445,7 @@ class EmpresaService:
         """Obtiene los candidatos con información detallada para la empresa"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Obtener candidatos para las solicitudes de esta empresa
         candidatos = db.session.query(PostulacionEmpresa) \
@@ -523,7 +526,7 @@ class EmpresaService:
         """Notifica a RRHH sobre un candidato aprobado"""
         user = EmpresaService._get_user_from_auth()
         if not user or user.rol != 'empresa':
-            raise PermissionError("Acceso denegado")
+            raise AuthorizationError("Acceso denegado")
 
         # Buscar la postulación y verificar que pertenece a esta empresa
         postulacion = db.session.query(PostulacionEmpresa) \

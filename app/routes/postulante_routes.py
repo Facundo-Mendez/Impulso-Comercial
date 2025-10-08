@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, current_app
 
-from ..models.postulante_registro import Postulante
+from ..models.postulante_registro import PostulanteRegistro
 from ..models.etiqueta import Etiqueta
 from ..services.postulante_service import PostulanteService # <-- 2. Importar el servicio de IA
-from app.exceptions.custom_errors import ValidationError, ConflictError, NotFoundError, PermissionError
+from app.exceptions.error_handler import ValidationError, ConflictError, NotFoundError
 
 postulante_bp = Blueprint("postulante_bp", __name__)
 
@@ -33,7 +33,7 @@ def get_etiquetas_by_postulante(id):
 
     return jsonify({"ok": True, "etiquetas": lista}), 200
 
-@routes_bp.post("/postulante/postular/<int:solicitud_id>")
+@postulante_bp.post("/postulante/postular/<int:solicitud_id>")
 def postular_a_solicitud(solicitud_id):
     try:
         resultado = PostulanteService.postular_a_solicitud(solicitud_id)
