@@ -835,31 +835,27 @@
 
     // Actualizar etiquetas desde la API
     function updateTagsFromAPI(etiquetas) {
-      if (!etiquetas || etiquetas.length === 0) return;
-      
       const skillTags = document.getElementById('skillTags');
       const experienceTags = document.getElementById('experienceTags');
       const educationTags = document.getElementById('educationTags');
-      
+      // Limpiar contenedores para evitar duplicados y quitar datos hardcodeados
+      skillTags.innerHTML = '';
+      experienceTags.innerHTML = '';
+      educationTags.innerHTML = '';
+      if (!etiquetas || etiquetas.length === 0) return;
       etiquetas.forEach(etiqueta => {
-        // Categorizar etiquetas basado en palabras clave
-        const nombre = etiqueta.nombre.toLowerCase();
+        const nombre = (etiqueta.nombre || '').toLowerCase();
         let container = skillTags; // default
-        
         if (nombre.includes('año') || nombre.includes('experiencia') || nombre.includes('senior') || nombre.includes('junior')) {
           container = experienceTags;
         } else if (nombre.includes('universidad') || nombre.includes('carrera') || nombre.includes('título') || nombre.includes('certificación')) {
           container = educationTags;
         }
-        
-        // Verificar si la etiqueta ya existe
-        if (!container.textContent.includes(etiqueta.nombre)) {
-          const tag = document.createElement('span');
-          tag.className = container === skillTags ? 'tag tag-skill' : 
-                         container === experienceTags ? 'tag tag-experience' : 'tag tag-education';
-          tag.textContent = etiqueta.nombre;
-          container.appendChild(tag);
-        }
+        const tag = document.createElement('span');
+        tag.className = container === skillTags ? 'tag tag-skill' : 
+                       container === experienceTags ? 'tag tag-experience' : 'tag tag-education';
+        tag.textContent = etiqueta.nombre;
+        container.appendChild(tag);
       });
     }
 
@@ -1104,28 +1100,28 @@
     }
 
     // Simulación de datos dinámicos
-    function loadUserData() {
-      // Esta función cargaría datos reales del usuario desde el backend
-      const userData = {
-        name: 'Juan Pérez',
-        email: 'juan.perez@email.com',
-        phone: '+54 9 261 123-4567',
-        title: 'Desarrollador Frontend',
-        hasCV: false,
-        skills: ['JavaScript', 'React', 'HTML/CSS', 'Node.js', 'Git'],
-        experience: ['3+ años', 'Frontend', 'E-commerce', 'Trabajo en equipo'],
-        education: ['Ing. Sistemas', 'Certificación React', 'English B2']
-      };
-
-      // Actualizar interfaz con datos del usuario
-      document.getElementById('profileName').value = userData.name;
-      document.getElementById('profileEmail').value = userData.email;
-      document.getElementById('profilePhone').value = userData.phone;
-      document.getElementById('profileTitle').value = userData.title;
-      document.getElementById('userName').textContent = userData.name;
-
-      const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase();
-      document.getElementById('userAvatar').textContent = initials;
+    async function loadUserData() {
+      // Obtener usuario real
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') } });
+        if (!res.ok) throw new Error('No autorizado');
+        const me = await res.json();
+        const name = me.nombre || '';
+        const email = me.correo || '';
+        document.getElementById('profileName').value = name;
+        document.getElementById('profileEmail').value = email;
+        document.getElementById('userName').textContent = name || 'Mi Perfil';
+        const initials = (name || 'MP').split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (e) {
+        // Si falla, dejamos los campos vacíos
+      }
+      // Cargar etiquetas reales del usuario
+      try {
+        const r = await fetch('/api/perfil/etiquetas', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') } });
+        const data = await r.json();
+        if (data && data.ok) updateTagsFromAPI(data.etiquetas || []);
+      } catch {}
     }
 
     // Filtros para búsqueda de empleos
