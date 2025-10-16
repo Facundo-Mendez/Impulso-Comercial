@@ -120,40 +120,40 @@ class PostulanteService:
         if not user or user.rol != 'postulante':
             return jsonify({"ok": False, "error": "Acceso denegado"}), 403
 
-            # Verificar que la solicitud existe
-            solicitud = Solicitud.query.get(solicitud_id)
-            if not solicitud:
-                return jsonify({"ok": False, "error": "Solicitud no encontrada"}), 404
+        # Verificar que la solicitud existe
+        solicitud = Solicitud.query.get(solicitud_id)
+        if not solicitud:
+            return jsonify({"ok": False, "error": "Solicitud no encontrada"}), 404
 
-            # Verificar que el usuario tiene un perfil de postulante
-            postulante = PostulanteRegistro.query.filter_by(usuario_id=user.id).first()
-            if not postulante:
-                return jsonify({"ok": False, "error": "Perfil de postulante no encontrado"}), 404
+        # Verificar que el usuario tiene un perfil de postulante
+        postulante = PostulanteRegistro.query.filter_by(usuario_id=user.id).first()
+        if not postulante:
+            return jsonify({"ok": False, "error": "Perfil de postulante no encontrado"}), 404
 
-            # Verificar que no se haya postulado antes
-            postulacion_existente = PostulacionEmpresa.query.filter_by(
-                postulante_id=postulante.id,
-                solicitud_id=solicitud_id
-            ).first()
+        # Verificar que no se haya postulado antes
+        postulacion_existente = PostulacionEmpresa.query.filter_by(
+            postulante_id=postulante.id,
+            solicitud_id=solicitud_id
+        ).first()
 
-            if postulacion_existente:
-                return jsonify({"ok": False, "error": "Ya te has postulado a esta solicitud"}), 400
+        if postulacion_existente:
+            return jsonify({"ok": False, "error": "Ya te has postulado a esta solicitud"}), 400
 
-            # Crear nueva postulación
-            nueva_postulacion = PostulacionEmpresa(
-                postulante_id=postulante.id,
-                solicitud_id=solicitud_id,
-                estado='cv_enviado'
-            )
+        # Crear nueva postulación
+        nueva_postulacion = PostulacionEmpresa(
+            postulante_id=postulante.id,
+            solicitud_id=solicitud_id,
+            estado='cv_enviado'
+        )
 
-            db.session.add(nueva_postulacion)
-            db.session.commit()
+        db.session.add(nueva_postulacion)
+        db.session.commit()
 
-            return {
-                "message": "Postulación enviada correctamente",
-                "postulacion": {
-                    "id": nueva_postulacion.id,
-                    "estado": nueva_postulacion.estado,
-                    "fecha_postulacion": nueva_postulacion.fecha_postulacion.isoformat()
-                }
+        return {
+            "message": "Postulación enviada correctamente",
+            "postulacion": {
+                "id": nueva_postulacion.id,
+                "estado": nueva_postulacion.estado,
+                "fecha_postulacion": nueva_postulacion.fecha_postulacion.isoformat()
             }
+        }

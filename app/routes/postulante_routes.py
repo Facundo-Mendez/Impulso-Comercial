@@ -1,3 +1,4 @@
+from app import db
 from flask import Blueprint, request, jsonify, current_app
 
 from ..models.postulante_registro import PostulanteRegistro
