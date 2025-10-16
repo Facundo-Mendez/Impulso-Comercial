@@ -364,8 +364,8 @@
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
           <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
           <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
-          <li><a href="/campus">Ir al Campus</a></li>
-          <li><a href="{{ url_for('pages', page='perfil') }}" class="active">Mi Perfil</a></li>
+          
+          
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
         <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
@@ -433,27 +433,7 @@
             </button>
           </div>
 
-          <div class="simple-form">
-            <div class="grid-2">
-              <label>
-                Nombre completo
-                <input type="text" id="profileName" placeholder="Tu nombre completo" value="Juan Pérez">
-              </label>
-              <label>
-                Teléfono
-                <input type="tel" id="profilePhone" placeholder="+54 9 ..." value="+54 9 261 123-4567">
-              </label>
-            </div>
-            <label>
-              Email
-              <input type="email" id="profileEmail" placeholder="tu@email.com" value="juan.perez@email.com">
-            </label>
-            <label>
-              Título profesional
-              <input type="text" id="profileTitle" placeholder="Ej: Desarrollador Frontend" value="Desarrollador Frontend">
-            </label>
-            <button class="cta-btn primary" onclick="updateProfile()">Guardar cambios</button>
-          </div>
+          
         </section>
 
         <!-- Sección: Mis Etiquetas -->
@@ -623,26 +603,31 @@
           </div>
 
           <div class="simple-form">
-            <h4>Preferencias de notificaciones</h4>
-            <label class="checkbox-label">
-              <input type="checkbox" checked> Recibir emails sobre nuevas oportunidades
+            <h4>Datos de perfil</h4>
+            <label>
+              Nombre completo
+              <input type="text" id="profileName" placeholder="Tu nombre completo">
             </label>
-            <label class="checkbox-label">
-              <input type="checkbox" checked> Notificar cuando una empresa vea mi perfil
+            <label>
+              Telefono
+              <input type="text" id="profilePhone" placeholder="Tu telefono">
             </label>
-            <label class="checkbox-label">
-              <input type="checkbox"> Recibir newsletter semanal
+            <label>
+              Email
+              <input type="email" id="profileEmail" placeholder="tu@email.com">
             </label>
+            <label>
+              Titulo Profesional
+              <input type="text" id="profileTitle" placeholder="Tu titulo profesional">
+            </label>
+            <button class="cta-btn primary" onclick="updateProfile()">Guardar cambios</button>
+            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);"/>
+            
+            
+            
+            
 
-            <h4 style="margin-top: 2rem;">Privacidad</h4>
-            <label class="checkbox-label">
-              <input type="checkbox" checked> Perfil visible para empresas
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox"> Permitir contacto directo
-            </label>
-
-            <button class="cta-btn primary" style="margin-top: 2rem;">Guardar configuración</button>
+     
           </div>
         </section>
 
@@ -1325,6 +1310,34 @@
     .profile-nav a:focus-visible {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
+    }
+
+    /* Ordenar y alinear mejor la sección de Configuración */
+    #configuracion .section-header {
+      align-items: center;
+    }
+    #configuracion .simple-form {
+      max-width: 720px;
+      margin: 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #configuracion h4 {
+      margin: 0.5rem 0 0.25rem 0;
+      color: var(--primary);
+    }
+    #configuracion .checkbox-label {
+      justify-content: flex-start !important;
+      gap: 8px !important;
+    }
+    #configuracion .checkbox-label input[type="checkbox"] {
+      margin-right: 6px !important;
+    }
+    #configuracion .cta-btn.primary {
+      align-self: flex-start;
+      margin-top: 1rem;
     }
   </style>
 

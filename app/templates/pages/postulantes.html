@@ -23,7 +23,7 @@
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
           <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
           <li><a href="{{ url_for('pages', page='postulantes') }}" class="active">Postulantes</a></li>
-          <li><a href="/campus">Ir al Campus</a></li>
+          
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
         <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
@@ -37,47 +37,11 @@
     <h2 class="page-title">Postulantes</h2>
 
     <div id="postTabs" class="tabs" role="tablist" aria-label="Tipo de formulario">
-      <button class="tab-btn active" data-target="#formEmpresa" aria-selected="true">Soy Empresa</button>
+      
       <button class="tab-btn" data-target="#formPostulante" aria-selected="false">Soy Postulante</button>
     </div>
 
-    <div class="tab-panels">
-      <!-- FORM EMPRESA -->
-      <form id="formEmpresa" class="tab-panel" enctype="application/json">
-        <h3 class="form-title">Solicitud de Búsqueda</h3>
-        <fieldset>
-          <legend>Perfil requerido</legend>
-          <div class="grid-2">
-            <label>
-              Cargo / Puesto
-              <input type="text" name="empresa_cargo" required placeholder="Ej: Ejecutivo/a de Cuentas"/>
-            </label>
-            <label>
-              Modalidad
-              <input type="text" name="empresa_modalidad" placeholder="Presencial / Híbrido / Remoto"/>
-            </label>
-            <label class="full">
-              Requisitos
-              <textarea name="empresa_requisitos" rows="3" placeholder="Tecnologías, herramientas, experiencia, etc."></textarea>
-            </label>
-            <label class="full">
-              Expectativas
-              <textarea name="empresa_expectativa" rows="3" placeholder="Objetivos, seniority, KPIs esperados"></textarea>
-            </label>
-            <label class="full">
-              Habilidades deseadas
-              <textarea name="empresa_skills" rows="3" placeholder="Comunicación, negociación, manejo de objeciones, etc."></textarea>
-            </label>
-            <label class="full">
-              Extra
-              <textarea name="empresa_extra" rows="3" placeholder="Observaciones adicionales"></textarea>
-            </label>
-          </div>
-        </fieldset>
-        <div class="actions">
-          <button type="submit" class="cta-btn primary">Enviar solicitud</button>
-        </div>
-      </form>
+    
 
       <!-- FORM POSTULANTE -->
       <form id="formPostulante" class="tab-panel hidden" enctype="multipart/form-data">

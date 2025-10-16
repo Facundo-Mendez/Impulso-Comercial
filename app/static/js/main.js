@@ -126,6 +126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loginLink = document.querySelector('.login-btn');
   
   if (navList && loginLink) {
+    // Quitar enlace "Ir al Campus" si existe en cualquier header
+    const campusLink = navList.querySelector('a[href="/campus"]');
+    if (campusLink && campusLink.parentElement) campusLink.parentElement.remove();
     if (isLoggedIn()) {
       // Agregar enlace "Mi Perfil" si no existe
       const existingProfileLink = navList.querySelector('a[href*="perfil"]');
@@ -136,22 +139,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         navList.insertBefore(profileLi, loginLink.parentElement);
       }
       
-      // Actualizar el enlace de login para mostrar información del usuario
-      const me = await getMe();
-      if (me) {
-        const display = (me.rol === 'empresa' && me.empresa)
-          ? me.empresa.nombre_empresa
-          : me.nombre || 'Mi cuenta';
-        loginLink.innerHTML = `<i class="fas fa-user-circle"></i> ${display}`;
-      } else {
-        loginLink.innerHTML = `<i class="fas fa-user-circle"></i> Mi cuenta`;
-      }
-      loginLink.removeAttribute('href');
-      loginLink.style.cursor = 'pointer';
-      loginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (confirm("¿Cerrar sesión?")) logout();
+      // Reemplazar el botón de login por engranaje con menú
+      const userMenu = document.createElement('li');
+      userMenu.className = 'user-menu';
+      userMenu.innerHTML = `
+        <button class="user-gear" aria-haspopup="true" aria-expanded="false" title="Configuración">
+          <i class="fas fa-cog"></i>
+        </button>
+        <div class="user-dropdown" role="menu" hidden>
+          <button type="button" class="logout-btn" role="menuitem"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+        </div>
+      `;
+      navList.insertBefore(userMenu, loginLink.parentElement);
+      // Eliminar el enlace de login original
+      loginLink.parentElement.remove();
+
+      // Toggle del menú
+      const gearBtn = userMenu.querySelector('.user-gear');
+      const dropdown = userMenu.querySelector('.user-dropdown');
+      const toggleMenu = () => {
+        const isHidden = dropdown.hasAttribute('hidden');
+        if (isHidden) dropdown.removeAttribute('hidden'); else dropdown.setAttribute('hidden', '');
+        gearBtn.setAttribute('aria-expanded', String(isHidden));
+      };
+      gearBtn.addEventListener('click', (e) => { e.preventDefault(); toggleMenu(); });
+      document.addEventListener('click', (e) => {
+        if (!userMenu.contains(e.target)) dropdown.setAttribute('hidden', '');
       });
+      // Logout
+      userMenu.querySelector('.logout-btn').addEventListener('click', (e) => { e.preventDefault(); logout(); });
     } else {
       // Remover enlace "Mi Perfil" si existe
       const existingProfileLink = navList.querySelector('a[href*="perfil"]');
@@ -274,7 +290,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!res.ok) throw data;
       localStorage.setItem('token', data.token);
       if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-      location.href = '/campus';
+      // Redirigir al inicio en lugar de un campus inexistente
+      location.href = '/';
     } catch (err) {
       if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
     }
@@ -340,6 +357,98 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Agregar estilos CSS para el engranaje y menú desplegable
+const style = document.createElement('style');
+style.textContent = `
+  .user-menu {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .user-gear {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  .user-gear:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  
+  .user-gear:active {
+    transform: translateY(0);
+  }
+  
+  .user-gear i {
+    font-size: 1rem;
+  }
+  
+  .user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    min-width: 180px;
+    z-index: 1000;
+    margin-top: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .user-dropdown[hidden] {
+    display: none;
+  }
+  
+  .logout-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    color: #374151;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .logout-btn:hover {
+    background-color: #f3f4f6;
+    color: #dc2626;
+  }
+  
+  .logout-btn i {
+    color: #dc2626;
+  }
+  
+  .user-dropdown:not([hidden]) {
+    animation: slideDown 0.2s ease-out;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+document.head.appendChild(style);
+
 document.addEventListener('DOMContentLoaded', () => {
   const btnPostular = document.getElementById('btnPostularme');
   const btnTalento = document.getElementById('btnBuscoTalento');
@@ -371,6 +480,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// (revert) Se elimina lógica temporal de foto/ubicación
 
 
 
