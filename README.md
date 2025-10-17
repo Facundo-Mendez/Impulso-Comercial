@@ -1,164 +1,174 @@
 
 # Proyecto Impulso Comercial - Documentación
 
-Este proyecto implementa un portal para conectar **empresas** y **postulantes** en el ámbito comercial.  
-Usa **Flask (Python)** para el backend, y ahora **SQLite** para base de datos en desarrollo y mas simple que mysql.Ademas un frontend en **HTML, CSS, JS**.
+Este proyecto es un portal web para conectar empresas y postulantes en el área comercial.  
+Utiliza Flask (Python) para el backend, SQLite como base de datos y HTML, CSS y JavaScript para el frontend.
 
 ---
 
-## 📂 Estructura principal
+## Estructura del proyecto
 
 ```
 Impulso-Comercial/
 │
 ├── app/
-│   ├── __init__.py          # Configuración de Flask y registro de blueprints
-│   ├── config.py            # Configuración general (SQLite, uploads, claves)
-│   ├── models/models.py     # Definición de modelos SQLAlchemy
-│   ├── auth.py              # Blueprint de autenticación (registro, login)
-│   ├── forms.py             # Blueprint de formularios (empresa y postulante)
-│   └── static/              # Archivos frontend (css, js, img)
-│       ├── css/styles.css
-│       ├── js/main.js
-│       └── img/logo.png
+│   ├── __init__.py          # Configuración principal de Flask
+│   ├── config.py            # Configuración de base de datos y archivos
+│   ├── models/models.py     # Modelos de base de datos
+│   ├── auth.py              # Sistema de autenticación
+│   ├── routes.py            # Rutas principales de la aplicación
+│   ├── cv_routes.py         # Rutas para gestión de CV
+│   └── static/              # Archivos del frontend
+│       ├── css/
+│       ├── js/
+│       └── img/
 │
-├── migrations/              # Archivos de control de migraciones Alembic
-├── uploads/                 # Aca se almacenan los formularios
-├── impulso_comercial.db     # Base SQLite (se genera después del upgrade)
-├── templates/               # Páginas HTML (index, login, postulantes, etc.)
+├── migrations/              # Control de cambios en base de datos
+├── uploads/                 # Archivos subidos por usuarios
+├── instance/                # Base de datos SQLite
+├── templates/               # Páginas HTML
 │
-└──.env                      # Muy importante para lo que es la conexion
-└── run.py                   # Punto de arranque de la app 
-              
-Flask
+├── .env                     # Variables de configuración
+└── run.py                   # Archivo principal para ejecutar la aplicación
 ```
 
 ---
 
-## 🔑 Funcionalidades implementadas
+## Funcionalidades principales
 
-### 1. Autenticación de usuarios
-- Registro (`/api/auth/signup`) y login (`/api/auth/login`) con JWT.
-- Usuarios pueden ser **empresa** o **postulante** (`tipo` y `rol` en DB).
-- El estado de sesión se guarda en `localStorage` (token).
+### 1. Sistema de autenticación
+- Registro y login de usuarios
+- Dos tipos de usuarios: empresas y postulantes
+- Sesiones seguras con tokens
 
-### 2. Rutas y páginas principales
-- `index.html`: landing con botones principales.
-  - **Quiero postularme** → redirige a login si no hay sesión, a `postulantes.html` si ya hay sesión.
-  - **Busco talento comercial** → igual lógica.
-- `login.html`: formulario para iniciar sesión o registrarse (empresa/usuario).
-- `postulantes.html`: panel con formularios de:
-  - Solicitud de empresas (cargar perfil requerido).
-  - Postulación de usuarios (cargar CV, links, descripción).
-  - **Protección:** si no hay sesión iniciada, muestra aviso "Acceso restringido".
+### 2. Páginas principales
+- **Página de inicio**: botones para empresas y postulantes
+- **Login**: formulario para iniciar sesión o registrarse
+- **Postulantes**: panel para cargar CV y datos personales
+- **Mi Perfil**: gestión de datos personales y foto de perfil
+- **Mi CV**: análisis inteligente de CV y empresas compatibles
 
-### 3. Formularios y base de datos
-- **Modelos creados:**
-  - `SolicitudEmpresa`: solicitudes de personal por parte de empresas.
-  - `PostulanteRegistro`: registros de postulantes con datos y CV.
-- **Almacenamiento de archivos:** los CV subidos se guardan en `/uploads/`.
+### 3. Gestión de archivos
+- Subida de CV en formato PDF, DOC, DOCX
+- Análisis automático de CV con inteligencia artificial
+- Almacenamiento seguro de archivos
 
-### 4. JS dinámico (`main.js`)
-- Control del menú móvil y acordeones.
-- Manejo de pestañas en `login.html` y `postulantes.html`.
-- Lógica de autenticación en frontend:
-  - Cambiar el link de "Iniciar Sesión" → "Cerrar sesión" si hay token.
-  - Enviar formularios al backend con `fetch` (incluyendo token si existe).
-- Redirecciones dinámicas de los botones en `index.html`.
+### 4. Sistema de matching
+- Análisis de compatibilidad entre postulantes y empresas
+- Recomendaciones personalizadas
+- Sistema de puntuación basado en habilidades y experiencia
 
 ---
 
-## 🗃️ Migraciones con  Alembic/Flask-Migrate'Esto en el caso de hacer una nueva implementacion en relacion con la base de datos'
+## Gestión de base de datos
 
-### Inicialización
+### Comandos básicos para migraciones
+
+**Inicializar base de datos:**
 ```bash
 flask db init
 ```
 
-### Crear nueva migración
+**Crear nueva migración:**
 ```bash
-flask db migrate -m "mensaje"
+flask db migrate -m "descripción del cambio"
 ```
 
-### Aplicar migración
+**Aplicar cambios:**
 ```bash
 flask db upgrade
 ```
 
-### Resetear en caso de error (SQLite)
-- Opción rápida: borrar `impulso_comercial.db` y `migrations/`, luego repetir init + migrate + upgrade.
+**En caso de problemas:**
+- Eliminar archivo `impulso_comercial.db` y carpeta `migrations/`
+- Repetir los comandos de inicialización
 
 ---
 
-## 🚀 Flujo de uso
+## Cómo usar la aplicación
 
-1. **Registro / Login** en `login.html`  
-   → se genera un token que se guarda en `localStorage`.
+1. **Registro o Login**
+   - Los usuarios pueden registrarse como empresa o postulante
+   - Al iniciar sesión se guarda un token de seguridad
 
-2. **Acceso a `postulantes.html`**  
-   - Si no hay token → se bloquea con "Acceso restringido".  
-   - Si hay token → se muestran formularios.
+2. **Acceso a funcionalidades**
+   - Sin sesión: acceso limitado a información básica
+   - Con sesión: acceso completo a todas las funciones
 
-3. **Empresa** completa formulario de solicitud  
-   → se guarda en tabla `solicitud_empresa`.
+3. **Para empresas**
+   - Completar formulario de solicitud de personal
+   - Los datos se guardan en la base de datos
 
-4. **Postulante** completa formulario y sube CV  
-   → se guarda en tabla `postulante_registro` y archivo en `/uploads/`.
+4. **Para postulantes**
+   - Subir CV y completar datos personales
+   - El sistema analiza automáticamente el CV
+   - Recibe recomendaciones de empresas compatibles
 
-5. **Index** adapta comportamiento de botones según sesión.
-
----
-
-## ⚙️ Configuración rápida para el que quiere probar la web
-
-- Instalar dependencias:
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-- Ejecutar servidor:
-  ```bash
-  flask run
-  ```
-
-- Variables importantes en `.env` o `config.py`: 'No tocar'
-  ```env
-  SECRET_KEY="clave_secreta_segura"
-  SQLALCHEMY_DATABASE_URI="sqlite:///../impulso_comercial.db"
-  UPLOAD_FOLDER="uploads"
-  ```
+5. **Página de inicio**
+   - Se adapta según el tipo de usuario logueado
 
 ---
 
-##  Resumen
+## Configuración e instalación
 
-El proyecto ahora permite:
-- Registro/login con roles (empresa o postulante).
-- Redirección dinámica según sesión.
-- Formularios que almacenan datos en SQLite y suben archivos.
-- Migraciones consistentes con Alembic.
-- Protección de acceso a secciones restringidas.
-  
-  
-## 🚀 Flujo de uso de ramas back-end Git Flow
-Vamos a trabajar en la rama develop, pero cada vez que trabajemos en una tarea se va a crear una rama feature/nomre de la tarea.
-Cambiar a las ramas features según su tarea asignada, y se trabaja ahí normalmente, hasta que se termina la tarea y se elimina esa rama.
+### Instalación rápida
 
-1. **Cuando se termina la tarea:**
-- git add .
-- git commit -m "Implementación IA completada"
-- git checkout develop
-- git pull origin develop
-- git merge feature/implementacion-ia
-- git push origin develop
+**1. Instalar dependencias:**
+```bash
+pip install -r requirements.txt
+```
 
-```Borrar local (se espera aprobación de Facundo o Ignacio)```
-- git branch -d feature/implementacion-ia  
+**2. Ejecutar la aplicación:**
+```bash
+python run.py
+```
 
-```Borrar en remoto (se espera aprobación de Facundo o Ignacio)```
-- git push origin --delete feature/implementacion-ia
+**3. Acceder a la aplicación:**
+- Abrir navegador en: `http://127.0.0.1:5000`
 
-2. **Y cuando se quiere pasar todo a producción (se espera aprobación de Facundoo Ignacio):**
-- git checkout main
-- git merge develop
-- git push origin main
+### Variables de configuración
+
+Las siguientes variables se configuran automáticamente:
+- Clave secreta para sesiones
+- Ruta de base de datos SQLite
+- Carpeta para archivos subidos
+
+---
+
+## Resumen del proyecto
+
+Este portal web permite:
+- Registro y login de empresas y postulantes
+- Gestión de perfiles y datos personales
+- Subida y análisis automático de CV
+- Sistema de matching entre postulantes y empresas
+- Almacenamiento seguro de archivos y datos
+- Interfaz adaptativa según el tipo de usuario
+
+---
+
+## Gestión de código con Git
+
+### Flujo de trabajo
+
+**1. Trabajo en nuevas funcionalidades:**
+- Crear rama feature para cada tarea
+- Trabajar en la rama feature correspondiente
+- Al terminar, fusionar con la rama develop
+
+**2. Comandos básicos:**
+```bash
+# Crear nueva rama
+git checkout -b feature/nombre-tarea
+
+# Al terminar la tarea
+git add .
+git commit -m "Descripción del cambio"
+git checkout develop
+git merge feature/nombre-tarea
+git push origin develop
+```
+
+**3. Pasar a producción:**
+- Fusionar develop con main
+- Requiere aprobación del equipo

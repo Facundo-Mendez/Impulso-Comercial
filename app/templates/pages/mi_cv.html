@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi CV | Impulso Comercial</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+</head>
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="{{ url_for('home_alias') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img"/>
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
+          <li><a href="{{ url_for('pages', page='mi_cv') }}" class="active">Mi CV</a></li>
+          <li><a href="/campus">Ir al Campus</a></li>
+          <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+        </ul>
+        <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content container">
+    <h2 class="page-title">Mi CV</h2>
+    
+    <div class="cv-section">
+      <div class="cv-upload">
+        <h3>Subir CV</h3>
+        <p>Sube tu currículum vitae para que las empresas puedan encontrarte</p>
+        
+        <form id="cvUploadForm" enctype="multipart/form-data">
+          <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Arrastra tu CV aquí o haz clic para seleccionar</p>
+            <p class="upload-info">Formatos soportados: PDF, DOC, DOCX (máx. 5MB)</p>
+            <input type="file" id="cvFile" name="cv" accept=".pdf,.doc,.docx" style="display: none;">
+          </div>
+          
+          <div class="cv-preview" id="cvPreview" style="display: none;">
+            <div class="preview-content">
+              <i class="fas fa-file-pdf"></i>
+              <div class="file-info">
+                <h4 id="fileName"></h4>
+                <p id="fileSize"></p>
+              </div>
+              <button type="button" class="remove-file" id="removeFile">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="cta-btn primary" id="uploadBtn" disabled>
+              <i class="fas fa-upload"></i> Subir CV
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="cv-status" id="cvStatus">
+        <h3>Estado de tu CV</h3>
+        <div class="status-card">
+          <div class="status-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="status-info">
+            <h4>CV Actual</h4>
+            <p id="currentCvName">No hay CV subido</p>
+            <p class="status-date" id="uploadDate"></p>
+          </div>
+          <div class="status-actions">
+            <button class="btn-secondary" id="downloadBtn" style="display: none;">
+              <i class="fas fa-download"></i> Descargar
+            </button>
+            <button class="btn-danger" id="deleteBtn" style="display: none;">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Análisis Inteligente del CV -->
+    <div class="analysis-section" id="analysisSection" style="display: none;">
+      <div class="analysis-header">
+        <h3>Análisis Inteligente de tu CV</h3>
+      </div>
+      <p class="analysis-intro">Nuestro sistema de inteligencia artificial ha analizado tu currículum y ha identificado tus fortalezas clave:</p>
+      
+      <div class="analysis-grid">
+        <div class="analysis-card">
+          <h4>Puntuación General</h4>
+          <div class="score-container">
+            <div class="score-bar">
+              <div class="score-fill" id="scoreFill"></div>
+            </div>
+            <p class="score-text" id="scoreText"></p>
+          </div>
+        </div>
+        
+        <div class="analysis-card">
+          <h4>Habilidades Destacadas</h4>
+          <div class="skills-container" id="highlightedSkills">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="analysis-card">
+          <h4>Experiencia Valorada</h4>
+          <div class="experience-container" id="valuedExperience">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+        
+        <div class="analysis-card" style="grid-column: span 2;">
+          <h4>Recomendaciones</h4>
+          <div class="recommendations-container" id="recommendations">
+            <!-- Se llenará dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empresas que Matchean -->
+    <div class="matching-companies" id="matchingCompanies" style="display: none;">
+      <div class="companies-grid" id="companiesGrid">
+        <!-- Se llenará dinámicamente -->
+      </div>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+        <p>Especialistas en reclutamiento de talento comercial.</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contacto</h4>
+        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+      </div>
+      <div class="footer-social">
+        <h4>Seguinos</h4>
+        <div class="social-links">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  
+  <script>
+    // Verificar autenticación y tipo de usuario
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        // No está logueado, redirigir al login
+        alert('Debes iniciar sesión para acceder a esta página');
+        window.location.href = '/pages/login.html';
+        return;
+      }
+      
+      try {
+        // Verificar el tipo de usuario
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        
+        if (!response.ok) {
+          // Token inválido, redirigir al login
+          localStorage.removeItem('token');
+          alert('Sesión expirada. Por favor inicia sesión nuevamente');
+          window.location.href = '/pages/login.html';
+          return;
+        }
+        
+        const userData = await response.json();
+        
+        if (userData.rol !== 'usuario') {
+          // No es un postulante, mostrar mensaje de error
+          document.body.innerHTML = `
+            <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f8f9fa;">
+              <div style="text-align: center; background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #f59e0b; margin-bottom: 1rem;"></i>
+                <h2 style="color: #374151; margin-bottom: 1rem;">Acceso Restringido</h2>
+                <p style="color: #6b7280; margin-bottom: 2rem;">Esta página está disponible solo para postulantes. Las empresas deben usar su panel correspondiente.</p>
+                <a href="/pages/modulo_postulante.html" style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-block;">
+                  Ir al Panel de Postulantes
+                </a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+        
+        // Usuario válido, cargar datos del CV y inicializar manejadores
+        await loadCvData();
+        initializeFileHandlers();
+        
+      } catch (error) {
+        console.error('Error verificando usuario:', error);
+        alert('Error al verificar usuario. Por favor intenta nuevamente');
+        window.location.href = '/pages/login.html';
+      }
+    });
+    
+    async function loadCvData() {
+      try {
+        const response = await fetch('/api/cv/status', {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateCvStatus(data);
+          
+          // Si hay CV, cargar análisis
+          if (data.cv_filename) {
+            await loadCvAnalysis();
+            await loadMatchingCompanies();
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando datos del CV:', error);
+      }
+    }
+    
+    async function loadCvAnalysis() {
+      try {
+        const response = await fetch('/api/cv/analysis', {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+        
+        if (response.ok) {
+          const analysis = await response.json();
+          displayCvAnalysis(analysis);
+        }
+      } catch (error) {
+        console.error('Error cargando análisis del CV:', error);
+      }
+    }
+    
+    async function loadMatchingCompanies() {
+      try {
+        const response = await fetch('/api/cv/matching-companies', {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+        
+        if (response.ok) {
+          const companies = await response.json();
+          displayMatchingCompanies(companies);
+        }
+      } catch (error) {
+        console.error('Error cargando empresas compatibles:', error);
+      }
+    }
+    
+    function updateCvStatus(data) {
+      const currentCvName = document.getElementById('currentCvName');
+      const uploadDate = document.getElementById('uploadDate');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const deleteBtn = document.getElementById('deleteBtn');
+      const analysisSection = document.getElementById('analysisSection');
+      const matchingCompanies = document.getElementById('matchingCompanies');
+      
+      if (data.cv_filename) {
+        currentCvName.textContent = data.cv_filename;
+        uploadDate.textContent = `Subido: ${new Date(data.upload_date).toLocaleDateString()}`;
+        downloadBtn.style.display = 'inline-block';
+        deleteBtn.style.display = 'inline-block';
+        
+        downloadBtn.onclick = () => downloadCv(data.cv_filename);
+        deleteBtn.onclick = () => deleteCv();
+        
+        // Mostrar secciones de análisis
+        analysisSection.style.display = 'block';
+        matchingCompanies.style.display = 'block';
+      } else {
+        currentCvName.textContent = 'No hay CV subido';
+        uploadDate.textContent = '';
+        downloadBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+        
+        // Ocultar secciones de análisis
+        analysisSection.style.display = 'none';
+        matchingCompanies.style.display = 'none';
+      }
+    }
+    
+    function displayCvAnalysis(analysis) {
+      // Habilidades destacadas
+      const skillsContainer = document.getElementById('highlightedSkills');
+      skillsContainer.innerHTML = '';
+      analysis.habilidades_destacadas.forEach(skill => {
+        const skillTag = document.createElement('span');
+        skillTag.className = 'skill-tag';
+        skillTag.textContent = skill;
+        skillsContainer.appendChild(skillTag);
+      });
+      
+      // Experiencia valorada
+      const experienceContainer = document.getElementById('valuedExperience');
+      experienceContainer.innerHTML = '';
+      analysis.experiencia_valorada.forEach(exp => {
+        const expTag = document.createElement('span');
+        expTag.className = 'experience-tag';
+        expTag.textContent = exp;
+        experienceContainer.appendChild(expTag);
+      });
+      
+      // Puntuación general
+      const scoreFill = document.getElementById('scoreFill');
+      const scoreText = document.getElementById('scoreText');
+      scoreFill.style.width = `${analysis.puntuacion_general}%`;
+      scoreText.textContent = analysis.mensaje_puntuacion;
+      
+      // Recomendaciones
+      const recommendationsContainer = document.getElementById('recommendations');
+      recommendationsContainer.innerHTML = '';
+      analysis.recomendaciones.forEach(rec => {
+        const recItem = document.createElement('div');
+        recItem.className = 'recommendation-item';
+        recItem.innerHTML = `<i class="fas fa-lightbulb"></i> ${rec}`;
+        recommendationsContainer.appendChild(recItem);
+      });
+    }
+    
+    function displayMatchingCompanies(companies) {
+      const companiesGrid = document.getElementById('companiesGrid');
+      companiesGrid.innerHTML = '';
+      
+      companies.forEach(company => {
+        const companyCard = document.createElement('div');
+        companyCard.className = 'company-card';
+        
+        const initials = company.nombre.split(' ').map(word => word[0]).join('').toUpperCase();
+        const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#f97316'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        companyCard.innerHTML = `
+          <div class="company-header">
+            <div class="company-avatar" style="background-color: ${color}">
+              ${initials}
+            </div>
+            <div class="company-info">
+              <h4>${company.nombre}</h4>
+              <p>${company.ubicacion}</p>
+            </div>
+          </div>
+          <div class="compatibility-section">
+            <div class="compatibility-bar">
+              <div class="compatibility-fill" style="width: ${company.compatibilidad}%"></div>
+            </div>
+            <span class="compatibility-percentage">${company.compatibilidad}%</span>
+          </div>
+          <div class="company-tags">
+            ${company.etiquetas.map(tag => `<span class="company-tag">${tag}</span>`).join('')}
+          </div>
+        `;
+        
+        companiesGrid.appendChild(companyCard);
+      });
+    }
+    
+    async function downloadCv(filename) {
+      try {
+        const response = await fetch(`/api/cv/download/${filename}`, {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          alert('Error al descargar el CV');
+        }
+      } catch (error) {
+        console.error('Error descargando CV:', error);
+        alert('Error al descargar el CV');
+      }
+    }
+    
+    async function deleteCv() {
+      if (!confirm('¿Estás seguro de que quieres eliminar tu CV?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/cv/delete', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+          }
+        });
+        
+        if (response.ok) {
+          alert('CV eliminado exitosamente');
+          location.reload();
+        } else {
+          alert('Error al eliminar el CV');
+        }
+      } catch (error) {
+        console.error('Error eliminando CV:', error);
+        alert('Error al eliminar el CV');
+      }
+    }
+  </script>
+  
+  <style>
+    .cv-section {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .cv-upload, .cv-status {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .upload-area {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 3rem 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+    
+    .upload-area.dragover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .upload-area i {
+      font-size: 3rem;
+      color: #ddd;
+      margin-bottom: 1rem;
+    }
+    
+    .upload-info {
+      font-size: 0.875rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    
+    .cv-preview {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .preview-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .preview-content i {
+      font-size: 2rem;
+      color: #dc2626;
+    }
+    
+    .file-info h4 {
+      margin: 0;
+      color: var(--text);
+    }
+    
+    .file-info p {
+      margin: 0;
+      color: #666;
+      font-size: 0.875rem;
+    }
+    
+    .remove-file {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 2rem;
+      height: 2rem;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    
+    .status-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .status-icon i {
+      font-size: 2rem;
+      color: var(--primary);
+    }
+    
+    .status-info h4 {
+      margin: 0 0 0.25rem 0;
+    }
+    
+    .status-date {
+      color: #666;
+      font-size: 0.875rem;
+    }
+    
+    .status-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+    
+    /* Análisis Inteligente */
+    .analysis-section {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+    
+    .analysis-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .analysis-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .analysis-header h3 {
+      margin: 0;
+      color: #1f2937;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .ai-badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 0.375rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .analysis-intro {
+      color: #6b7280;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .analysis-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    
+    .analysis-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+    
+    .analysis-card h4 {
+      margin: 0 0 1rem 0;
+      color: #1f2937;
+      font-size: 1.125rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .analysis-card h4::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 2px;
+    }
+    
+    .skill-tag, .experience-tag {
+      display: inline-block;
+      background: #ffffff;
+      color: #374151;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      margin: 0.25rem;
+      border: 1px solid #d1d5db;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .skill-tag:hover, .experience-tag:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .score-container {
+      text-align: center;
+    }
+    
+    .score-bar {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      border-radius: 8px;
+      transition: width 1s ease;
+    }
+    
+    .score-text {
+      color: #374151;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .recommendation-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      color: #374151;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      padding: 0.75rem;
+      background: #ffffff;
+      border-radius: 8px;
+      border-left: 3px solid #3b82f6;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .recommendation-item i {
+      color: #3b82f6;
+      margin-top: 0.1rem;
+      font-size: 1rem;
+    }
+    
+    /* Empresas que Matchean */
+    .matching-companies {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+    
+    
+    .matching-companies h3 {
+      margin: 0 0 1.5rem 0;
+      color: #1f2937;
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .matching-companies h3::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border-radius: 2px;
+    }
+    
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .company-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    
+    .company-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+    
+    .company-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .company-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.25rem;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .company-info h4 {
+      margin: 0 0 0.25rem 0;
+      color: #1f2937;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+    
+    .company-info p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .compatibility-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .compatibility-bar {
+      flex: 1;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .compatibility-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      border-radius: 8px;
+      transition: width 1s ease;
+    }
+    
+    .compatibility-percentage {
+      color: #374151;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    .company-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .company-tag {
+      background: #ffffff;
+      color: #374151;
+      padding: 0.375rem 0.75rem;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      border: 1px solid #d1d5db;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .company-tag:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+      transform: translateY(-1px);
+    }
+  </style>
+  
+  <script>
+    // Variables globales para el manejo de archivos
+    let uploadArea, fileInput, cvPreview, fileName, fileSize, removeFile, uploadBtn, uploadForm;
+    
+    function initializeFileHandlers() {
+      uploadArea = document.getElementById('uploadArea');
+      fileInput = document.getElementById('cvFile');
+      cvPreview = document.getElementById('cvPreview');
+      fileName = document.getElementById('fileName');
+      fileSize = document.getElementById('fileSize');
+      removeFile = document.getElementById('removeFile');
+      uploadBtn = document.getElementById('uploadBtn');
+      uploadForm = document.getElementById('cvUploadForm');
+      
+      if (!uploadArea || !fileInput) return; // Elementos no disponibles
+      
+      // Drag and drop functionality
+      uploadArea.addEventListener('click', () => fileInput.click());
+      
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+      
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+      
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFile(e.target.files[0]);
+        }
+      });
+      
+      removeFile.addEventListener('click', () => {
+        cvPreview.style.display = 'none';
+        uploadBtn.disabled = true;
+        fileInput.value = '';
+      });
+      
+      uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('cv', fileInput.files[0]);
+        
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+        uploadBtn.disabled = true;
+        
+        try {
+          const response = await fetch('/api/cv/upload', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+            alert('CV subido exitosamente');
+            location.reload();
+          } else {
+            alert('Error al subir CV: ' + (result.error || 'Error desconocido'));
+          }
+        } catch (error) {
+          alert('Error al subir CV: ' + error.message);
+        } finally {
+          uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Subir CV';
+          uploadBtn.disabled = false;
+        }
+      });
+    }
+    
+    function handleFile(file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Por favor selecciona un archivo PDF, DOC o DOCX');
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('El archivo es demasiado grande. Máximo 5MB');
+        return;
+      }
+      
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+      cvPreview.style.display = 'block';
+      uploadBtn.disabled = false;
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+  </script>
+</body>
+</html>

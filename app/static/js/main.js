@@ -130,6 +130,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const campusLink = navList.querySelector('a[href="/campus"]');
     if (campusLink && campusLink.parentElement) campusLink.parentElement.remove();
     if (isLoggedIn()) {
+      // Obtener datos del usuario para verificar el rol
+      const userData = await getMe();
+      
+      if (userData && userData.rol === 'usuario') {
+        // Agregar enlace "Mi CV" si no existe (solo para postulantes)
+        const existingCvLink = navList.querySelector('a[href*="mi_cv"]');
+        if (!existingCvLink) {
+          const cvLi = document.createElement('li');
+          cvLi.innerHTML = `<a href="/pages/mi_cv.html">Mi CV</a>`;
+          // Insertar antes del enlace de login
+          navList.insertBefore(cvLi, loginLink.parentElement);
+        }
+      }
+      
       // Agregar enlace "Mi Perfil" si no existe
       const existingProfileLink = navList.querySelector('a[href*="perfil"]');
       if (!existingProfileLink) {
@@ -183,44 +197,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-/* Pestañas y formularios en login.html */
+/* Formularios de autenticación */
 
 (() => {
-  const modeTabs = document.getElementById('modeTabs');
-  const loginTypeTabs = document.getElementById('loginTypeTabs');
   const loginForm = document.getElementById('loginForm');
   const signupForm = document.getElementById('signupForm');
-  const loginUserType = document.getElementById('loginUserType');
   const signupTipo = document.getElementById('signupTipo');
   const empresaFields = document.getElementById('empresaFields');
-  if (!modeTabs) return; // no estamos en login.html
-
-  // Cambio Login / Signup
-  modeTabs.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modeTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const mode = btn.dataset.mode;
-      if (mode === 'login') {
-        loginForm.style.display = '';
-        signupForm.style.display = 'none';
-        loginTypeTabs.style.display = '';
-      } else {
-        loginForm.style.display = 'none';
-        signupForm.style.display = '';
-        loginTypeTabs.style.display = 'none';
-      }
-    });
-  });
-
-  // Cambio Empresa / Usuario (solo login)
-  loginTypeTabs.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      loginTypeTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (loginUserType) loginUserType.value = btn.dataset.type || 'empresa';
-    });
-  });
 
   // Mostrar/ocultar campos de empresa en SIGNUP
   const toggleEmpresa = () => {
@@ -236,66 +219,85 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Handler LOGIN
-  const loginMsg = document.getElementById('loginMsg');
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(loginForm);
-    const body = {
-      correo: fd.get('email'),    // backend espera "correo"
-      password: fd.get('password')
-      // loginUserType.value está por si luego se diferenciá flujos
-    };
-    if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      localStorage.setItem('token', data.token);
-      sessionStorage.setItem('token', data.token);
-      if (loginMsg) loginMsg.textContent = '¡Listo! Redirigiendo...';
-      location.href = '/';
-    } catch (err) {
-      if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'No se pudo iniciar sesión';
-    }
-  });
+  if (loginForm) {
+    const loginMsg = document.getElementById('loginMsg');
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(loginForm);
+      const body = {
+        correo: fd.get('email'),    // backend espera "correo"
+        password: fd.get('password')
+      };
+      if (loginMsg) loginMsg.textContent = 'Iniciando sesión...';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        localStorage.setItem('token', data.token);
+        sessionStorage.setItem('token', data.token);
+        if (loginMsg) loginMsg.textContent = '¡Bienvenido! Redirigiendo...';
+        // Redirigir según el tipo de usuario
+        if (data.type === 'empresa') {
+          location.href = '/pages/dashboard-rrhh.html';
+        } else {
+          location.href = '/'; // Postulantes van al inicio
+        }
+      } catch (err) {
+        if (loginMsg) loginMsg.textContent = (err && err.error) ? err.error : 'Error al iniciar sesión';
+      }
+    });
+  }
 
   // Handler SIGNUP
-  const signupMsg = document.getElementById('signupMsg');
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(signupForm);
-    const tipo = (fd.get('tipo') || 'usuario').toLowerCase();
-    const body = {
-      tipo,
-      nombre: fd.get('nombre'),
-      correo: fd.get('correo'),
-      password: fd.get('password'),
-    };
-    if (tipo === 'empresa') {
-      body.nombre_empresa = fd.get('nombre_empresa');
-      body.descripcion = fd.get('descripcion') || null;
-    }
-    if (signupMsg) signupMsg.textContent = 'Creando cuenta...';
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!res.ok) throw data;
-      localStorage.setItem('token', data.token);
-      if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-      // Redirigir al inicio en lugar de un campus inexistente
-      location.href = '/';
-    } catch (err) {
-      if (signupMsg) signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
-    }
-  });
+  if (signupForm) {
+    const signupMsg = document.getElementById('signupMsg');
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(signupForm);
+      const tipo = (fd.get('tipo') || 'usuario').toLowerCase();
+      const body = {
+        tipo,
+        nombre: fd.get('nombre'),
+        correo: fd.get('correo'),
+        password: fd.get('password'),
+      };
+      if (tipo === 'empresa') {
+        body.nombre_empresa = fd.get('nombre_empresa');
+        body.descripcion = fd.get('descripcion') || null;
+      }
+      if (signupMsg) signupMsg.textContent = 'Creando cuenta...';
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.error('Error del servidor:', data);
+          throw data;
+        }
+        localStorage.setItem('token', data.token);
+        if (signupMsg) signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
+        // Redirigir según el tipo de usuario
+        if (data.type === 'empresa') {
+          location.href = '/pages/dashboard-rrhh.html';
+        } else {
+          location.href = '/pages/modulo_postulante.html';
+        }
+      } catch (err) {
+        console.error('Error en registro:', err);
+        if (signupMsg) {
+          signupMsg.textContent = (err && err.error) ? err.error : 'No se pudo crear la cuenta';
+          signupMsg.style.color = 'red';
+        }
+      }
+    });
+  }
 })();
 document.addEventListener('DOMContentLoaded', () => {
   // --- Emparejamos IDs de formularios ---

@@ -21,8 +21,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="{{ url_for('home_alias') }}" class="active">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
           <li><a href="/campus">Ir al Campus</a></li>
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
@@ -173,5 +172,29 @@
   </footer>
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // Ocultar botón "Busco talento comercial" para postulantes
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            const btnBuscoTalento = document.getElementById('btnBuscoTalento');
+            if (userData.rol === 'usuario' && btnBuscoTalento) {
+              btnBuscoTalento.style.display = 'none';
+            }
+          }
+        } catch (error) {
+          console.log('Error verificando usuario:', error);
+        }
+      }
+    });
+  </script>
 </body>
 </html>

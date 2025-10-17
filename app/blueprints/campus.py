@@ -12,7 +12,7 @@ def campus_page():
 # APIs protegidas (mock) 
 
 @campus_bp.get('/api/jobs')
-@limiter.limit('20 per minute')
+@limiter.limit('100 per minute')
 @require_auth
 def api_jobs():
     data = {
@@ -25,7 +25,7 @@ def api_jobs():
     return jsonify(data)
 
 @campus_bp.get('/api/candidates')
-@limiter.limit('20 per minute')
+@limiter.limit('100 per minute')
 @require_auth
 def api_candidates():
     data = {
@@ -38,7 +38,7 @@ def api_candidates():
     return jsonify(data)
 
 @campus_bp.get('/api/courses')
-@limiter.limit('20 per minute')
+@limiter.limit('100 per minute')
 @require_auth
 def api_courses():
     data = {

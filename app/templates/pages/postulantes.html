@@ -21,8 +21,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}" class="active">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}" class="active">Postularme</a></li>
           
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
@@ -34,32 +33,25 @@
   </header>
 
   <main class="page-content container">
-    <h2 class="page-title">Postulantes</h2>
+    <h2 class="page-title">Postularme</h2>
 
     <div id="postTabs" class="tabs" role="tablist" aria-label="Tipo de formulario">
-      
-      <button class="tab-btn" data-target="#formPostulante" aria-selected="false">Soy Postulante</button>
+      <button class="tab-btn" data-target="#formPostulante" aria-selected="false" id="soyPostulanteBtn">Soy Postulante</button>
     </div>
 
-    
-
-      <!-- FORM POSTULANTE -->
-      <form id="formPostulante" class="tab-panel hidden" enctype="multipart/form-data">
+    <!-- FORM POSTULANTE -->
+    <form id="formPostulante" class="tab-panel" enctype="multipart/form-data">
         <h3 class="form-title">Carga tu postulación</h3>
         <fieldset>
           <legend>Datos del Postulante</legend>
-          <div class="grid-3">
+          <div class="grid-2">
             <label>
               Nombre
-              <input type="text" name="nombre" required placeholder="Tu nombre"/>
-            </label>
-            <label>
-              Email
-              <input type="email" name="email" required placeholder="tu@correo.com"/>
+              <input type="text" name="nombre" placeholder="Tu nombre"/>
             </label>
             <label>
               Teléfono
-              <input type="text" name="telefono" placeholder="+54 9 ..."/>
+              <input type="tel" name="telefono" placeholder="+54 9 11 1234-5678" pattern="[+]?[0-9\s\-\(\)]+" title="Formato: +54 9 11 1234-5678"/>
             </label>
             <label class="full">
               Puesto de interés
@@ -104,5 +96,687 @@
   </footer>
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // Script específico para la página de postulantes
+    document.addEventListener('DOMContentLoaded', async () => {
+      const formPostulante = document.getElementById('formPostulante');
+      const soyPostulanteBtn = document.getElementById('soyPostulanteBtn');
+      const postTabs = document.getElementById('postTabs');
+      
+      // Verificar si el usuario está logueado
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        try {
+          // Verificar que el token sea válido
+          const response = await fetch('/api/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            
+            // Si el usuario está logueado, mostrar el formulario automáticamente
+            formPostulante.classList.remove('hidden');
+            soyPostulanteBtn.classList.add('active');
+            soyPostulanteBtn.setAttribute('aria-selected', 'true');
+            
+            // Ocultar el botón ya que el formulario está visible
+            postTabs.style.display = 'none';
+            
+            // Pre-llenar campos con datos del usuario
+            const nombreInput = formPostulante.querySelector('input[name="nombre"]');
+            const telefonoInput = formPostulante.querySelector('input[name="telefono"]');
+            
+            if (nombreInput && userData.nombre) {
+              nombreInput.value = userData.nombre;
+              nombreInput.style.backgroundColor = '#f0f9ff';
+              nombreInput.style.borderColor = '#0ea5e9';
+            }
+            if (telefonoInput && userData.telefono) {
+              telefonoInput.value = userData.telefono;
+              telefonoInput.style.backgroundColor = '#f0f9ff';
+              telefonoInput.style.borderColor = '#0ea5e9';
+            } else if (telefonoInput) {
+              // Formato sugerido para teléfono argentino
+              telefonoInput.placeholder = "+54 9 11 1234-5678";
+            }
+            
+            // Agregar formateo automático al teléfono
+            if (telefonoInput) {
+              telefonoInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Solo números
+                
+                // Formatear como teléfono argentino
+                if (value.length > 0) {
+                  if (value.startsWith('54')) {
+                    // Ya tiene código de país
+                    if (value.length > 2) {
+                      value = '+54 ' + value.substring(2);
+                    }
+                    if (value.length > 6) {
+                      value = value.substring(0, 6) + ' ' + value.substring(6);
+                    }
+                    if (value.length > 10) {
+                      value = value.substring(0, 10) + ' ' + value.substring(10);
+                    }
+                    if (value.length > 15) {
+                      value = value.substring(0, 15) + '-' + value.substring(15, 19);
+                    }
+                  } else {
+                    // Agregar código de país
+                    if (value.length > 0) {
+                      value = '+54 9 ' + value;
+                    }
+                    if (value.length > 8) {
+                      value = value.substring(0, 8) + ' ' + value.substring(8);
+                    }
+                    if (value.length > 13) {
+                      value = value.substring(0, 13) + '-' + value.substring(13, 17);
+                    }
+                  }
+                }
+                
+                e.target.value = value;
+              });
+            }
+          } else {
+            // Token inválido, limpiar y mostrar botón
+            localStorage.removeItem('token');
+            showLoginButton();
+          }
+        } catch (error) {
+          console.error('Error verificando autenticación:', error);
+          showLoginButton();
+        }
+      } else {
+        // No hay token, mostrar botón
+        showLoginButton();
+      }
+      
+      function showLoginButton() {
+        formPostulante.classList.add('hidden');
+        postTabs.style.display = '';
+        soyPostulanteBtn.classList.remove('active');
+        soyPostulanteBtn.setAttribute('aria-selected', 'false');
+      }
+      
+      // Manejar envío del formulario de postulantes
+      formPostulante.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = formPostulante.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        
+        try {
+          submitBtn.textContent = 'Enviando...';
+          submitBtn.disabled = true;
+          
+          const formData = new FormData(formPostulante);
+          
+          const response = await fetch('/api/postulacion', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (response.ok) {
+            // Mostrar ventana emergente verde con tick
+            showSuccessModal();
+            // Limpiar formulario pero mantener datos del usuario
+            const nombreInput = formPostulante.querySelector('input[name="nombre"]');
+            const telefonoInput = formPostulante.querySelector('input[name="telefono"]');
+            const puestoInput = formPostulante.querySelector('input[name="puesto"]');
+            const cvInput = formPostulante.querySelector('input[name="cv"]');
+            
+            // Guardar valores del usuario
+            const savedNombre = nombreInput.value;
+            const savedTelefono = telefonoInput.value;
+            
+            // Limpiar formulario
+            formPostulante.reset();
+            
+            // Restaurar datos del usuario con estilo visual
+            if (savedNombre) {
+              nombreInput.value = savedNombre;
+              nombreInput.style.backgroundColor = '#f0f9ff';
+              nombreInput.style.borderColor = '#0ea5e9';
+            }
+            if (savedTelefono) {
+              telefonoInput.value = savedTelefono;
+              telefonoInput.style.backgroundColor = '#f0f9ff';
+              telefonoInput.style.borderColor = '#0ea5e9';
+            }
+          } else {
+            alert('Error: ' + (result.error || 'Error desconocido'));
+          }
+          
+        } catch (error) {
+          console.error('Error enviando postulación:', error);
+          alert('Error al enviar la postulación. Inténtalo de nuevo.');
+        } finally {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      });
+      
+        // Función para mostrar ventana emergente de éxito
+        function showSuccessModal() {
+          // Crear el modal de éxito
+          const successModal = document.createElement('div');
+          successModal.id = 'successModal';
+          successModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+          `;
+          
+          successModal.innerHTML = `
+            <div style="
+              background: linear-gradient(135deg, #10b981, #059669);
+              color: white;
+              padding: 2rem;
+              border-radius: 16px;
+              text-align: center;
+              box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+              max-width: 400px;
+              width: 90%;
+              animation: slideIn 0.4s ease;
+            ">
+              <div style="
+                width: 80px;
+                height: 80px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.5rem;
+                animation: checkmark 0.6s ease 0.3s both;
+              ">
+                <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
+              </div>
+              <h2 style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 600;">
+                ¡Postulación Recibida!
+              </h2>
+              <p style="margin: 0 0 1.5rem 0; opacity: 0.9; line-height: 1.5;">
+                Tu CV ha sido guardado y analizado exitosamente. Te mostraremos las empresas que coinciden con tu perfil.
+              </p>
+              <div style="
+                width: 100%;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 2px;
+                overflow: hidden;
+                margin-bottom: 1rem;
+              ">
+                <div style="
+                  width: 100%;
+                  height: 100%;
+                  background: white;
+                  border-radius: 2px;
+                  animation: progress 2s ease-in-out;
+                "></div>
+              </div>
+              <p style="margin: 0; font-size: 0.875rem; opacity: 0.8;">
+                Cargando empresas...
+              </p>
+            </div>
+          `;
+          
+          // Agregar estilos CSS
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes slideIn {
+              from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+              to { transform: translateY(0) scale(1); opacity: 1; }
+            }
+            @keyframes checkmark {
+              from { transform: scale(0); }
+              to { transform: scale(1); }
+            }
+            @keyframes progress {
+              from { transform: translateX(-100%); }
+              to { transform: translateX(0); }
+            }
+          `;
+          document.head.appendChild(style);
+          
+          // Agregar modal al body
+          document.body.appendChild(successModal);
+          
+          // Después de 2 segundos, mostrar el modal de empresas
+          setTimeout(async () => {
+            document.body.removeChild(successModal);
+            await showCompaniesModal();
+          }, 2000);
+        }
+
+        // Función para mostrar modal de empresas que coinciden
+        async function showCompaniesModal() {
+          try {
+            // Obtener empresas que coinciden
+            const response = await fetch('/api/cv/matching-companies', {
+              headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+
+            if (!response.ok) {
+              throw new Error('Error al cargar empresas');
+            }
+
+            const companies = await response.json();
+
+            // Crear el modal de empresas
+            const modal = document.createElement('div');
+            modal.id = 'companiesModal';
+            modal.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.7);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 10000;
+              animation: fadeIn 0.3s ease;
+              padding: 2rem;
+              box-sizing: border-box;
+            `;
+
+            // Generar contenido de empresas
+            let companiesContent = '';
+            if (companies && companies.length > 0) {
+              companiesContent = companies.map(company => `
+                <div class="company-card" style="
+                  background: rgba(255,255,255,0.9);
+                  border-radius: 20px;
+                  padding: 2rem;
+                  box-shadow: 0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.2);
+                  transition: all 0.3s ease;
+                  position: relative;
+                  overflow: hidden;
+                  margin-bottom: 1.5rem;
+                  backdrop-filter: blur(10px);
+                  border: 1px solid rgba(255,255,255,0.3);
+                ">
+                  <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 5px;
+                    background: linear-gradient(90deg, #4fc3f7, #29b6f6, #03a9f4);
+                    border-radius: 20px 20px 0 0;
+                  "></div>
+                  
+                  <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                    <div style="
+                      width: 60px;
+                      height: 60px;
+                      background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+                      border-radius: 16px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      margin-right: 1.5rem;
+                      color: white;
+                      font-size: 1.4rem;
+                      font-weight: bold;
+                      box-shadow: 0 8px 24px rgba(79, 195, 247, 0.3);
+                      border: 2px solid rgba(255,255,255,0.2);
+                    ">
+                      ${company.nombre.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 style="margin: 0 0 0.25rem 0; color: #1f2937; font-size: 1.2rem; font-weight: 600;">
+                        ${company.nombre}
+                      </h3>
+                      <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">
+                        ${company.ubicacion || 'Ubicación no especificada'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.9rem; color: #6b7280; margin-right: 1rem; font-weight: 500;">
+                      Compatibilidad:
+                    </span>
+                    <div style="
+                      flex: 1;
+                      height: 6px;
+                      background: #e5e7eb;
+                      border-radius: 3px;
+                      overflow: hidden;
+                      position: relative;
+                    ">
+                      <div style="
+                        height: 100%;
+                        background: linear-gradient(90deg, #10b981, #059669);
+                        border-radius: 3px;
+                        width: ${company.compatibilidad}%;
+                        transition: width 0.8s ease;
+                      "></div>
+                    </div>
+                    <span style="margin-left: 1rem; font-weight: 600; color: #059669; font-size: 0.9rem;">
+                      ${company.compatibilidad}%
+                    </span>
+                  </div>
+                  
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+                    ${company.etiquetas.map(tag => `
+                      <span style="
+                        background: #f3f4f6;
+                        color: #374151;
+                        padding: 0.3rem 0.6rem;
+                        border-radius: 15px;
+                        font-size: 0.75rem;
+                        font-weight: 500;
+                        border: 1px solid #e5e7eb;
+                      ">${tag}</span>
+                    `).join('')}
+                  </div>
+                  
+                  <div style="color: #6b7280; line-height: 1.5; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    ${company.descripcion || 'Descripción no disponible'}
+                  </div>
+                  
+                  <button onclick="applyToCompany(${company.id})" style="
+                    background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+                    color: white;
+                    border: none;
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.75rem;
+                    font-size: 1rem;
+                    box-shadow: 0 8px 24px rgba(79, 195, 247, 0.3);
+                    border: 2px solid rgba(255,255,255,0.2);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 32px rgba(79, 195, 247, 0.4)'; this.style.background='linear-gradient(135deg, #29b6f6, #03a9f4)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(79, 195, 247, 0.3)'; this.style.background='linear-gradient(135deg, #4fc3f7, #29b6f6)'">
+                    <i class="fas fa-paper-plane"></i>
+                    Postularme
+                  </button>
+                </div>
+              `).join('');
+            } else {
+              companiesContent = `
+                <div style="
+                  text-align: center;
+                  color: #01579b;
+                  padding: 4rem 2rem;
+                  background: rgba(255,255,255,0.2);
+                  border-radius: 20px;
+                  backdrop-filter: blur(15px);
+                  border: 1px solid rgba(255,255,255,0.3);
+                  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                ">
+                  <div style="
+                    width: 100px;
+                    height: 100px;
+                    background: linear-gradient(135deg, #81d4fa, #4fc3f7);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 2rem;
+                    box-shadow: 0 8px 24px rgba(129, 212, 250, 0.3);
+                  ">
+                    <i class="fas fa-search" style="font-size: 2.5rem; color: white;"></i>
+                  </div>
+                  <h3 style="
+                    margin-bottom: 1rem; 
+                    font-size: 1.8rem; 
+                    font-weight: 700;
+                    color: #01579b;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  ">No se encontraron empresas</h3>
+                  <p style="
+                    opacity: 0.8; 
+                    line-height: 1.6; 
+                    font-size: 1.1rem;
+                    color: #0277bd;
+                    max-width: 400px;
+                    margin: 0 auto;
+                  ">
+                    No hay empresas que coincidan con tu perfil actual. Intenta actualizar tu CV con más habilidades o experiencia.
+                  </p>
+                </div>
+              `;
+            }
+
+            modal.innerHTML = `
+              <div style="
+                background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 50%, #81d4fa 100%);
+                border-radius: 24px;
+                max-width: 900px;
+                width: 100%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+                animation: slideIn 0.4s ease;
+                position: relative;
+                backdrop-filter: blur(20px);
+              ">
+                <!-- Decoración de fondo -->
+                <div style="
+                  position: absolute;
+                  top: -50px;
+                  right: -50px;
+                  width: 200px;
+                  height: 200px;
+                  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                  border-radius: 50%;
+                  pointer-events: none;
+                "></div>
+                <div style="
+                  position: absolute;
+                  bottom: -30px;
+                  left: -30px;
+                  width: 150px;
+                  height: 150px;
+                  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+                  border-radius: 50%;
+                  pointer-events: none;
+                "></div>
+                
+                <div style="padding: 2.5rem; position: relative; z-index: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
+                    <div style="flex: 1;">
+                      <div style="
+                        display: inline-flex;
+                        align-items: center;
+                        background: rgba(255,255,255,0.2);
+                        padding: 0.5rem 1rem;
+                        border-radius: 50px;
+                        margin-bottom: 1rem;
+                        backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255,255,255,0.3);
+                      ">
+                        <i class="fas fa-search" style="color: #0277bd; margin-right: 0.5rem; font-size: 0.9rem;"></i>
+                        <span style="color: #01579b; font-size: 0.9rem; font-weight: 600;">Análisis Inteligente</span>
+                      </div>
+                      <h2 style="
+                        margin: 0 0 0.75rem 0; 
+                        color: #01579b; 
+                        font-size: 2.2rem; 
+                        font-weight: 800; 
+                        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        line-height: 1.2;
+                      ">
+                        Empresas que Coinciden
+                      </h2>
+                      <p style="
+                        margin: 0; 
+                        color: #0277bd; 
+                        font-size: 1.1rem; 
+                        line-height: 1.6;
+                        opacity: 0.9;
+                        max-width: 500px;
+                      ">
+                        Hemos analizado tu CV y encontrado las empresas que mejor se adaptan a tu perfil profesional
+                      </p>
+                    </div>
+                    <button onclick="closeCompaniesModal()" style="
+                      background: rgba(255,255,255,0.3);
+                      color: #01579b;
+                      border: 2px solid rgba(255,255,255,0.4);
+                      width: 44px;
+                      height: 44px;
+                      border-radius: 50%;
+                      cursor: pointer;
+                      transition: all 0.3s ease;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 1.3rem;
+                      backdrop-filter: blur(10px);
+                      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    " onmouseover="this.style.background='rgba(255,255,255,0.5)'; this.style.transform='scale(1.1)'" 
+                       onmouseout="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1)'">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  
+                  <div style="
+                    max-height: 60vh; 
+                    overflow-y: auto; 
+                    padding-right: 0.5rem;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255,255,255,0.2);
+                  ">
+                    ${companiesContent}
+                  </div>
+                </div>
+              </div>
+            `;
+
+            // Agregar estilos adicionales
+            const additionalStyle = document.createElement('style');
+            additionalStyle.textContent = `
+              .company-card:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.3) !important;
+                background: rgba(255,255,255,0.95) !important;
+              }
+              
+              #companiesModal::-webkit-scrollbar {
+                width: 10px;
+              }
+              
+              #companiesModal::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.1);
+                border-radius: 8px;
+                margin: 8px;
+              }
+              
+              #companiesModal::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #81d4fa, #4fc3f7);
+                border-radius: 8px;
+                border: 2px solid rgba(255,255,255,0.2);
+              }
+              
+              #companiesModal::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+              }
+              
+              @keyframes slideIn {
+                from { 
+                  transform: translateY(-30px) scale(0.95); 
+                  opacity: 0; 
+                }
+                to { 
+                  transform: translateY(0) scale(1); 
+                  opacity: 1; 
+                }
+              }
+              
+              @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+              }
+              
+              @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+              }
+            `;
+            document.head.appendChild(additionalStyle);
+
+            // Agregar modal al body
+            document.body.appendChild(modal);
+            
+            // Agregar evento para cerrar modal al hacer clic fuera
+            modal.addEventListener('click', function(e) {
+              if (e.target === modal) {
+                closeCompaniesModal();
+              }
+            });
+            
+            // Agregar evento para cerrar modal con tecla Escape
+            const handleEscape = function(e) {
+              if (e.key === 'Escape') {
+                closeCompaniesModal();
+                document.removeEventListener('keydown', handleEscape);
+              }
+            };
+            document.addEventListener('keydown', handleEscape);
+
+          } catch (error) {
+            console.error('Error cargando empresas:', error);
+            alert('Error al cargar las empresas. Inténtalo de nuevo.');
+          }
+        }
+
+    });
+
+    // Función para cerrar el modal de empresas (global)
+    function closeCompaniesModal() {
+      const modal = document.getElementById('companiesModal');
+      if (modal) {
+        // Agregar animación de cierre
+        modal.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+          if (modal.parentNode) {
+            document.body.removeChild(modal);
+          }
+        }, 300);
+      }
+    }
+
+    // Función para postularse a una empresa (global)
+    function applyToCompany(companyId) {
+      // Implementar lógica de postulación
+      alert('Funcionalidad de postulación en desarrollo para empresa ID: ' + companyId);
+    }
+  </script>
 </body>
 </html>

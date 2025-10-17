@@ -236,8 +236,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
           <li><a href="/campus">Ir al Campus</a></li>
           <li><a href="{{ url_for('pages', page='perfil') }}" class="active">Mi Perfil</a></li>
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
@@ -255,8 +254,8 @@
     <div class="profile-container">
       <aside class="profile-sidebar">
         <div class="profile-avatar">
-          <div class="avatar-circle" id="userAvatar">JD</div>
-          <h3 id="userName">Juan Pérez</h3>
+          <div class="avatar-circle" id="userAvatar">...</div>
+          <h3 id="userName">Cargando...</h3>
           <p class="muted">Desarrollador Frontend</p>
         </div>
         
@@ -308,7 +307,7 @@
             <div class="grid-2">
               <label>
                 Nombre completo
-                <input type="text" id="profileName" placeholder="Tu nombre completo" value="Juan Pérez">
+                <input type="text" id="profileName" placeholder="Tu nombre completo" value="">
               </label>
               <label>
                 Teléfono
@@ -377,7 +376,6 @@
 
             <h4 style="margin-top: 2rem;">Privacidad</h4>
             <label class="checkbox-label"><input type="checkbox" checked> Perfil visible para empresas</label>
-            <label class="checkbox-label"><input type="checkbox"> Permitir contacto directo</label>
             <button class="cta-btn primary" style="margin-top: 2rem;">Guardar configuración</button>
           </div>
         </section>
@@ -616,14 +614,9 @@
     }
 
     function loadUserData() {
-      const userData = { name: 'Juan Pérez', email: 'juan.perez@email.com', phone: '+54 9 261 123-4567', title: 'Desarrollador Frontend' };
-      document.getElementById('profileName').value = userData.name;
-      document.getElementById('profileEmail').value = userData.email;
-      document.getElementById('profilePhone').value = userData.phone;
-      document.getElementById('profileTitle').value = userData.title;
-      document.getElementById('userName').textContent = userData.name;
-      const initials = userData.name.split(' ').map(n => n[0]).join('').toUpperCase();
-      document.getElementById('userAvatar').textContent = initials;
+      // Los datos se cargarán dinámicamente desde la API
+      // Esta función se mantiene para compatibilidad pero no usa datos hardcodeados
+      console.log('loadUserData: Los datos se cargan dinámicamente desde la API');
     }
   </script>
 

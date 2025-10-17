@@ -73,7 +73,7 @@ def require_auth(f):
     return decorated_function
 
 @auth_bp.post("/signup")
-@limiter.limit("3 per minute")
+@limiter.limit("10 per minute")
 def signup():
     """Registro de nuevos usuarios con protección de rate limiting"""
     try:
@@ -128,16 +128,24 @@ def signup():
         
         logger.info(f"Usuario registrado exitosamente: {correo}")
         
-        return jsonify({
+        # Generar token JWT
+        token = make_token({"sub": str(nuevo_usuario.id_usuario), "type": nuevo_usuario.rol, "email": nuevo_usuario.correo})
+        
+        resp = {
             "success": True,
             "message": "Usuario registrado exitosamente",
-            "usuario": {
-                "id": nuevo_usuario.id_usuario,
-                "nombre": nuevo_usuario.nombre,
-                "correo": nuevo_usuario.correo,
-                "rol": nuevo_usuario.rol
-            }
-        }), 201
+            "token": token,
+            "type": nuevo_usuario.rol,
+            "nombre": nuevo_usuario.nombre,
+            "rol": nuevo_usuario.rol
+        }
+        
+        # Incluir empresa si corresponde
+        if nuevo_usuario.rol == "empresa" and nuevo_usuario.empresas:
+            emp = nuevo_usuario.empresas[0]
+            resp["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}
+        
+        return jsonify(resp), 201
         
     except (ValidationError, ConflictError):
         # Re-raise validation and conflict errors (handled by error handler)
@@ -148,7 +156,7 @@ def signup():
         raise AppError("Error interno del servidor durante el registro")
 
 @auth_bp.post("/login")
-@limiter.limit("5 per minute")
+@limiter.limit("20 per minute")
 def login():
     """Login de usuarios con protección de rate limiting"""
     try:
@@ -249,7 +257,7 @@ def me():
         if not u:
             raise NotFoundError("Usuario no encontrado")
 
-        out = {"id": usuario_id, "nombre": u.nombre, "correo": u.correo, "rol": u.rol}
+        out = {"id": usuario_id, "nombre": u.nombre, "correo": u.correo, "rol": u.rol, "foto_perfil": u.foto_perfil}
         if u.rol == "empresa" and u.empresas:
             emp = u.empresas[0]
             out["empresa"] = {"id_empresa": emp.id_empresa, "nombre_empresa": emp.nombre_empresa}

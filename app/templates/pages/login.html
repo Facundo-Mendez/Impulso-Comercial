@@ -21,8 +21,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
           <li><a href="/campus">Ir al Campus</a></li>
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
         </ul>
@@ -35,16 +34,6 @@
 
   <main class="page-content container">
     <h2 class="page-title">Acceso</h2>
-
-    <div id="modeTabs" class="tab-toggle small" role="tablist" aria-label="Modo de acceso">
-      <button class="tab-btn active" data-mode="login" aria-selected="true">Iniciar sesión</button>
-      <button class="tab-btn" data-mode="signup" aria-selected="false">Crear cuenta</button>
-    </div>
-
-    <div id="loginTypeTabs" class="tab-toggle small" role="tablist" aria-label="Tipo de usuario">
-      <button class="tab-btn active" data-type="empresa" aria-selected="true">Empresa</button>
-      <button class="tab-btn" data-type="usuario" aria-selected="false">Usuario</button>
-    </div>
 
     <!-- LOGIN -->
     <form id="loginForm" class="simple-form" autocomplete="on">
@@ -61,49 +50,11 @@
       <p id="loginMsg" class="muted"></p>
     </form>
 
-    <!-- SIGNUP -->
-    <form id="signupForm" class="simple-form" style="display:none" autocomplete="on">
-      <div class="grid-2">
-        <label>
-          Tipo de cuenta
-          <select id="signupTipo" name="tipo" required>
-            <option value="empresa" selected>Empresa</option>
-            <option value="usuario">Usuario</option>
-          </select>
-        </label>
-        <label>
-          Nombre
-          <input type="text" name="nombre" required placeholder="Tu nombre"/>
-        </label>
-      </div>
-      <div class="grid-2">
-        <label>
-          Correo
-          <input type="email" name="correo" required placeholder="tu@correo.com"/>
-        </label>
-        <label>
-          Contraseña
-          <input type="password" name="password" required placeholder="••••••••"/>
-        </label>
-      </div>
-
-      <fieldset id="empresaFields">
-        <legend>Datos de la empresa</legend>
-        <div class="grid-2">
-          <label>
-            Nombre de la empresa
-            <input type="text" name="nombre_empresa" placeholder="Mi Empresa S.A."/>
-          </label>
-          <label>
-            Descripción
-            <input type="text" name="descripcion" placeholder="¿A qué se dedican?"/>
-          </label>
-        </div>
-      </fieldset>
-
-      <button type="submit">Crear cuenta</button>
-      <p id="signupMsg" class="muted"></p>
-    </form>
+    <p class="text-center" style="margin-top: 1rem;">
+      <a href="{{ url_for('pages', page='registro') }}" style="color: var(--primary); text-decoration: none;">
+        ¿No tienes una cuenta? Registrarse acá
+      </a>
+    </p>
   </main>
 
   <footer class="main-footer">

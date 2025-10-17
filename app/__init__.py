@@ -13,7 +13,7 @@ migrate = Migrate()
 limiter = Limiter(
     app=None,
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["1000 per day", "200 per hour", "50 per minute"]
 )
 
 def create_app():
@@ -37,6 +37,14 @@ def create_app():
     # Setup error handlers
     from .error_handler import setup_error_handlers
     setup_error_handlers(app)
+
+    # Ruta para servir fotos de perfil
+    @app.route('/static/uploads/photos/<filename>')
+    def uploaded_photos(filename):
+        from flask import send_from_directory
+        import os
+        photos_dir = os.path.join(app.root_path, 'static', 'uploads', 'photos')
+        return send_from_directory(photos_dir, filename)
 
     print("=== Rutas registradas en Flask ===")
     for rule in app.url_map.iter_rules():
@@ -77,12 +85,16 @@ def create_app():
     from .auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
+    # Blueprint para CV
+    from .cv_routes import cv_bp
+    app.register_blueprint(cv_bp)
+
     # Si tenés el blueprint de formularios:
     try:
         from .routes import routes_bp
         app.register_blueprint(routes_bp, url_prefix="/api")
     except Exception as e:
-        print("⚠️ No se pudo registrar routes_bp:", e)
+        print("ADVERTENCIA: No se pudo registrar routes_bp:", e)
         # Si aún no existe routes.py, se ignora
 
     # Crear carpeta de uploads si existe la config

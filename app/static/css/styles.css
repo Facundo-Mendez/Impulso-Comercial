@@ -565,6 +565,12 @@ legend {
 
 }
 
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(180px, 1fr));
@@ -584,6 +590,8 @@ label {
 }
 
 input[type="text"],
+input[type="email"],
+input[type="tel"],
 input[type="url"],
 input[type="file"],
 select,
@@ -592,6 +600,20 @@ textarea {
   border: 1px solid #c9d6e4;
   border-radius: 10px;
   background: #f9fbfe;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="file"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  background: #fff;
 }
 
 .check {
@@ -687,6 +709,8 @@ a:hover {
 
 .simple-form input,
 input[type="text"],
+input[type="email"],
+input[type="tel"],
 input[type="url"],
 input[type="file"],
 select,

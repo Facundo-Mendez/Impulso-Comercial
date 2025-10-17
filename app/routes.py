@@ -137,77 +137,77 @@ def get_etiquetas_by_postulante(id):
 # ===== Endpoints soporte para módulo perfil =====
 @routes_bp.get("/perfil/jobs")
 def perfil_jobs():
-    """Devuelve lista de trabajos recomendados (mock/simple)."""
-    trabajos = [
-        {
-            "id": "job1",
-            "titulo": "Desarrollador Frontend Senior",
-            "empresa": "TechCorp Argentina",
-            "compatibilidad": 95,
-            "etiquetas_requeridas": ["React", "JavaScript", "HTML/CSS", "3+ años"],
-            "ubicacion": "Buenos Aires - Remoto",
-        },
-        {
-            "id": "job2",
-            "titulo": "Full Stack Developer",
-            "empresa": "StartupTech",
-            "compatibilidad": 78,
-            "etiquetas_requeridas": ["Node.js", "React", "MongoDB", "2+ años"],
-            "ubicacion": "Córdoba - Híbrido",
-        },
-        {
-            "id": "job3",
-            "titulo": "Frontend Developer",
-            "empresa": "DesignStudio",
-            "compatibilidad": 65,
-            "etiquetas_requeridas": ["Vue.js", "JavaScript", "CSS", "1+ años"],
-            "ubicacion": "Mendoza - Presencial",
-        },
-    ]
-    return jsonify({"ok": True, "trabajos": trabajos})
+    """Devuelve lista de trabajos recomendados basados en matching real."""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    try:
+        from .matching_service import matching_service
+        
+        # Obtener trabajos recomendados usando el servicio de matching
+        trabajos_recomendados = matching_service.obtener_trabajos_recomendados(u.id_usuario, limite=20)
+        
+        return jsonify({"ok": True, "trabajos": trabajos_recomendados})
+        
+    except Exception as e:
+        print(f"Error obteniendo trabajos recomendados: {e}")
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
-
-# En memoria simple para postulaciones por usuario durante la sesión del servidor
-_APLICACIONES_MEM = {}
 
 @routes_bp.post("/perfil/apply-job")
 def perfil_apply_job():
+    """Postularse a un trabajo usando el sistema real de matching."""
     data = request.get_json() or {}
     u = _get_user_from_auth()
     if not u:
         return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
     job_id = data.get("job_id")
     if not job_id:
         return jsonify({"ok": False, "error": "job_id es requerido"}), 400
-    # Buscar info del job mock para enriquecer
-    jobs_resp = perfil_jobs().json
-    trabajo = next((j for j in jobs_resp["trabajos"] if j["id"] == job_id), None)
-    if not trabajo:
-        return jsonify({"ok": False, "error": "Trabajo no encontrado"}), 404
-    registro = {
-        "job_id": job_id,
-        "trabajo_titulo": trabajo["titulo"],
-        "empresa": trabajo["empresa"],
-        "fecha_postulacion": datetime.now(timezone.utc).isoformat(),
-        "estado": "En revisión",
-    }
-    user_key = str(u.id_usuario)
-    _APLICACIONES_MEM.setdefault(user_key, []).append(registro)
-    return jsonify({"ok": True})
+    
+    try:
+        from .matching_service import matching_service
+        
+        # Usar el servicio de matching para postularse
+        success = matching_service.postular_a_trabajo(u.id_usuario, int(job_id))
+        
+        if success:
+            return jsonify({"ok": True, "message": "Postulación enviada exitosamente"})
+        else:
+            return jsonify({"ok": False, "error": "Ya te has postulado a este trabajo"}), 400
+            
+    except ValueError:
+        return jsonify({"ok": False, "error": "ID de trabajo inválido"}), 400
+    except Exception as e:
+        print(f"Error postulándose a trabajo: {e}")
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
 
 @routes_bp.get("/perfil/applications")
 def perfil_applications():
+    """Obtiene las postulaciones del usuario usando el sistema real."""
     u = _get_user_from_auth()
     if not u:
         return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
-    user_key = str(u.id_usuario)
-    return jsonify({"ok": True, "postulaciones": _APLICACIONES_MEM.get(user_key, [])})
+    
+    try:
+        from .matching_service import matching_service
+        
+        # Obtener postulaciones usando el servicio de matching
+        postulaciones = matching_service.obtener_postulaciones_usuario(u.id_usuario)
+        
+        return jsonify({"ok": True, "postulaciones": postulaciones})
+        
+    except Exception as e:
+        print(f"Error obteniendo postulaciones: {e}")
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
 
 @routes_bp.get("/perfil/etiquetas")
 def perfil_etiquetas():
-    """Devuelve etiquetas del último registro de postulante del usuario autenticado"""
+    """Devuelve etiquetas y datos del perfil del último registro de postulante del usuario autenticado"""
     u = _get_user_from_auth()
     if not u:
         return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
@@ -218,7 +218,35 @@ def perfil_etiquetas():
         .first()
     )
     etiquetas = [] if not reg else [{"id": e.id, "nombre": e.nombre} for e in reg.etiquetas]
-    return jsonify({"ok": True, "etiquetas": etiquetas})
+    
+    # Extraer datos del perfil desde la descripción
+    titulo = ""
+    telefono = ""
+    provincia = ""
+    pais = ""
+    
+    if reg and reg.descripcion:
+        desc_parts = reg.descripcion.split("; ")
+        for part in desc_parts:
+            if part.startswith("Titulo: "):
+                titulo = part.replace("Titulo: ", "")
+            elif part.startswith("Telefono: "):
+                telefono = part.replace("Telefono: ", "")
+            elif part.startswith("Ubicacion: "):
+                ubicacion = part.replace("Ubicacion: ", "")
+                if ", " in ubicacion:
+                    provincia, pais = ubicacion.split(", ", 1)
+                else:
+                    provincia = ubicacion
+    
+    return jsonify({
+        "ok": True, 
+        "etiquetas": etiquetas,
+        "titulo": titulo,
+        "telefono": telefono,
+        "provincia": provincia,
+        "pais": pais
+    })
 
 
 @routes_bp.post("/perfil/extract-tags")
@@ -288,6 +316,8 @@ def perfil_update():
     email = (data.get("email") or "").strip()
     titulo = (data.get("titulo") or "").strip()
     telefono = (data.get("telefono") or "").strip()
+    provincia = (data.get("provincia") or "").strip()
+    pais = (data.get("pais") or "").strip()
 
     if nombre:
         u.nombre = nombre
@@ -302,14 +332,176 @@ def perfil_update():
         .first()
     )
     if reg:
-        # Usamos descripcion para guardar un resumen del título/telefono si no hay campos específicos
+        # Usamos descripcion para guardar un resumen del título/telefono/ubicación si no hay campos específicos
         desc_parts = []
         if titulo:
             desc_parts.append(f"Titulo: {titulo}")
         if telefono:
             desc_parts.append(f"Telefono: {telefono}")
+        if provincia or pais:
+            ubicacion = [p for p in [provincia, pais] if p]
+            if ubicacion:
+                desc_parts.append(f"Ubicacion: {', '.join(ubicacion)}")
         if desc_parts:
             reg.descripcion = "; ".join(desc_parts)
 
     db.session.commit()
     return jsonify({"ok": True})
+
+@routes_bp.route("/perfil/photo", methods=["POST"])
+def upload_profile_photo():
+    """Sube y guarda la foto de perfil del usuario"""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    if 'photo' not in request.files:
+        return jsonify({"ok": False, "error": "No se encontró archivo de foto"}), 400
+    
+    photo_file = request.files['photo']
+    if photo_file.filename == '':
+        return jsonify({"ok": False, "error": "No se seleccionó archivo"}), 400
+    
+    # Validar tipo de archivo
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    if not ('.' in photo_file.filename and 
+            photo_file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+        return jsonify({"ok": False, "error": "Tipo de archivo no permitido"}), 400
+    
+    try:
+        # Crear directorio de fotos si no existe
+        photos_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'photos')
+        os.makedirs(photos_dir, exist_ok=True)
+        
+        # Generar nombre único para el archivo
+        filename = secure_filename(f"user_{u.id_usuario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{photo_file.filename.rsplit('.', 1)[1].lower()}")
+        filepath = os.path.join(photos_dir, filename)
+        
+        # Guardar archivo
+        photo_file.save(filepath)
+        
+        # Guardar ruta en la base de datos
+        u.foto_perfil = f"/static/uploads/photos/{filename}"
+        db.session.commit()
+        
+        return jsonify({"ok": True, "photo_url": u.foto_perfil})
+        
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Error guardando foto: {str(e)}"}), 500
+
+@routes_bp.route("/perfil/photo", methods=["DELETE"])
+def delete_profile_photo():
+    """Elimina la foto de perfil del usuario"""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    try:
+        # Eliminar archivo físico si existe
+        if u.foto_perfil:
+            import os
+            photo_path = os.path.join(current_app.root_path, u.foto_perfil.lstrip('/'))
+            if os.path.exists(photo_path):
+                os.remove(photo_path)
+        
+        # Limpiar referencia en la base de datos
+        u.foto_perfil = None
+        db.session.commit()
+        
+        return jsonify({"ok": True})
+        
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Error eliminando foto: {str(e)}"}), 500
+
+@routes_bp.route("/postulacion", methods=["POST"])
+def crear_postulacion():
+    """Maneja el formulario de postulantes y guarda el CV."""
+    try:
+        # Obtener datos del formulario
+        nombre = request.form.get('nombre')
+        telefono = request.form.get('telefono')
+        puesto = request.form.get('puesto')
+        cv_file = request.files.get('cv')
+        
+        if not all([nombre, cv_file]):
+            return jsonify({"error": "Faltan campos requeridos"}), 400
+        
+        # Verificar si el usuario está logueado
+        user = _get_user_from_auth()
+        if not user:
+            return jsonify({"error": "Debes estar logueado para enviar una postulación"}), 401
+        
+        # Verificar que el usuario sea un postulante
+        if user.rol != 'usuario':
+            return jsonify({"error": "Solo los postulantes pueden enviar postulaciones"}), 403
+        
+        # Guardar el CV usando el mismo sistema que Mi CV
+        if cv_file and cv_file.filename:
+            # Validar tipo de archivo
+            allowed_extensions = {'pdf', 'doc', 'docx'}
+            if '.' not in cv_file.filename or \
+               cv_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+                return jsonify({"error": "Solo se permiten archivos PDF, DOC o DOCX"}), 400
+            
+            # Validar tamaño (5MB máximo)
+            if cv_file.content_length and cv_file.content_length > 5 * 1024 * 1024:
+                return jsonify({"error": "El archivo es demasiado grande. Máximo 5MB"}), 400
+            
+            # Crear directorio si no existe
+            upload_folder = os.path.join(current_app.root_path, '..', 'uploads', 'cvs')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # Guardar archivo con nombre único basado en el usuario
+            filename = secure_filename(f"{user.id_usuario}.pdf")
+            filepath = os.path.join(upload_folder, filename)
+            cv_file.save(filepath)
+            
+            # Extraer etiquetas del CV usando IA
+            try:
+                with open(filepath, 'rb') as f:
+                    contenido = f.read()
+                
+                mime_type = "application/pdf" if filename.endswith('.pdf') else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                tags = analizar_cv_y_extraer_etiquetas(contenido, mime_type)
+                
+                # Obtener o crear registro de postulante
+                postulante = PostulanteRegistro.query.filter_by(usuario_id=user.id_usuario).first()
+                if not postulante:
+                    postulante = PostulanteRegistro(usuario_id=user.id_usuario)
+                    db.session.add(postulante)
+                    db.session.flush()
+                
+                # Actualizar información del postulante
+                postulante.cv_filename = filename
+                postulante.cv_mime = mime_type
+                postulante.cv_size = os.path.getsize(filepath)
+                
+                # Actualizar etiquetas del postulante
+                for tag_name in tags:
+                    # Buscar o crear etiqueta
+                    tag = Etiqueta.query.filter_by(nombre=tag_name).first()
+                    if not tag:
+                        tag = Etiqueta(nombre=tag_name)
+                        db.session.add(tag)
+                        db.session.flush()
+                    
+                    # Agregar etiqueta al postulante si no la tiene
+                    if tag not in postulante.etiquetas:
+                        postulante.etiquetas.append(tag)
+                
+                db.session.commit()
+                
+            except Exception as e:
+                current_app.logger.error(f"Error extrayendo etiquetas del CV: {str(e)}")
+                db.session.rollback()
+                return jsonify({"error": "Error al procesar el CV"}), 500
+        
+        return jsonify({
+            "message": "Postulación enviada exitosamente",
+            "cv_guardado": True
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Error en postulación: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": "Error interno del servidor"}), 500

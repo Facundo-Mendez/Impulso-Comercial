@@ -327,6 +327,79 @@
       opacity: 0.5;
     }
 
+    /* Estilos para foto de perfil */
+    .photo-upload-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .photo-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-danger i {
+      margin-right: 0.5rem;
+    }
+
+    .photo-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .photo-preview #photoPlaceholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .photo-preview #photoPlaceholder i {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Estilos para campos de ubicación */
+    .location-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
     @media (max-width: 768px) {
       .profile-container {
         grid-template-columns: 1fr;
@@ -345,6 +418,15 @@
       .job-actions {
         flex-direction: column;
       }
+
+      .location-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-upload-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -362,8 +444,7 @@
       <nav class="main-nav" id="mainNav">
         <ul class="nav-list">
           <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
-          <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-          <li><a href="{{ url_for('pages', page='postulantes') }}">Postulantes</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
           
           
           <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
@@ -382,18 +463,15 @@
       <!-- Sidebar de navegación -->
       <aside class="profile-sidebar">
         <div class="profile-avatar">
-          <div class="avatar-circle" id="userAvatar">JD</div>
-          <h3 id="userName">Juan Pérez</h3>
-          <p class="muted">Desarrollador Frontend</p>
+          <div class="avatar-circle" id="userAvatar">...</div>
+          <h3 id="userName">Cargando...</h3>
+          <p class="muted" id="userLocation" style="display: none;"></p>
+          <p class="muted" id="userTitle">Sin título profesional</p>
         </div>
         
         <nav>
           <ul class="profile-nav">
-            <li><a href="#" class="nav-link active" data-section="curriculum"><i class="fas fa-file-alt"></i> Mi Currículum</a></li>
-            <li><a href="#" class="nav-link" data-section="etiquetas"><i class="fas fa-tags"></i> Mis Etiquetas</a></li>
-            <li><a href="#" class="nav-link" data-section="trabajos"><i class="fas fa-search"></i> Buscar Empleos</a></li>
-            <li><a href="#" class="nav-link" data-section="postulaciones"><i class="fas fa-paper-plane"></i> Mis Postulaciones</a></li>
-            <li><a href="#" class="nav-link" data-section="configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
+            <li><a href="#" class="nav-link active" data-section="configuracion"><i class="fas fa-cog"></i> Configuración</a></li>
           </ul>
         </nav>
       </aside>
@@ -401,221 +479,67 @@
       <!-- Contenido principal -->
       <div class="profile-content">
         
-        <!-- Sección: Mi Currículum -->
-        <section id="curriculum" class="section active">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-file-alt"></i> Mi Currículum</h2>
-          </div>
-          
-          <div id="cvCurrent" style="display: none;">
-            <div class="cv-current">
-              <i class="fas fa-file-pdf" style="color: #dc2626; font-size: 2rem;"></i>
-              <div>
-                <h4 id="cvFileName">curriculum.pdf</h4>
-                <p class="muted">Subido el <span id="cvDate">15/09/2024</span></p>
-              </div>
-              <button class="btn-secondary" onclick="downloadCV()">
-                <i class="fas fa-download"></i> Descargar
-              </button>
-            </div>
-          </div>
 
-          <div class="cv-upload-area" id="cvUpload">
-            <div class="cv-upload-icon">
-              <i class="fas fa-cloud-upload-alt"></i>
-            </div>
-            <h3>Subir Currículum</h3>
-            <p>Arrastra tu CV aquí o haz clic para seleccionar</p>
-            <p class="muted">Formato PDF - Máximo 5MB</p>
-            <input type="file" id="cvFile" accept=".pdf" style="display: none;">
-            <button class="cta-btn primary" onclick="document.getElementById('cvFile').click()">
-              Seleccionar archivo
-            </button>
-          </div>
 
-          
-        </section>
 
-        <!-- Sección: Mis Etiquetas -->
-        <section id="etiquetas" class="section">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-tags"></i> Mis Etiquetas</h2>
-            <button class="btn-secondary" onclick="extractTags()">
-              <i class="fas fa-magic"></i> Extraer con IA
-            </button>
-          </div>
-          
-          <div class="tags-section">
-            <h4><i class="fas fa-code"></i> Habilidades Técnicas</h4>
-            <div class="tags-container" id="skillTags">
-              <span class="tag tag-skill">JavaScript</span>
-              <span class="tag tag-skill">React</span>
-              <span class="tag tag-skill">HTML/CSS</span>
-              <span class="tag tag-skill">Node.js</span>
-              <span class="tag tag-skill">Git</span>
-            </div>
-          </div>
-
-          <div class="tags-section" style="margin-top: 2rem;">
-            <h4><i class="fas fa-briefcase"></i> Experiencia</h4>
-            <div class="tags-container" id="experienceTags">
-              <span class="tag tag-experience">3+ años</span>
-              <span class="tag tag-experience">Frontend</span>
-              <span class="tag tag-experience">E-commerce</span>
-              <span class="tag tag-experience">Trabajo en equipo</span>
-            </div>
-          </div>
-
-          <div class="tags-section" style="margin-top: 2rem;">
-            <h4><i class="fas fa-graduation-cap"></i> Educación</h4>
-            <div class="tags-container" id="educationTags">
-              <span class="tag tag-education">Ing. Sistemas</span>
-              <span class="tag tag-education">Certificación React</span>
-              <span class="tag tag-education">English B2</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Sección: Buscar Empleos -->
-        <section id="trabajos" class="section">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-search"></i> Empleos Recomendados</h2>
-          </div>
-
-          <div class="jobs-list" id="jobsList">
-            <div class="job-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">Desarrollador Frontend Senior</h3>
-                  <p class="job-company">TechCorp Argentina</p>
-                </div>
-                <div class="compatibility-score score-high">95% Compatible</div>
-              </div>
-              <div class="job-requirements">
-                <div class="tags-container">
-                  <span class="tag tag-skill">React</span>
-                  <span class="tag tag-skill">JavaScript</span>
-                  <span class="tag tag-skill">HTML/CSS</span>
-                  <span class="tag tag-experience">3+ años</span>
-                </div>
-              </div>
-              <p><i class="fas fa-map-marker-alt"></i> Buenos Aires - Remoto</p>
-              <div class="job-actions">
-                <button class="btn-apply" onclick="applyToJob('job1')">Postularme</button>
-                <button class="btn-secondary" onclick="viewJob('job1')">Ver detalles</button>
-              </div>
-            </div>
-
-            <div class="job-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">Full Stack Developer</h3>
-                  <p class="job-company">StartupTech</p>
-                </div>
-                <div class="compatibility-score score-medium">78% Compatible</div>
-              </div>
-              <div class="job-requirements">
-                <div class="tags-container">
-                  <span class="tag tag-skill">Node.js</span>
-                  <span class="tag tag-skill">React</span>
-                  <span class="tag tag-skill">MongoDB</span>
-                  <span class="tag tag-experience">2+ años</span>
-                </div>
-              </div>
-              <p><i class="fas fa-map-marker-alt"></i> Córdoba - Híbrido</p>
-              <div class="job-actions">
-                <button class="btn-apply" onclick="applyToJob('job2')">Postularme</button>
-                <button class="btn-secondary" onclick="viewJob('job2')">Ver detalles</button>
-              </div>
-            </div>
-
-            <div class="job-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">Frontend Developer</h3>
-                  <p class="job-company">DesignStudio</p>
-                </div>
-                <div class="compatibility-score score-medium">65% Compatible</div>
-              </div>
-              <div class="job-requirements">
-                <div class="tags-container">
-                  <span class="tag tag-skill">Vue.js</span>
-                  <span class="tag tag-skill">JavaScript</span>
-                  <span class="tag tag-skill">CSS</span>
-                  <span class="tag tag-experience">1+ años</span>
-                </div>
-              </div>
-              <p><i class="fas fa-map-marker-alt"></i> Mendoza - Presencial</p>
-              <div class="job-actions">
-                <button class="btn-apply" onclick="applyToJob('job3')">Postularme</button>
-                <button class="btn-secondary" onclick="viewJob('job3')">Ver detalles</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Sección: Mis Postulaciones -->
-        <section id="postulaciones" class="section">
-          <div class="section-header">
-            <h2 class="section-title"><i class="fas fa-paper-plane"></i> Mis Postulaciones</h2>
-          </div>
-
-          <div class="applications-list" id="applicationsList">
-            <div class="application-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">Desarrollador Frontend Senior</h3>
-                  <p class="job-company">TechCorp Argentina</p>
-                  <p class="muted">Postulado el 10/09/2024</p>
-                </div>
-                <div class="application-status status-reviewing">En revisión</div>
-              </div>
-            </div>
-
-            <div class="application-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">React Developer</h3>
-                  <p class="job-company">Innovation Labs</p>
-                  <p class="muted">Postulado el 08/09/2024</p>
-                </div>
-                <div class="application-status status-accepted">Aceptada</div>
-              </div>
-            </div>
-
-            <div class="application-card">
-              <div class="job-header">
-                <div>
-                  <h3 class="job-title">Frontend Developer Jr</h3>
-                  <p class="job-company">WebAgency</p>
-                  <p class="muted">Postulado el 05/09/2024</p>
-                </div>
-                <div class="application-status status-rejected">Rechazada</div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         <!-- Sección: Configuración -->
-        <section id="configuracion" class="section">
+        <section id="configuracion" class="section active">
           <div class="section-header">
             <h2 class="section-title"><i class="fas fa-cog"></i> Configuración</h2>
           </div>
-
+          
           <div class="simple-form">
             <h4>Datos de perfil</h4>
+            
+            <!-- Foto de perfil -->
             <label>
-              Nombre completo
-              <input type="text" id="profileName" placeholder="Tu nombre completo">
+              Foto de perfil
+              <div class="photo-upload-container">
+                <div class="photo-preview" id="photoPreview">
+                  <img id="photoImage" src="" alt="Foto de perfil" style="display: none;">
+                  <div id="photoPlaceholder">
+                    <i class="fas fa-camera"></i>
+                    <span>Subir foto</span>
+                  </div>
+                </div>
+                <div class="photo-buttons">
+                  <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                  <button type="button" class="btn-secondary" onclick="document.getElementById('photoInput').click()">
+                    <i class="fas fa-upload"></i> Seleccionar foto
+                  </button>
+                  <button type="button" class="btn-danger" id="deletePhotoBtn" onclick="deletePhoto()" style="display: none;">
+                    <i class="fas fa-trash"></i> Eliminar foto
+                  </button>
+                </div>
+              </div>
             </label>
-            <label>
+
+              <label>
+                Nombre completo
+              <input type="text" id="profileName" placeholder="Tu nombre completo">
+              </label>
+              <label>
               Telefono
               <input type="text" id="profilePhone" placeholder="Tu telefono">
-            </label>
+              </label>
             <label>
               Email
               <input type="email" id="profileEmail" placeholder="tu@email.com">
             </label>
+            
+            <!-- Ubicación -->
+            <div class="location-fields">
+            <label>
+                Provincia
+                <input type="text" id="profileProvince" placeholder="Tu provincia">
+            </label>
+              <label>
+                País
+                <input type="text" id="profileCountry" placeholder="Tu país">
+              </label>
+          </div>
+            
             <label>
               Titulo Profesional
               <input type="text" id="profileTitle" placeholder="Tu titulo profesional">
@@ -689,247 +613,117 @@
         });
       });
 
-      // Configurar drag & drop para CV
-      setupCVUpload();
     });
 
-    // Configuración de subida de CV
-    function setupCVUpload() {
-      const uploadArea = document.getElementById('cvUpload');
-      const fileInput = document.getElementById('cvFile');
 
-      // Drag & drop eventos
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, preventDefaults, false);
-      });
 
-      function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
 
-      ['dragenter', 'dragover'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, highlight, false);
-      });
 
-      ['dragleave', 'drop'].forEach(eventName => {
-        uploadArea.addEventListener(eventName, unhighlight, false);
-      });
 
-      function highlight(e) {
-        uploadArea.classList.add('dragover');
-      }
+    // Configurar manejo de foto de perfil
+    document.addEventListener('DOMContentLoaded', function() {
+      const photoInput = document.getElementById('photoInput');
+      const photoImage = document.getElementById('photoImage');
+      const photoPlaceholder = document.getElementById('photoPlaceholder');
+      const userAvatar = document.getElementById('userAvatar');
 
-      function unhighlight(e) {
-        uploadArea.classList.remove('dragover');
-      }
+      // Cargar foto de perfil existente
+      loadUserPhoto();
 
-      // Manejar drop
-      uploadArea.addEventListener('drop', handleDrop, false);
+      if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+              showToast('Tipo de archivo no permitido. Use JPG, PNG, GIF o WebP', 'error');
+              return;
+            }
 
-      function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFiles(files);
-      }
+            // Validar tamaño (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+              showToast('El archivo es demasiado grande. Máximo 5MB', 'error');
+              return;
+            }
 
-      // Manejar selección de archivo
-      fileInput.addEventListener('change', function(e) {
-        handleFiles(this.files);
-      });
+            // Mostrar preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              photoImage.src = e.target.result;
+              photoImage.style.display = 'block';
+              photoPlaceholder.style.display = 'none';
+              
+              // Actualizar avatar en sidebar
+              userAvatar.innerHTML = `<img src="${e.target.result}" alt="Foto de perfil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            };
+            reader.readAsDataURL(file);
 
-      function handleFiles(files) {
-        if (files.length > 0) {
-          const file = files[0];
-          if (file.type === 'application/pdf') {
-            uploadCV(file);
-          } else {
-            showToast('Por favor, selecciona un archivo PDF', 'error');
+            // Subir foto al servidor
+            uploadPhotoToServer(file);
           }
-        }
+        });
       }
+    });
+
+    // Función para cargar foto de perfil existente
+    function loadUserPhoto() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.foto_perfil) {
+          const photoImage = document.getElementById('photoImage');
+          const photoPlaceholder = document.getElementById('photoPlaceholder');
+          const deletePhotoBtn = document.getElementById('deletePhotoBtn');
+          const userAvatar = document.getElementById('userAvatar');
+          
+          // Mostrar foto en el preview
+          photoImage.src = data.foto_perfil;
+          photoImage.style.display = 'block';
+          photoPlaceholder.style.display = 'none';
+          deletePhotoBtn.style.display = 'block';
+          
+          // Mostrar foto en el avatar del sidebar
+          userAvatar.innerHTML = `<img src="${data.foto_perfil}" alt="Foto de perfil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        }
+      })
+      .catch(error => {
+        console.log('Error cargando foto de perfil:', error);
+      });
     }
 
-    // Función para subir CV
-    function uploadCV(file) {
-      showToast('Subiendo CV...', 'info');
-      
+    // Función para subir foto al servidor
+    function uploadPhotoToServer(file) {
       const formData = new FormData();
-      formData.append('cv', file);
-      
-      fetch('/api/perfil/extract-tags', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.ok) {
-          // Mostrar CV subido
-          document.getElementById('cvCurrent').style.display = 'block';
-          document.getElementById('cvFileName').textContent = file.name;
-          document.getElementById('cvDate').textContent = new Date().toLocaleDateString();
-          
-          // Ocultar área de subida
-          document.getElementById('cvUpload').style.display = 'none';
-          
-          showToast('CV subido exitosamente. Etiquetas extraídas con IA!', 'success');
-          
-          // Mostrar las nuevas etiquetas
-          updateTagsFromAPI(data.etiquetas);
-          
-          // Recalcular trabajos recomendados
-          loadRecommendedJobs();
-        } else {
-          showToast(data.error || 'Error subiendo CV', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showToast('Error conectando con el servidor', 'error');
-      });
-    }
+      formData.append('photo', file);
 
-    // Extraer etiquetas con IA (simulado)
-    function extractTags() {
-      showToast('Extrayendo etiquetas con IA...', 'info');
-      setTimeout(() => {
-        extractTagsFromCV();
-      }, 2000);
-    }
+      showToast('Subiendo foto...', 'info');
 
-    function extractTagsFromCV() {
-      // Simular nuevas etiquetas extraídas
-      const skillTags = document.getElementById('skillTags');
-      const newSkills = ['TypeScript', 'Vue.js', 'Docker'];
-      
-      newSkills.forEach(skill => {
-        if (!skillTags.textContent.includes(skill)) {
-          const tag = document.createElement('span');
-          tag.className = 'tag tag-skill';
-          tag.textContent = skill;
-          skillTags.appendChild(tag);
-        }
-      });
-      
-      showToast('Nuevas etiquetas extraídas exitosamente', 'success');
-      calculateJobCompatibility();
-    }
-
-    // Actualizar etiquetas desde la API
-    function updateTagsFromAPI(etiquetas) {
-      const skillTags = document.getElementById('skillTags');
-      const experienceTags = document.getElementById('experienceTags');
-      const educationTags = document.getElementById('educationTags');
-      // Limpiar contenedores para evitar duplicados y quitar datos hardcodeados
-      skillTags.innerHTML = '';
-      experienceTags.innerHTML = '';
-      educationTags.innerHTML = '';
-      if (!etiquetas || etiquetas.length === 0) return;
-      etiquetas.forEach(etiqueta => {
-        const nombre = (etiqueta.nombre || '').toLowerCase();
-        let container = skillTags; // default
-        if (nombre.includes('año') || nombre.includes('experiencia') || nombre.includes('senior') || nombre.includes('junior')) {
-          container = experienceTags;
-        } else if (nombre.includes('universidad') || nombre.includes('carrera') || nombre.includes('título') || nombre.includes('certificación')) {
-          container = educationTags;
-        }
-        const tag = document.createElement('span');
-        tag.className = container === skillTags ? 'tag tag-skill' : 
-                       container === experienceTags ? 'tag tag-experience' : 'tag tag-education';
-        tag.textContent = etiqueta.nombre;
-        container.appendChild(tag);
-      });
-    }
-
-    // Cargar trabajos recomendados desde la API
-    function loadRecommendedJobs() {
-      fetch('/api/perfil/jobs', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.ok) {
-          displayJobs(data.trabajos);
-        } else {
-          showToast(data.error || 'Error cargando trabajos', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showToast('Error conectando con el servidor', 'error');
-      });
-    }
-
-    // Mostrar trabajos en la interfaz
-    function displayJobs(trabajos) {
-      const jobsList = document.getElementById('jobsList');
-      if (!trabajos || trabajos.length === 0) {
-        jobsList.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>No hay trabajos disponibles</p></div>';
-        return;
-      }
-      
-      jobsList.innerHTML = trabajos.map(trabajo => `
-        <div class="job-card" data-job-id="${trabajo.id}">
-          <div class="job-header">
-            <div>
-              <h3 class="job-title">${trabajo.titulo}</h3>
-              <p class="job-company">${trabajo.empresa}</p>
-            </div>
-            <div class="compatibility-score ${getCompatibilityClass(trabajo.compatibilidad)}">
-              ${trabajo.compatibilidad}% Compatible
-            </div>
-          </div>
-          <div class="job-requirements">
-            <div class="tags-container">
-              ${trabajo.etiquetas_requeridas.map(tag => `<span class="tag tag-skill">${tag}</span>`).join('')}
-            </div>
-          </div>
-          <p><i class="fas fa-map-marker-alt"></i> ${trabajo.ubicacion}</p>
-          <div class="job-actions">
-            <button class="btn-apply" onclick="applyToJobAPI('${trabajo.id}', this)">Postularme</button>
-            <button class="btn-secondary" onclick="viewJob('${trabajo.id}')">Ver detalles</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Obtener clase CSS basada en compatibilidad
-    function getCompatibilityClass(compatibilidad) {
-      if (compatibilidad >= 80) return 'score-high';
-      if (compatibilidad >= 60) return 'score-medium';
-      return 'score-low';
-    }
-
-    // Postularse a trabajo usando API
-    function applyToJobAPI(jobId, buttonElement) {
-      showToast('Enviando postulación...', 'info');
-      
-      fetch('/api/perfil/apply-job', {
+      fetch('/api/perfil/photo', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
         },
-        body: JSON.stringify({ job_id: jobId })
+        body: formData
       })
       .then(response => response.json())
       .then(data => {
         if (data.ok) {
-          buttonElement.disabled = true;
-          buttonElement.textContent = 'Postulado';
-          buttonElement.classList.add('disabled');
-          
-          showToast('¡Postulación enviada exitosamente!', 'success');
-          
-          // Recargar postulaciones
-          loadUserApplications();
+          showToast('Foto subida exitosamente', 'success');
+          // Actualizar avatar con la URL del servidor
+          const userAvatar = document.getElementById('userAvatar');
+          const deletePhotoBtn = document.getElementById('deletePhotoBtn');
+          userAvatar.innerHTML = `<img src="${data.photo_url}" alt="Foto de perfil" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+          deletePhotoBtn.style.display = 'block';
         } else {
-          showToast(data.error || 'Error enviando postulación', 'error');
+          showToast(data.error || 'Error subiendo foto', 'error');
         }
       })
       .catch(error => {
@@ -938,9 +732,16 @@
       });
     }
 
-    // Cargar postulaciones del usuario
-    function loadUserApplications() {
-      fetch('/api/perfil/applications', {
+    // Función para eliminar foto de perfil
+    function deletePhoto() {
+      if (!confirm('¿Estás seguro de que quieres eliminar tu foto de perfil?')) {
+        return;
+      }
+
+      showToast('Eliminando foto...', 'info');
+
+      fetch('/api/perfil/photo', {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
         }
@@ -948,47 +749,30 @@
       .then(response => response.json())
       .then(data => {
         if (data.ok) {
-          displayApplications(data.postulaciones);
+          showToast('Foto eliminada exitosamente', 'success');
+          
+          // Restaurar placeholder
+          const photoImage = document.getElementById('photoImage');
+          const photoPlaceholder = document.getElementById('photoPlaceholder');
+          const deletePhotoBtn = document.getElementById('deletePhotoBtn');
+          const userAvatar = document.getElementById('userAvatar');
+          
+          photoImage.style.display = 'none';
+          photoPlaceholder.style.display = 'flex';
+          deletePhotoBtn.style.display = 'none';
+          
+          // Restaurar avatar con iniciales
+          const name = document.getElementById('profileName').value || 'Usuario';
+          const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+          userAvatar.textContent = initials;
         } else {
-          console.error('Error cargando postulaciones:', data.error);
+          showToast(data.error || 'Error eliminando foto', 'error');
         }
       })
       .catch(error => {
         console.error('Error:', error);
+        showToast('Error conectando con el servidor', 'error');
       });
-    }
-
-    // Mostrar postulaciones en la interfaz
-    function displayApplications(postulaciones) {
-      const applicationsList = document.getElementById('applicationsList');
-      if (!postulaciones || postulaciones.length === 0) {
-        applicationsList.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>No tienes postulaciones aún</p></div>';
-        return;
-      }
-      
-      applicationsList.innerHTML = postulaciones.map(app => `
-        <div class="application-card">
-          <div class="job-header">
-            <div>
-              <h3 class="job-title">${app.trabajo_titulo}</h3>
-              <p class="job-company">${app.empresa}</p>
-              <p class="muted">Postulado el ${new Date(app.fecha_postulacion).toLocaleDateString()}</p>
-            </div>
-            <div class="application-status ${getStatusClass(app.estado)}">${app.estado}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Obtener clase CSS para el estado
-    function getStatusClass(estado) {
-      switch (estado.toLowerCase()) {
-        case 'pendiente': return 'status-pending';
-        case 'en revisión': return 'status-reviewing';
-        case 'aceptada': return 'status-accepted';
-        case 'rechazada': return 'status-rejected';
-        default: return 'status-pending';
-      }
     }
 
     // Actualizar perfil usando API
@@ -997,6 +781,8 @@
       const phone = document.getElementById('profilePhone').value;
       const email = document.getElementById('profileEmail').value;
       const title = document.getElementById('profileTitle').value;
+      const province = document.getElementById('profileProvince').value;
+      const country = document.getElementById('profileCountry').value;
 
       if (!name || !email) {
         showToast('Por favor completa los campos obligatorios', 'error');
@@ -1015,7 +801,9 @@
           nombre: name,
           telefono: phone,
           email: email,
-          titulo: title
+          titulo: title,
+          provincia: province,
+          pais: country
         })
       })
       .then(response => response.json())
@@ -1028,6 +816,19 @@
           const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
           document.getElementById('userAvatar').textContent = initials;
           
+          // Actualizar ubicación en sidebar
+          const userLocation = document.getElementById('userLocation');
+          if (province || country) {
+            const locationText = [province, country].filter(Boolean).join(', ');
+            userLocation.textContent = locationText;
+            userLocation.style.display = 'block';
+          } else {
+            userLocation.style.display = 'none';
+          }
+          
+               // Actualizar título en sidebar
+               document.getElementById('userTitle').textContent = title || 'Sin título profesional';
+          
           showToast('Perfil actualizado exitosamente', 'success');
         } else {
           showToast(data.error || 'Error actualizando perfil', 'error');
@@ -1039,14 +840,6 @@
       });
     }
 
-    // Descargar CV
-    function downloadCV() {
-      showToast('Descargando CV...', 'info');
-      // Simular descarga
-      setTimeout(() => {
-        showToast('CV descargado exitosamente', 'success');
-      }, 500);
-    }
 
     // Sistema de notificaciones toast
     function showToast(message, type = 'info') {
@@ -1101,11 +894,36 @@
       } catch (e) {
         // Si falla, dejamos los campos vacíos
       }
-      // Cargar etiquetas reales del usuario
+      // Cargar etiquetas y datos del perfil del usuario
       try {
         const r = await fetch('/api/perfil/etiquetas', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') } });
         const data = await r.json();
-        if (data && data.ok) updateTagsFromAPI(data.etiquetas || []);
+        if (data && data.ok) {
+          updateTagsFromAPI(data.etiquetas || []);
+          
+          // Cargar datos del perfil
+          if (data.titulo) {
+            document.getElementById('profileTitle').value = data.titulo;
+            document.getElementById('userTitle').textContent = data.titulo;
+          }
+          if (data.telefono) {
+            document.getElementById('profilePhone').value = data.telefono;
+          }
+          if (data.provincia) {
+            document.getElementById('profileProvince').value = data.provincia;
+          }
+          if (data.pais) {
+            document.getElementById('profileCountry').value = data.pais;
+          }
+          
+          // Actualizar ubicación en sidebar
+          const userLocation = document.getElementById('userLocation');
+          if (data.provincia || data.pais) {
+            const locationText = [data.provincia, data.pais].filter(Boolean).join(', ');
+            userLocation.textContent = locationText;
+            userLocation.style.display = 'block';
+          }
+        }
       } catch {}
     }
 
