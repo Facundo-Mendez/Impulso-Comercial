@@ -88,10 +88,12 @@ img {
 
 .nav-list {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   list-style: none;
   margin: 0;
-  padding: 0
+  padding: 0;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .nav-list a {
@@ -726,6 +728,211 @@ textarea {
 .tab-btn.active {
   background: #0e4f8b !important;
   color: #fff !important;
+}
+
+
+/* Estilos para mensajes de formulario */
+.form-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-weight: 500;
+  display: none;
+}
+
+.form-message.info {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.form-message.success {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.form-message.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+/* Estilos para el menú de RRHH */
+.nav-list .user-greeting {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.nav-list .user-greeting:hover {
+  background: #bbdefb;
+  transform: translateY(-1px);
+}
+
+.nav-list .settings-btn {
+  background: #f5f5f5;
+  color: #666;
+  padding: 8px 12px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.nav-list .settings-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+.nav-list .active {
+  background: #2196f3;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 16px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/* Asegurar que todos los elementos del menú tengan el mismo estilo base */
+.nav-list a {
+  white-space: nowrap;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  min-height: 36px;
+  line-height: 20px;
+  box-sizing: border-box;
+}
+
+/* Estilos para el dropdown del menú de usuario */
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  margin-top: 4px;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-content {
+  padding: 8px 0;
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  color: #333;
+}
+
+.dropdown-header i {
+  font-size: 18px;
+  color: #2196f3;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 8px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.dropdown-item i {
+  width: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.dropdown-item.logout-item {
+  color: #f44336;
+}
+
+.dropdown-item.logout-item:hover {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+/* Responsividad para el header de RRHH */
+@media (max-width: 1200px) {
+  .nav-list {
+    gap: 8px;
+  }
+
+  .nav-list a {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .nav-list .user-name,
+  .nav-list .logout-btn,
+  .nav-list .active {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-list {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .nav-list li {
+    width: 100%;
+  }
+
+  .nav-list a {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
 }
 
 /* User Dropdown Menu */

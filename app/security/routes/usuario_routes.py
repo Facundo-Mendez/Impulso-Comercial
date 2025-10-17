@@ -97,3 +97,36 @@ def me():
     out = UserService.me(u)
 
     return jsonify(out), 200
+
+@auth_bp.get("/validate")
+def validate_token():
+    """Validar token JWT y devolver información del usuario"""
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            raise AuthenticationError("Token de autorización requerido")
+
+        token = auth_header.split(' ', 1)[1]
+        payload = jwt_utils.decode_token(token)
+        
+        # Verificar que el usuario aún existe
+        user = Usuario.query.get(payload.get('sub'))
+        if not user:
+            raise AuthenticationError("Usuario no válido")
+
+        return jsonify({
+            "success": True,
+            "usuario": {
+                "id": user.id,
+                "nombre": user.nombre,
+                "correo": user.correo,
+                "rol": user.rol
+            },
+            "rol": user.rol
+        }), 200
+
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, AuthenticationError):
+        raise AuthenticationError("Token inválido o expirado")
+    except Exception as e:
+        logger.error(f"Error validando token: {str(e)}", exc_info=True)
+        raise AppError("Error interno del servidor durante la validación")

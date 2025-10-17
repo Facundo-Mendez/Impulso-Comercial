@@ -1,4 +1,170 @@
 // =========================
+// HEADER DINÁMICO SEGÚN TIPO DE USUARIO
+
+function updateHeaderForUser() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  // Verificar el tipo de usuario
+  fetch('/api/auth/me', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'rrhh') {
+      updateHeaderForRRHH(data.nombre);
+    }
+  })
+  .catch(error => {
+    console.error('Error verificando usuario:', error);
+  });
+}
+
+function updateHeaderForRRHH(userName) {
+  const navList = document.querySelector('.nav-list');
+  if (!navList) return;
+
+  // Limpiar el menú actual
+  navList.innerHTML = '';
+
+  // Agregar elementos específicos para RRHH
+  const menuItems = [
+    { text: 'Inicio', href: '/index.html' },
+    { text: 'Dashboard RRHH', href: '/pages/dashboard-rrhh.html', active: true },
+    { text: 'Mis Postulantes', href: '/pages/postulantes.html' },
+    { text: 'Gestionar Etiquetas', href: '#', onclick: 'rrhhDashboard.showEtiquetas()' },
+    { text: 'Reportes', href: '#', onclick: 'rrhhDashboard.showAnalytics()' },
+        {
+          text: `<i class="fas fa-user"></i> Hola, ${userName}`,
+          href: '#',
+          class: 'user-greeting'
+        },
+    {
+      text: `<i class="fas fa-cog"></i>`,
+      href: '#',
+      class: 'settings-btn',
+      onclick: 'toggleUserMenu()'
+    }
+  ];
+
+  menuItems.forEach((item, index) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+
+    // Usar innerHTML para elementos con iconos, textContent para otros
+    if (item.text.includes('<i class=')) {
+      a.innerHTML = item.text;
+    } else {
+      a.textContent = item.text;
+    }
+
+    a.href = item.href;
+
+    if (item.active) a.classList.add('active');
+    if (item.class) a.classList.add(item.class);
+    if (item.onclick) a.setAttribute('onclick', item.onclick);
+
+    // Agregar separador visual después del saludo del usuario
+    if (item.class === 'user-greeting') {
+      li.style.marginLeft = '16px';
+      li.style.borderLeft = '1px solid #e0e0e0';
+      li.style.paddingLeft = '16px';
+    }
+
+    // Agregar separador visual antes del botón de configuración
+    if (item.class === 'settings-btn') {
+      li.style.marginLeft = '8px';
+    }
+
+    li.appendChild(a);
+    navList.appendChild(li);
+  });
+
+  // Agregar el dropdown del menú de usuario
+  addUserDropdown(userName);
+
+  // Ocultar elementos que no deberían estar visibles para RRHH
+  const elementsToHide = [
+    'a[href*="contacto"]',
+    'a[href*="campus"]',
+    'a[href*="login"]'
+  ];
+
+  elementsToHide.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      if (el.closest('.nav-list')) {
+        el.style.display = 'none';
+      }
+    });
+  });
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+  window.location.href = '/pages/login.html';
+}
+
+function addUserDropdown(userName) {
+  // Crear el dropdown del menú de usuario
+  const dropdown = document.createElement('div');
+  dropdown.id = 'userDropdown';
+  dropdown.className = 'user-dropdown';
+  dropdown.style.display = 'none';
+
+  dropdown.innerHTML = `
+    <div class="dropdown-content">
+      <a href="#" class="dropdown-item" onclick="showProfile()">
+        <i class="fas fa-user"></i>
+        Mi Perfil
+      </a>
+      <a href="#" class="dropdown-item logout-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        Cerrar Sesión
+      </a>
+    </div>
+  `;
+
+  // Encontrar el botón del engranaje y posicionar el dropdown debajo de él
+  const settingsBtn = document.querySelector('.settings-btn');
+  if (settingsBtn) {
+    const settingsLi = settingsBtn.closest('li');
+    if (settingsLi) {
+      settingsLi.style.position = 'relative';
+      settingsLi.appendChild(dropdown);
+    }
+  }
+}
+
+function toggleUserMenu() {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) {
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function showProfile() {
+  // Función para mostrar el perfil del usuario
+  alert('Función de Mi Perfil - Próximamente disponible');
+  // Aquí puedes agregar la lógica para mostrar el perfil del usuario
+}
+
+// Cerrar el dropdown al hacer clic fuera de él
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('userDropdown');
+  const settingsBtn = document.querySelector('.settings-btn');
+
+  if (dropdown &&
+      !dropdown.contains(event.target) &&
+      !settingsBtn.contains(event.target)) {
+    dropdown.style.display = 'none';
+  }
+});
+
 // MENU MOBILE
 
 (() => {
@@ -230,12 +396,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         tipo: loginUserType ? loginUserType.value : 'usuario'
       };
       if (loginMsg) {
-        loginMsg.textContent = 'Iniciando sesión...';
         loginMsg.style.display = 'block';
-        loginMsg.style.background = '#e0f2fe';
-        loginMsg.style.color = '#0c2238';
-        loginMsg.style.border = '1px solid #0ea5e9';
+        loginMsg.textContent = 'Iniciando sesión...';
+        loginMsg.className = 'form-message info';
       }
+
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
@@ -260,10 +425,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => {
           if (data.rol === 'empresa') {
             location.href = '/pages/dashboard-empresa.html';
+          } else if (data.rol === 'rrhh') {
+           // Redirigir según el rol del usuario
+            location.href = '/pages/dashboard-rrhh.html';
           } else {
             location.href = '/';
           }
-        }, 100);
+        }, 1000);
       } catch (err) {
         console.error('Error en login:', err);
         if (loginMsg) {
@@ -355,11 +523,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         body.descripcion = fd.get('descripcion') || null;
       }
       if (signupMsg) {
-        signupMsg.textContent = 'Creando cuenta...';
         signupMsg.style.display = 'block';
-        signupMsg.style.background = '#e0f2fe';
-        signupMsg.style.color = '#0c2238';
-        signupMsg.style.border = '1px solid #0ea5e9';
+        signupMsg.textContent = 'Creando cuenta...';
+        signupMsg.className = 'form-message info';
       }
       try {
         const res = await fetch('/api/auth/signup', {
@@ -372,9 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('token', data.token);
         if (signupMsg) {
           signupMsg.textContent = '¡Cuenta creada! Redirigiendo...';
-          signupMsg.style.background = '#d1fae5';
-          signupMsg.style.color = '#065f46';
-          signupMsg.style.border = '1px solid #16a34a';
+          signupMsg.className = 'form-message success';
         }
         // Actualizar navegación antes de redirigir
         await updateNavigationForUser();
@@ -382,12 +546,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Pequeño delay para asegurar que la navegación se actualice
         setTimeout(() => {
           // Redirigir según el tipo de usuario
-          if (tipo === 'empresa') {
+          if (data.usuario && data.usuario.rol === 'empresa') {
             location.href = '/pages/dashboard-empresa.html';
+          } else if (data.usuario && data.usuario.rol === 'rrhh') {
+            location.href = '/pages/dashboard-rrhh.html';
           } else {
             location.href = '/';
           }
-        }, 100);
+        }, 1000);
       } catch (err) {
         console.error('Error en registro:', err);
         if (signupMsg) {
@@ -526,6 +692,9 @@ async function updateNavigationForUser() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Actualizar header según el tipo de usuario
+  updateHeaderForUser();
+
   const btnPostular = document.getElementById('btnPostularme');
   const btnTalento = document.getElementById('btnBuscoTalento');
   const btnCompletar = document.getElementById('btnCompletarFormulario'); // 👈 nuevo botón

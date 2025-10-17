@@ -49,6 +49,8 @@
       <input type="password" name="password" required placeholder="••••••••"/>
     </label>
     <button type="submit">Ingresar</button>
+
+    <div id="loginMsg" class="form-message" style="display: none;"></div>
   </form>
   <div id="loginMsg" style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; font-weight: 500;"></div>
   <p><a href="{{ url_for('pages', page='registro') }}">¿No tienes una cuenta? Registrarse acá</a></p>

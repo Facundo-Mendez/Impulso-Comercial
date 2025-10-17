@@ -64,3 +64,40 @@ def require_auth(f):
             raise AuthenticationError("Error de autenticación")
     
     return decorated_function
+
+def require_rrhh(f):
+    """Decorador para proteger rutas que requieren permisos de RRHH"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            raise AuthenticationError("Token de autorización requerido")
+        
+        token = auth_header.split(' ', 1)[1]
+        try:
+            payload = decode_token(token)
+            # Verificar que el usuario aún existe
+            user = Usuario.query.get(payload.get('sub'))
+            if not user:
+                raise AuthenticationError("Usuario no válido")
+            
+            # Verificar que el usuario tiene permisos de RRHH
+            if user.rol != 'rrhh':
+                raise AuthenticationError("Permisos de RRHH requeridos")
+            
+            # Agregar usuario a request context
+            request.current_user = user
+            return f(*args, **kwargs)
+            
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationError("Token expirado")
+        except jwt.InvalidTokenError:
+            raise AuthenticationError("Token inválido")
+        except AuthenticationError:
+            # Re-raise authentication errors
+            raise
+        except Exception as e:
+            logger.error(f"Error inesperado en autenticación RRHH: {str(e)}", exc_info=True)
+            raise AuthenticationError("Error de autenticación")
+    
+    return decorated_function

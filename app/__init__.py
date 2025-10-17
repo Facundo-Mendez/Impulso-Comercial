@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -96,17 +96,67 @@ def create_app():
     except Exception as e:
         print("⚠️ No se pudo registrar empresas_bp:", e)
 
+    # Routes de RRHH
+    try:
+        from .routes.rrhh_routes import rrhh_bp
+        app.register_blueprint(rrhh_bp, url_prefix="/api")
+    except Exception as e:
+        print("⚠️ No se pudo registrar rrhh_bp:", e)
+
+
     # ===== Rutas para tus páginas =====
     @app.get("/")
     def home():
         return render_template("index.html")
 
+
     @app.get("/index.html")
     def home_alias():
         return render_template("index.html")
 
+
+    @app.get("/pages/postulantes.html")
+    def postulantes_page():
+        """Redirigir usuarios RRHH al dashboard, otros al módulo de postulantes"""
+        try:
+            # Verificar si hay token en el header
+            auth = request.headers.get("Authorization", "")
+            if auth.startswith("Bearer "):
+                token = auth.split(" ", 1)[1]
+
+                # Decodificar token JWT
+                import jwt
+                SECRET = os.getenv("SECRET_KEY", "cambia_esta_clave")
+                payload = jwt.decode(token, SECRET, algorithms=["HS256"])
+                user_id = payload.get("sub")
+
+                # Obtener usuario de la base de datos
+                from .models.models import Usuario
+                user = Usuario.query.get(user_id)
+
+                # Si el usuario es RRHH, redirigir al dashboard
+                if user and user.rol == 'rrhh':
+                    return redirect('/api/rrhh/dashboard')
+        except Exception as e:
+            # En caso de error, continuar con la página normal
+            pass
+
+        # Si no es RRHH o no está autenticado, mostrar la página normal
+        return render_template('pages/postulantes.html')
+
+
     @app.get("/pages/<path:page>.html")
     def pages(page):
         return render_template(f"pages/{page}.html")
+
+    @app.get("/pages/dashboard-rrhh.html")
+    def rrhh_dashboard_page():
+        """Página del dashboard de RRHH"""
+        return render_template('pages/dashboard-rrhh.html')
+
+    @app.get("/api/rrhh/dashboard")
+    def rrhh_dashboard():
+        """Dashboard de RRHH - requiere autenticación"""
+        return render_template('pages/dashboard-rrhh.html')
 
     return app

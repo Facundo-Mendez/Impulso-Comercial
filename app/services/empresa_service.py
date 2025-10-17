@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime, timezone
 from werkzeug.utils import secure_filename
 from app.exceptions.error_handler import ValidationError, ConflictError, NotFoundError, AuthorizationError
+from app.exceptions.logger import get_logger
 import jwt, os
 
 from ..security.model.usuario import Usuario
@@ -14,6 +15,7 @@ from ..models.empresa import Empresa
 
 
 class EmpresaService:
+    logger = get_logger('empresa')
 
     @staticmethod
     def _get_user_from_auth() -> Usuario | None:
@@ -567,3 +569,65 @@ class EmpresaService:
                 "notas": postulacion.notas
             }
         }
+
+    # ===== MÉTODOS PARA RRHH =====
+
+    @staticmethod
+    def get_solicitudes_for_rrhh():
+        """Obtener solicitudes de empresas para RRHH"""
+        try:
+            solicitudes = Solicitud.query.order_by(Solicitud.creado_en.desc()).all()
+            
+            result = []
+            for solicitud in solicitudes:
+                empresa = Empresa.query.get(solicitud.empresa_id) if solicitud.empresa_id else None
+                result.append({
+                    "id": solicitud.id,
+                    "cargo": solicitud.cargo,
+                    "modalidad": solicitud.modalidad,
+                    "requisitos": solicitud.requisitos,
+                    "expectativa": solicitud.expectativa,
+                    "skills": solicitud.skills,
+                    "extra": solicitud.extra,
+                    "creado_en": solicitud.creado_en.isoformat() if solicitud.creado_en else None,
+                    "empresa": {
+                        "id": empresa.id if empresa else None,
+                        "nombre": empresa.nombre_empresa if empresa else "Empresa no encontrada"
+                    }
+                })
+            
+            return {"solicitudes": result}
+            
+        except Exception as e:
+            EmpresaService.logger.error(f"Error obteniendo solicitudes: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def get_empresas_for_rrhh():
+        """Obtener lista de empresas para RRHH"""
+        try:
+            empresas = Empresa.query.all()
+            
+            result = []
+            for empresa in empresas:
+                usuario = Usuario.query.get(empresa.usuario_id) if empresa.usuario_id else None
+                solicitudes_count = Solicitud.query.filter_by(empresa_id=empresa.id).count()
+                
+                result.append({
+                    "id": empresa.id,
+                    "nombre_empresa": empresa.nombre_empresa,
+                    "descripcion": empresa.descripcion,
+                    "logo_url": empresa.logo_url,
+                    "usuario": {
+                        "nombre": usuario.nombre if usuario else "Sin nombre",
+                        "correo": usuario.correo if usuario else "Sin email"
+                    },
+                    "solicitudes_count": solicitudes_count,
+                    "etiquetas": [{"id": etiqueta.id, "nombre": etiqueta.nombre} for etiqueta in empresa.etiquetas]
+                })
+            
+            return {"empresas": result}
+            
+        except Exception as e:
+            EmpresaService.logger.error(f"Error obteniendo empresas: {str(e)}", exc_info=True)
+            raise e

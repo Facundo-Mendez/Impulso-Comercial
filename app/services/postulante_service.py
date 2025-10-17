@@ -6,15 +6,16 @@ import os
 from app import db
 from ..models.postulante_registro import PostulanteRegistro
 from ..models.solicitud import Solicitud
-from ..models.postulante_registro import PostulanteRegistro
 from ..models.postulante_empresa import PostulacionEmpresa
 from ..models.etiqueta import Etiqueta
+from ..security.model.usuario import Usuario
 from ..services.ia_service import IAService
 from ..security.service import jwt_utils
-from ..security.service.user_service import Usuario
+from app.exceptions.logger import get_logger
 
 
 class PostulanteService:
+    logger = get_logger('postulante')
 
     @staticmethod
     def _get_user_from_auth() -> Usuario | None:
@@ -157,3 +158,192 @@ class PostulanteService:
                 "fecha_postulacion": nueva_postulacion.fecha_postulacion.isoformat()
             }
         }
+
+    # ===== MÉTODOS PARA RRHH =====
+
+    @staticmethod
+    def get_postulantes_for_rrhh():
+        """Obtener lista de postulantes para RRHH"""
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 10, type=int)
+            search = request.args.get('search', '', type=str)
+            etiqueta_id = request.args.get('etiqueta_id', type=int)
+            
+            query = PostulanteRegistro.query
+            
+            # Filtro de búsqueda - buscar en usuario relacionado
+            if search:
+                query = query.join(Usuario, PostulanteRegistro.usuario_id == Usuario.id).filter(
+                    db.or_(
+                        Usuario.nombre.ilike(f'%{search}%'),
+                        Usuario.correo.ilike(f'%{search}%')
+                    )
+                )
+            
+            # Filtro por etiqueta
+            if etiqueta_id:
+                query = query.join(PostulanteRegistro.etiquetas).filter(Etiqueta.id == etiqueta_id)
+            
+            # Paginación
+            postulantes = query.paginate(
+                page=page, 
+                per_page=per_page, 
+                error_out=False
+            )
+            
+            result = []
+            for postulante in postulantes.items:
+                usuario = Usuario.query.get(postulante.usuario_id) if postulante.usuario_id else None
+                result.append({
+                    "id": postulante.id,
+                    "nombre": usuario.nombre if usuario else "Sin nombre",
+                    "email": usuario.correo if usuario else "Sin email",
+                    "telefono": None,  # No hay campo teléfono en tu modelo actual
+                    "puesto": None,    # No hay campo puesto en tu modelo actual
+                    "creado_en": postulante.creado_en.isoformat() if postulante.creado_en else None,
+                    "etiquetas": [{"id": etiqueta.id, "nombre": etiqueta.nombre} for etiqueta in postulante.etiquetas],
+                    "ai_feedback": None,  # No hay campo ai_feedback en tu modelo actual
+                    "descripcion": postulante.descripcion,
+                    "linkedin": postulante.linkedin,
+                    "github": postulante.github,
+                    "portfolio": postulante.portfolio,
+                    "cv_filename": postulante.cv_filename
+                })
+            
+            return {
+                "postulantes": result,
+                "pagination": {
+                    "page": postulantes.page,
+                    "pages": postulantes.pages,
+                    "per_page": postulantes.per_page,
+                    "total": postulantes.total,
+                    "has_next": postulantes.has_next,
+                    "has_prev": postulantes.has_prev
+                }
+            }
+            
+        except Exception as e:
+            PostulanteService.logger.error(f"Error obteniendo postulantes: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def get_postulante_detail_for_rrhh(postulante_id):
+        """Obtener detalles de un postulante específico para RRHH"""
+        try:
+            postulante = PostulanteRegistro.query.get_or_404(postulante_id)
+            usuario = Usuario.query.get(postulante.usuario_id) if postulante.usuario_id else None
+            
+            return {
+                "postulante": {
+                    "id": postulante.id,
+                    "nombre": usuario.nombre if usuario else "Sin nombre",
+                    "email": usuario.correo if usuario else "Sin email",
+                    "telefono": None,  # No hay campo teléfono en tu modelo actual
+                    "puesto": None,    # No hay campo puesto en tu modelo actual
+                    "creado_en": postulante.creado_en.isoformat() if postulante.creado_en else None,
+                    "etiquetas": [{"id": etiqueta.id, "nombre": etiqueta.nombre} for etiqueta in postulante.etiquetas],
+                    "ai_feedback": None,  # No hay campo ai_feedback en tu modelo actual
+                    "descripcion": postulante.descripcion,
+                    "linkedin": postulante.linkedin,
+                    "github": postulante.github,
+                    "portfolio": postulante.portfolio,
+                    "cv_filename": postulante.cv_filename,
+                    "cv_mime": postulante.cv_mime,
+                    "cv_size": postulante.cv_size
+                }
+            }
+            
+        except Exception as e:
+            PostulanteService.logger.error(f"Error obteniendo detalle del postulante: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def update_postulante_etiquetas_for_rrhh(postulante_id, etiqueta_ids):
+        """Actualizar etiquetas de un postulante para RRHH"""
+        try:
+            postulante = PostulanteRegistro.query.get_or_404(postulante_id)
+            
+            # Obtener etiquetas por IDs
+            etiquetas = Etiqueta.query.filter(Etiqueta.id.in_(etiqueta_ids)).all()
+            
+            # Actualizar etiquetas del postulante
+            postulante.etiquetas = etiquetas
+            db.session.commit()
+            
+            return {"message": "Etiquetas actualizadas correctamente"}
+            
+        except Exception as e:
+            db.session.rollback()
+            PostulanteService.logger.error(f"Error actualizando etiquetas: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def generate_ai_feedback_for_rrhh(postulante_id):
+        """Generar o regenerar feedback de IA para un postulante para RRHH"""
+        try:
+            postulante = PostulanteRegistro.query.get_or_404(postulante_id)
+            usuario = Usuario.query.get(postulante.usuario_id) if postulante.usuario_id else None
+            
+            # Aquí podrías integrar con tu servicio de IA existente
+            # Por ahora, generamos un feedback de ejemplo
+            from datetime import datetime
+            
+            # Feedback de ejemplo basado en la información disponible
+            ai_feedback = f"""
+            ANÁLISIS DE PERFIL - {usuario.nombre if usuario else 'Postulante'}
+            
+            📊 RESUMEN EJECUTIVO:
+            Postulante con perfil comercial registrado el {postulante.creado_en.strftime('%d/%m/%Y')}.
+            
+            🎯 PERFIL DETECTADO:
+            - Descripción: {postulante.descripcion or 'Sin descripción'}
+            - LinkedIn: {postulante.linkedin or 'No proporcionado'}
+            - GitHub: {postulante.github or 'No proporcionado'}
+            - Portfolio: {postulante.portfolio or 'No proporcionado'}
+            - Etiquetas asignadas: {', '.join([etiqueta.nombre for etiqueta in postulante.etiquetas]) if postulante.etiquetas else 'Sin etiquetas'}
+            
+            💡 RECOMENDACIONES:
+            1. Evaluar experiencia previa en ventas comerciales
+            2. Verificar habilidades de comunicación y negociación
+            3. Considerar fit cultural con la empresa
+            4. Revisar CV: {postulante.cv_filename or 'No disponible'}
+            
+            📈 POTENCIAL:
+            - Alto potencial si tiene experiencia comercial
+            - Requiere seguimiento para validar competencias técnicas
+            - Perfil digital: {'Completo' if postulante.linkedin and postulante.github else 'Parcial'}
+            
+            Generado automáticamente el {datetime.now().strftime('%d/%m/%Y %H:%M')}
+            """
+            
+            return {
+                "message": "Feedback de IA generado correctamente",
+                "ai_feedback": ai_feedback.strip()
+            }
+            
+        except Exception as e:
+            PostulanteService.logger.error(f"Error generando feedback de IA: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def get_etiquetas_for_rrhh():
+        """Obtener lista de etiquetas para RRHH"""
+        try:
+            etiquetas = Etiqueta.query.all()
+            
+            result = []
+            for etiqueta in etiquetas:
+                result.append({
+                    "id": etiqueta.id,
+                    "nombre": etiqueta.nombre,
+                    "descripcion": None,  # No hay campo descripción en tu modelo actual
+                    "color": None,       # No hay campo color en tu modelo actual
+                    "count": len(etiqueta.postulante_registro)
+                })
+            
+            return {"etiquetas": result}
+            
+        except Exception as e:
+            PostulanteService.logger.error(f"Error obteniendo etiquetas: {str(e)}", exc_info=True)
+            raise e

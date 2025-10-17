@@ -2,12 +2,15 @@ from app import db
 from flask import Blueprint, request, jsonify
 
 from ..services.empresa_service import EmpresaService
-
 from ..models.solicitud import Solicitud
+from ..models.empresa import Empresa
 from ..security.model.usuario import Usuario
+from ..security.auth import require_rrhh
 from app.exceptions.error_handler import ValidationError, ConflictError, NotFoundError, AuthorizationError
+from app.exceptions.logger import get_logger
 
 empresas_bp = Blueprint('empresas_bp', __name__)
+logger = get_logger('empresa')
 
 
 @empresas_bp.post("/empresa/solicitud")
@@ -200,3 +203,25 @@ def notificar_rrhh(candidato_id):
         db.session.rollback()
         print(f"Error notificando a RRHH: {e}")
         return jsonify({"ok": False, "error": "Error al notificar a RRHH"}), 500
+
+# ===== MÉTODOS PARA RRHH =====
+
+@empresas_bp.route("/solicitudes", methods=["GET"])
+@require_rrhh
+def get_solicitudes():
+    """Obtener solicitudes de empresas (para RRHH)"""
+    try:
+        resultado = EmpresaService.get_solicitudes_for_rrhh()
+        return jsonify({"ok": True, **resultado}), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@empresas_bp.route("/empresas", methods=["GET"])
+@require_rrhh
+def get_empresas():
+    """Obtener lista de empresas (para RRHH)"""
+    try:
+        resultado = EmpresaService.get_empresas_for_rrhh()
+        return jsonify({"ok": True, **resultado}), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500

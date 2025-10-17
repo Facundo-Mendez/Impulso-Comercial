@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard RRHH | Impulso Comercial</title>
+    <link rel="icon" href="/img/logo.png" type="image/png">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/rrhh.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+<header class="main-header">
+    <div class="container header-inner">
+        <a class="logo-container" href="/index.html">
+            <img src="/img/logo.png" alt="Logo Impulso Comercial" class="logo-img">
+            <div class="logo-text">
+                <h1>IMPULSO COMERCIAL</h1>
+                <p>Panel de Recursos Humanos</p>
+            </div>
+        </a>
+        <nav class="main-nav" id="mainNav">
+            <ul class="nav-list">
+                <li><a href="/index.html">Inicio</a></li>
+                <li><a href="/pages/dashboard-rrhh.html" class="active">Dashboard RRHH</a></li>
+                <li><a href="/pages/postulantes.html">Postulantes</a></li>
+                <li><a href="/pages/contacto.html">Contacto</a></li>
+                <li><a href="#" class="logout-btn" id="logoutBtn">Cerrar Sesión <i class="fas fa-sign-out-alt"></i></a></li>
+            </ul>
+            <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </div>
+</header>
+
+<main class="rrhh-dashboard">
+    <div class="container">
+        <!-- Header del Dashboard -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-users-cog"></i>
+                Panel de Gestión de Recursos Humanos
+            </h1>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalPostulantes">0</span>
+                        <span class="stat-label">Total Postulantes</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalEtiquetas">0</span>
+                        <span class="stat-label">Etiquetas Activas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalEmpresas">0</span>
+                        <span class="stat-label">Empresas Registradas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalSolicitudes">0</span>
+                        <span class="stat-label">Solicitudes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="quick-actions">
+            <h2><i class="fas fa-bolt"></i> Acciones Rápidas</h2>
+            <div class="actions-grid">
+                <a href="/pages/postulantes.html" class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Gestionar Postulantes</h3>
+                        <p>Ver, filtrar y gestionar perfiles de candidatos</p>
+                    </div>
+                </a>
+                <a href="#" class="action-card" id="viewEtiquetasBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Gestionar Etiquetas</h3>
+                        <p>Crear y administrar etiquetas de clasificación</p>
+                    </div>
+                </a>
+                <a href="#" class="action-card" id="viewSolicitudesBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Ver Solicitudes</h3>
+                        <p>Revisar solicitudes de búsqueda de empresas</p>
+                    </div>
+                </a>
+                <a href="#" class="action-card" id="analyticsBtn">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Analíticas</h3>
+                        <p>Ver estadísticas y reportes del sistema</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Lista de Postulantes con Filtros -->
+        <div class="recent-postulantes">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Gestión de Postulantes</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="rrhhDashboard.showEtiquetas()">
+                        <i class="fas fa-tags"></i> Gestionar Etiquetas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controles de Filtrado -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <input type="text" id="searchInput" placeholder="Buscar por nombre o email..."
+                           class="search-input" onkeyup="rrhhDashboard.handleSearch(event)">
+                    <select id="etiquetaFilter" class="filter-select" onchange="rrhhDashboard.handleEtiquetaFilter(event)" title="Filtrar por etiqueta">
+                        <option value="">Todas las etiquetas</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="rrhhDashboard.clearFilters()">
+                        <i class="fas fa-times"></i> Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="postulantes-list" id="recentPostulantes">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando postulantes...</p>
+                </div>
+            </div>
+
+            <!-- Paginación -->
+            <div class="pagination-container" id="pagination">
+                <!-- Los controles de paginación se cargarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Gráfico de Actividad -->
+        <div class="activity-chart">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Actividad de Postulaciones</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="activityChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal para ver detalles -->
+<div class="modal" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Detalles</h3>
+            <button class="modal-close" id="modalClose" title="Cerrar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Contenido dinámico -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="modalCloseBtn">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<footer class="main-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand">
+            <img src="/img/logo.png" alt="Logo Impulso Comercial" class="footer-logo">
+            <p>Especialistas en reclutamiento de talento comercial.</p>
+        </div>
+        <div class="footer-contact">
+            <h4>Contacto</h4>
+            <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+            <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+        </div>
+        <div class="footer-social">
+            <h4>Seguinos</h4>
+            <div class="social-links">
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script src="/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/modules/rrhh/dashboard.js"></script>
+<script>
+    // Verificar autenticación y rol RRHH antes de cargar el dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            alert('Debe iniciar sesión para acceder al dashboard de RRHH');
+            window.location.href = '/pages/login.html';
+            return;
+        }
+
+        // Verificar rol de RRHH
+        fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.rol || data.rol !== 'rrhh') {
+                alert('No tiene permisos para acceder al dashboard de RRHH');
+                window.location.href = '/';
+                return;
+            }
+
+            // Si es RRHH, inicializar el dashboard
+            if (window.rrhhDashboard) {
+                window.rrhhDashboard.init();
+            }
+        })
+        .catch(error => {
+            console.error('Error verificando usuario:', error);
+            alert('Error de autenticación');
+            window.location.href = '/pages/login.html';
+        });
+    });
+</script>
+</body>
+</html>
