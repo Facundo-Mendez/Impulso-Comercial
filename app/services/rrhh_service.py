@@ -220,3 +220,191 @@ class RRHHService:
         except Exception as e:
             logger.error(f"Error obteniendo estadísticas de avisos: {str(e)}", exc_info=True)
             raise e
+
+    @staticmethod
+    def crear_etiqueta_for_rrhh(nombre):
+        """Crear nueva etiqueta para RRHH"""
+        try:
+            from ..models.etiqueta import Etiqueta
+            
+            if not nombre or not nombre.strip():
+                raise ValueError("El nombre de la etiqueta es requerido")
+            
+            nombre = nombre.strip()
+            
+            # Verificar si ya existe
+            etiqueta_existente = Etiqueta.query.filter_by(nombre=nombre).first()
+            if etiqueta_existente:
+                raise ValueError("Ya existe una etiqueta con ese nombre")
+            
+            # Crear nueva etiqueta
+            nueva_etiqueta = Etiqueta(nombre=nombre)
+            db.session.add(nueva_etiqueta)
+            db.session.commit()
+            
+            return {
+                "etiqueta": {
+                    "id": nueva_etiqueta.id,
+                    "nombre": nueva_etiqueta.nombre
+                },
+                "mensaje": "Etiqueta creada correctamente"
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error creando etiqueta: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def eliminar_etiqueta_for_rrhh(etiqueta_id):
+        """Eliminar etiqueta para RRHH"""
+        try:
+            from ..models.etiqueta import Etiqueta
+            
+            etiqueta = Etiqueta.query.get_or_404(etiqueta_id)
+            
+            # Verificar si hay postulantes asociados
+            postulantes_con_etiqueta = len(etiqueta.postulante_registro)
+            
+            if postulantes_con_etiqueta > 0:
+                raise ValueError(f"No se puede eliminar la etiqueta porque {postulantes_con_etiqueta} postulantes la tienen asignada")
+            
+            db.session.delete(etiqueta)
+            db.session.commit()
+            
+            return {"mensaje": "Etiqueta eliminada correctamente"}
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error eliminando etiqueta: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def extraer_etiquetas_ia_for_rrhh(postulante_id):
+        """Extraer etiquetas automáticamente del CV usando IA para RRHH"""
+        try:
+            from ..models.postulante_registro import PostulanteRegistro
+            from ..models.etiqueta import Etiqueta
+            from ..services.ia_service import IAService
+            import os
+            
+            postulante = PostulanteRegistro.query.get_or_404(postulante_id)
+            
+            if not postulante.cv_filename:
+                raise ValueError("El postulante no tiene CV subido")
+            
+            # Construir ruta del archivo CV
+            cv_path = os.path.join('uploads', postulante.cv_filename)
+            
+            # Analizar CV con IA usando spaCy
+            analysis_result = IAService.extraer_informacion_cv(cv_path)
+            
+            if 'error' in analysis_result:
+                raise ValueError(analysis_result['error'])
+            
+            # Crear etiquetas que no existan
+            etiquetas_creadas = []
+            etiquetas_sugeridas = analysis_result.get('etiquetas_sugeridas', [])
+            
+            for nombre_etiqueta in etiquetas_sugeridas:
+                etiqueta = Etiqueta.query.filter_by(nombre=nombre_etiqueta).first()
+                if not etiqueta:
+                    etiqueta = Etiqueta(nombre=nombre_etiqueta)
+                    db.session.add(etiqueta)
+                    db.session.flush()  # Para obtener el ID
+                etiquetas_creadas.append(etiqueta)
+            
+            # Asociar etiquetas al postulante
+            for etiqueta in etiquetas_creadas:
+                if etiqueta not in postulante.etiquetas:
+                    postulante.etiquetas.append(etiqueta)
+            
+            db.session.commit()
+            
+            return {
+                "etiquetas_extraidas": [{"id": e.id, "nombre": e.nombre} for e in etiquetas_creadas],
+                "analisis": {
+                    "experiencia_anos": analysis_result.get('experiencia_anos', 0),
+                    "idiomas": analysis_result.get('idiomas', []),
+                    "tecnologias": analysis_result.get('tecnologias', []),
+                    "educacion": analysis_result.get('educacion', []),
+                    "certificaciones": analysis_result.get('certificaciones', []),
+                    "resumen": analysis_result.get('resumen', '')
+                },
+                "mensaje": f"Se extrajeron {len(etiquetas_creadas)} etiquetas automáticamente del CV usando IA"
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error extrayendo etiquetas con IA: {str(e)}", exc_info=True)
+            raise e
+
+    @staticmethod
+    def avisar_postulante_desde_empresa_for_rrhh(empresa_id, solicitud_id, postulante_id, observaciones=''):
+        """Avisar sobre un postulante desde empresa para RRHH"""
+        try:
+            from ..models.empresa import Empresa
+            from ..models.solicitud import Solicitud
+            from ..models.postulante_registro import PostulanteRegistro
+            from ..models.aviso_postulante import AvisoPostulante
+            from datetime import datetime
+            
+            # Verificar que existan los registros
+            empresa = Empresa.query.get(empresa_id)
+            if not empresa:
+                raise ValueError("Empresa no encontrada")
+            
+            solicitud = Solicitud.query.get(solicitud_id)
+            if not solicitud:
+                raise ValueError("Solicitud no encontrada")
+            
+            postulante = PostulanteRegistro.query.get(postulante_id)
+            if not postulante:
+                raise ValueError("Postulante no encontrado")
+            
+            # Verificar si ya existe un aviso para este postulante y solicitud
+            aviso_existente = AvisoPostulante.query.filter_by(
+                empresa_id=empresa_id,
+                solicitud_id=solicitud_id,
+                postulante_id=postulante_id
+            ).first()
+            
+            if aviso_existente:
+                # Actualizar el aviso existente
+                aviso_existente.observaciones = observaciones
+                aviso_existente.estado = 'pendiente'  # Resetear a pendiente
+                aviso_existente.actualizado_en = datetime.utcnow()
+                db.session.commit()
+                
+                logger.info(f"Aviso actualizado: Empresa {empresa_id} -> Postulante {postulante_id}")
+                
+                return {
+                    "aviso_id": aviso_existente.id,
+                    "mensaje": "Aviso actualizado correctamente. RRHH ha sido notificado.",
+                    "actualizado": True
+                }
+            else:
+                # Crear nuevo aviso
+                nuevo_aviso = AvisoPostulante(
+                    empresa_id=empresa_id,
+                    solicitud_id=solicitud_id,
+                    postulante_id=postulante_id,
+                    estado='pendiente',
+                    observaciones=observaciones
+                )
+                
+                db.session.add(nuevo_aviso)
+                db.session.commit()
+                
+                logger.info(f"Nuevo aviso creado: Empresa {empresa_id} -> Postulante {postulante_id}")
+                
+                return {
+                    "aviso_id": nuevo_aviso.id,
+                    "mensaje": "Aviso enviado correctamente a RRHH. El equipo revisará el perfil del postulante.",
+                    "actualizado": False
+                }
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Error creando aviso de postulante: {str(e)}", exc_info=True)
+            raise e

@@ -10,6 +10,8 @@ class Usuario(db.Model):
     correo: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     rol: Mapped[str] = mapped_column(String(20), nullable=False, default="usuario")
+    foto_perfil: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    descripcion: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     empresas = relationship(
         "Empresa",

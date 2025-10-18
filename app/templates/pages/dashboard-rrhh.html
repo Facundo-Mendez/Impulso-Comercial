@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión | Impulso Comercial</title>
+    <title>Mis Postulantes | Impulso Comercial</title>
     <link rel="icon" href="/img/logo.png" type="image/png">
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/rrhh.css">
+    <link rel="stylesheet" href="/css/profile-edit.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
@@ -21,11 +22,7 @@
         </a>
         <nav class="main-nav" id="mainNav">
             <ul class="nav-list">
-                <li><a href="/index.html">Inicio</a></li>
-                <li><a href="/pages/dashboard-rrhh.html" class="active">Gestión</a></li>
-                <li><a href="/pages/postulantes.html">Postulantes</a></li>
-                <li><a href="/pages/contacto.html">Contacto</a></li>
-                <li><a href="#" class="logout-btn" id="logoutBtn">Cerrar Sesión <i class="fas fa-sign-out-alt"></i></a></li>
+                <!-- El menú se cargará dinámicamente según el rol del usuario -->
             </ul>
             <button class="mobile-menu-btn" aria-label="Menú" id="menuBtn">
                 <i class="fas fa-bars"></i>
@@ -40,7 +37,10 @@
         <!-- Lista de Postulantes con Filtros -->
         <div class="recent-postulantes">
             <div class="section-header">
-                <h2><i class="fas fa-users"></i> Gestión de Postulantes</h2>
+                <h2><i class="fas fa-users"></i> Mis Postulantes</h2>
+                <button class="btn btn-primary" onclick="rrhhDashboard.showEtiquetas()">
+                    <i class="fas fa-tags"></i> Gestionar Etiquetas
+                </button>
             </div>
 
             <!-- Controles de Filtrado -->
@@ -70,15 +70,6 @@
             </div>
         </div>
 
-        <!-- Gráfico de Actividad -->
-        <div class="activity-chart">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-line"></i> Actividad de Postulaciones</h2>
-            </div>
-            <div class="chart-container">
-                <canvas id="activityChart" width="400" height="200"></canvas>
-            </div>
-        </div>
     </div>
 </main>
 
@@ -140,23 +131,43 @@
         }
 
         // Verificar rol de RRHH
-        fetch('/api/auth/me', {
+        fetch('/api/auth/validate', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
-            if (!data.rol || data.rol !== 'rrhh') {
+            console.log('Datos recibidos:', data); // Debug
+            const userRole = data.rol || (data.usuario && data.usuario.rol);
+            const userName = data.usuario ? data.usuario.nombre : (data.nombre || 'Usuario');
+            console.log('Rol extraído:', userRole); // Debug
+            console.log('Nombre usuario:', userName); // Debug
+
+            if (!userRole || userRole !== 'rrhh') {
+                console.log('Usuario no es RRHH, redirigiendo...');
                 alert('No tiene permisos para acceder al dashboard de RRHH');
                 window.location.href = '/';
                 return;
             }
 
+            console.log('Usuario es RRHH, inicializando dashboard...');
+
+            // Actualizar el header para RRHH
+            if (typeof updateHeaderForRRHH === 'function') {
+                updateHeaderForRRHH(userName);
+            }
+
             // Si es RRHH, inicializar el dashboard
             if (window.rrhhDashboard) {
+                console.log('RRHHDashboard encontrado, inicializando...');
                 window.rrhhDashboard.init();
+            } else {
+                console.error('RRHHDashboard no está disponible');
             }
         })
         .catch(error => {

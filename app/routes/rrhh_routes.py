@@ -66,3 +66,72 @@ def get_avisos_estadisticas():
         return jsonify({"ok": True, "estadisticas": estadisticas}), 200
     except Exception as e:
         return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@rrhh_bp.route("/etiquetas", methods=["POST"])
+@require_rrhh
+def crear_etiqueta():
+    """Crear nueva etiqueta"""
+    try:
+        data = request.get_json()
+        nombre = data.get('nombre', '').strip()
+        
+        if not nombre:
+            return jsonify({"ok": False, "error": "El nombre de la etiqueta es requerido"}), 400
+        
+        resultado = RRHHService.crear_etiqueta_for_rrhh(nombre)
+        return jsonify({"ok": True, **resultado}), 201
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@rrhh_bp.route("/etiquetas/<int:etiqueta_id>", methods=["DELETE"])
+@require_rrhh
+def eliminar_etiqueta(etiqueta_id):
+    """Eliminar etiqueta"""
+    try:
+        resultado = RRHHService.eliminar_etiqueta_for_rrhh(etiqueta_id)
+        return jsonify({"ok": True, **resultado}), 200
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@rrhh_bp.route("/postulantes/<int:postulante_id>/extraer-etiquetas", methods=["POST"])
+@require_rrhh
+def extraer_etiquetas_ia(postulante_id):
+    """Extraer etiquetas automáticamente del CV usando IA"""
+    try:
+        resultado = RRHHService.extraer_etiquetas_ia_for_rrhh(postulante_id)
+        return jsonify({"ok": True, **resultado}), 200
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@rrhh_bp.route("/avisar-postulante", methods=["POST"])
+def avisar_postulante_desde_empresa():
+    """Endpoint para que las empresas avisen a RRHH sobre un postulante interesante"""
+    try:
+        data = request.get_json()
+        
+        # Validar datos requeridos
+        empresa_id = data.get('empresa_id')
+        solicitud_id = data.get('solicitud_id')
+        postulante_id = data.get('postulante_id')
+        observaciones = data.get('observaciones', '')
+        
+        if not all([empresa_id, solicitud_id, postulante_id]):
+            return jsonify({
+                "ok": False, 
+                "error": "Faltan datos requeridos: empresa_id, solicitud_id, postulante_id"
+            }), 400
+        
+        resultado = RRHHService.avisar_postulante_desde_empresa_for_rrhh(
+            empresa_id, solicitud_id, postulante_id, observaciones
+        )
+        return jsonify({"ok": True, **resultado}), 201
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500

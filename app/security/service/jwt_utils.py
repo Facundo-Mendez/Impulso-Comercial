@@ -47,10 +47,6 @@ def require_auth(f):
             user = Usuario.query.get(payload.get('sub'))
             if not user:
                 raise AuthenticationError("Usuario no válido")
-
-            # Verificar que el usuario tiene permisos de RRHH
-            if user.rol != 'rrhh':
-                raise AuthenticationError("Permisos de RRHH requeridos")
             
             # Agregar usuario a request context
             request.current_user = user

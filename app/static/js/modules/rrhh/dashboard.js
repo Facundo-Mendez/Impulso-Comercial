@@ -9,7 +9,7 @@ class RRHHDashboard {
         this.chart = null;
         this.currentPage = 1;
         this.currentFilters = {};
-        this.init();
+        // No se inicializa automáticamente, se llama manualmente
     }
 
     init() {
@@ -46,8 +46,11 @@ class RRHHDashboard {
             }
 
             const data = await response.json();
-            if (data.rol !== 'rrhh') {
+            console.log('Datos recibidos en dashboard.js:', data); // Debug
+            const userRole = data.rol || (data.usuario && data.usuario.rol);
+            if (userRole !== 'rrhh') {
                 // Usuario no es de RRHH, redirigir al inicio
+                console.log('Usuario no es RRHH, rol:', userRole); // Debug
                 window.location.href = '/';
                 return;
             }
@@ -76,10 +79,6 @@ class RRHHDashboard {
             viewSolicitudesBtn.addEventListener('click', () => this.showSolicitudes());
         }
 
-        const analyticsBtn = document.getElementById('analyticsBtn');
-        if (analyticsBtn) {
-            analyticsBtn.addEventListener('click', () => this.showAnalytics());
-        }
 
         // Modal
         const modalClose = document.getElementById('modalClose');
@@ -207,7 +206,7 @@ class RRHHDashboard {
             <div class="postulante-item">
                 <div class="postulante-info" onclick="rrhhDashboard.showPostulanteDetail(${postulante.id})">
                     <h4>${postulante.nombre}</h4>
-                    <p>${postulante.email} • ${postulante.puesto || 'Sin puesto especificado'}</p>
+                    <p>${postulante.email} • ${postulante.descripcion ? postulante.descripcion.substring(0, 50) + '...' : 'Sin descripción'}</p>
                     <div class="postulante-meta">
                         <div class="postulante-etiquetas">
                             ${postulante.etiquetas.map(etiqueta =>
@@ -224,8 +223,16 @@ class RRHHDashboard {
                         <i class="fas fa-tags"></i>
                     </button>
                     ${postulante.cv_filename ? `
+                        <button class="btn btn-sm btn-success" onclick="rrhhDashboard.extraerEtiquetasIA(${postulante.id})" title="Extraer etiquetas con IA">
+                            <i class="fas fa-robot"></i>
+                        </button>
                         <a href="/uploads/${postulante.cv_filename}" target="_blank" class="btn btn-sm btn-secondary" title="Ver CV">
                             <i class="fas fa-file-pdf"></i>
+                        </a>
+                    ` : ''}
+                    ${postulante.linkedin ? `
+                        <a href="${postulante.linkedin}" target="_blank" class="btn btn-sm btn-info" title="Ver LinkedIn">
+                            <i class="fab fa-linkedin"></i>
                         </a>
                     ` : ''}
                 </div>
@@ -427,21 +434,42 @@ class RRHHDashboard {
 
         if (!modal || !modalTitle || !modalBody) return;
 
-        modalTitle.textContent = 'Etiquetas del Sistema';
+        modalTitle.textContent = 'Gestión de Etiquetas';
 
         modalBody.innerHTML = `
             <div class="etiquetas-management">
+                <div class="etiquetas-header">
+                    <h4>Etiquetas del Sistema</h4>
+                    <button class="btn btn-primary" onclick="rrhhDashboard.crearNuevaEtiqueta()">
+                        <i class="fas fa-plus"></i> Nueva Etiqueta
+                    </button>
+                </div>
                 <div class="etiquetas-grid">
                     ${etiquetas.map(etiqueta => `
                         <div class="etiqueta-card">
                             <div class="etiqueta-header">
                                 <span class="etiqueta-name">${etiqueta.nombre}</span>
-                                <span class="etiqueta-count">${etiqueta.count} postulantes</span>
+                                <div class="etiqueta-actions">
+                                    <button class="btn btn-sm btn-danger" onclick="rrhhDashboard.eliminarEtiqueta(${etiqueta.id})" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-                            ${etiqueta.descripcion ? `<p class="etiqueta-desc">${etiqueta.descripcion}</p>` : ''}
+                            <div class="etiqueta-stats">
+                                <span class="etiqueta-count">${etiqueta.count || 0} postulantes</span>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
+                ${etiquetas.length === 0 ? `
+                    <div class="no-etiquetas">
+                        <i class="fas fa-tags"></i>
+                        <p>No hay etiquetas en el sistema</p>
+                        <button class="btn btn-primary" onclick="rrhhDashboard.crearNuevaEtiqueta()">
+                            Crear Primera Etiqueta
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
 
@@ -513,36 +541,6 @@ class RRHHDashboard {
         modal.style.display = 'block';
     }
 
-    showAnalytics() {
-        const modal = document.getElementById('detailModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-
-        if (!modal || !modalTitle || !modalBody) return;
-
-        modalTitle.textContent = 'Analíticas del Sistema';
-
-        modalBody.innerHTML = `
-            <div class="analytics-content">
-                <div class="analytics-section">
-                    <h4>Estadísticas Generales</h4>
-                    <p>Las analíticas detalladas están disponibles en el dashboard principal.</p>
-                    <p>Puedes ver gráficos de actividad, tendencias de postulaciones y métricas de rendimiento.</p>
-                </div>
-                <div class="analytics-section">
-                    <h4>Funcionalidades Disponibles</h4>
-                    <ul>
-                        <li>Gráfico de actividad mensual</li>
-                        <li>Estadísticas de postulantes</li>
-                        <li>Conteo de etiquetas</li>
-                        <li>Métricas de empresas</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-
-        modal.style.display = 'block';
-    }
 
     closeModal() {
         const modal = document.getElementById('detailModal');
@@ -623,9 +621,35 @@ class RRHHDashboard {
         }, 500);
     }
 
+    async searchPostulantes(searchTerm) {
+        try {
+            this.currentFilters.search = searchTerm;
+            this.currentPage = 1;
+            await this.loadRecentPostulantes(this.currentFilters);
+        } catch (error) {
+            console.error('Error en búsqueda:', error);
+            this.showError('Error al buscar postulantes');
+        }
+    }
+
     handleEtiquetaFilter(event) {
         const etiquetaId = event.target.value;
         this.filterByEtiqueta(etiquetaId);
+    }
+
+    async filterByEtiqueta(etiquetaId) {
+        try {
+            if (etiquetaId) {
+                this.currentFilters.etiqueta_id = etiquetaId;
+            } else {
+                delete this.currentFilters.etiqueta_id;
+            }
+            this.currentPage = 1;
+            await this.loadRecentPostulantes(this.currentFilters);
+        } catch (error) {
+            console.error('Error filtrando por etiqueta:', error);
+            this.showError('Error al filtrar por etiqueta');
+        }
     }
 
     clearFilters() {
@@ -876,6 +900,184 @@ class RRHHDashboard {
         }
     }
 
+    async extraerEtiquetasIA(postulanteId) {
+        try {
+            const response = await fetch(`/api/rrhh/postulantes/${postulanteId}/extraer-etiquetas`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error extrayendo etiquetas');
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                // Mostrar análisis detallado en un modal
+                this.mostrarAnalisisIA(data.analisis, data.etiquetas_extraidas);
+                // Recargar la lista de postulantes para mostrar las nuevas etiquetas
+                this.loadRecentPostulantes(this.currentFilters);
+            } else {
+                throw new Error(data.error || 'Error extrayendo etiquetas');
+            }
+        } catch (error) {
+            console.error('Error extrayendo etiquetas con IA:', error);
+            this.showError('Error extrayendo etiquetas: ' + error.message);
+        }
+    }
+
+    mostrarAnalisisIA(analisis, etiquetas) {
+        const modal = document.getElementById('detailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        if (!modal || !modalTitle || !modalBody) return;
+
+        modalTitle.textContent = 'Análisis de CV con IA';
+
+        modalBody.innerHTML = `
+            <div class="ia-analysis">
+                <div class="analysis-header">
+                    <h4><i class="fas fa-robot"></i> Análisis Inteligente del CV</h4>
+                    <p>La IA ha analizado el CV y extraído la siguiente información:</p>
+                </div>
+
+                <div class="analysis-sections">
+                    ${analisis.experiencia_anos > 0 ? `
+                        <div class="analysis-section">
+                            <h5><i class="fas fa-briefcase"></i> Experiencia</h5>
+                            <p><strong>${analisis.experiencia_anos} años de experiencia</strong></p>
+                        </div>
+                    ` : ''}
+
+                    ${analisis.idiomas.length > 0 ? `
+                        <div class="analysis-section">
+                            <h5><i class="fas fa-language"></i> Idiomas</h5>
+                            <div class="tags-container">
+                                ${analisis.idiomas.map(idioma => `<span class="tag">${idioma}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${analisis.tecnologias.length > 0 ? `
+                        <div class="analysis-section">
+                            <h5><i class="fas fa-code"></i> Tecnologías</h5>
+                            <div class="tags-container">
+                                ${analisis.tecnologias.map(tech => `<span class="tag tech-tag">${tech}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${analisis.educacion.length > 0 ? `
+                        <div class="analysis-section">
+                            <h5><i class="fas fa-graduation-cap"></i> Educación</h5>
+                            <div class="tags-container">
+                                ${analisis.educacion.map(edu => `<span class="tag edu-tag">${edu}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${analisis.certificaciones.length > 0 ? `
+                        <div class="analysis-section">
+                            <h5><i class="fas fa-certificate"></i> Certificaciones</h5>
+                            <div class="tags-container">
+                                ${analisis.certificaciones.map(cert => `<span class="tag cert-tag">${cert}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="analysis-summary">
+                    <h5><i class="fas fa-file-alt"></i> Resumen del Perfil</h5>
+                    <p>${analisis.resumen}</p>
+                </div>
+
+                <div class="etiquetas-extraidas">
+                    <h5><i class="fas fa-tags"></i> Etiquetas Extraídas (${etiquetas.length})</h5>
+                    <div class="tags-container">
+                        ${etiquetas.map(etiqueta => `<span class="tag etiqueta-tag">${etiqueta.nombre}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div class="analysis-actions">
+                    <button class="btn btn-primary" onclick="this.closest('.modal').style.display='none'">
+                        <i class="fas fa-check"></i> Entendido
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.style.display = 'block';
+    }
+
+    async crearNuevaEtiqueta() {
+        const nombre = prompt('Ingrese el nombre de la nueva etiqueta:');
+        if (!nombre || nombre.trim() === '') return;
+
+        try {
+            const response = await fetch('/api/rrhh/etiquetas', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombre: nombre.trim() })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error creando etiqueta');
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                alert('Etiqueta creada correctamente');
+                this.showEtiquetas(); // Recargar la vista
+            } else {
+                throw new Error(data.error || 'Error creando etiqueta');
+            }
+        } catch (error) {
+            console.error('Error creando etiqueta:', error);
+            this.showError('Error creando etiqueta: ' + error.message);
+        }
+    }
+
+    async eliminarEtiqueta(etiquetaId) {
+        if (!confirm('¿Está seguro de que desea eliminar esta etiqueta? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/rrhh/etiquetas/${etiquetaId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error eliminando etiqueta');
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                alert('Etiqueta eliminada correctamente');
+                this.showEtiquetas(); // Recargar la vista
+            } else {
+                throw new Error(data.error || 'Error eliminando etiqueta');
+            }
+        } catch (error) {
+            console.error('Error eliminando etiqueta:', error);
+            this.showError('Error eliminando etiqueta: ' + error.message);
+        }
+    }
+
     showError(message) {
         console.error(message);
         // Aquí podrías implementar un sistema de notificaciones más elegante
@@ -883,5 +1085,5 @@ class RRHHDashboard {
     }
 }
 
-// Crear instancia global del dashboard
+// Crear instancia global del dashboard (se inicializará manualmente)
 window.rrhhDashboard = new RRHHDashboard();

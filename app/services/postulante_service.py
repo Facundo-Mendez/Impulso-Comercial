@@ -13,7 +13,6 @@ from ..services.ia_service import IAService
 from ..security.service import jwt_utils
 from app.exceptions.logger import get_logger
 
-
 class PostulanteService:
     logger = get_logger('postulante')
 
@@ -194,21 +193,27 @@ class PostulanteService:
             
             result = []
             for postulante in postulantes.items:
+                # Obtener información del usuario
                 usuario = Usuario.query.get(postulante.usuario_id) if postulante.usuario_id else None
+
                 result.append({
                     "id": postulante.id,
                     "nombre": usuario.nombre if usuario else "Sin nombre",
                     "email": usuario.correo if usuario else "Sin email",
-                    "telefono": None,  # No hay campo teléfono en tu modelo actual
-                    "puesto": None,    # No hay campo puesto en tu modelo actual
-                    "creado_en": postulante.creado_en.isoformat() if postulante.creado_en else None,
-                    "etiquetas": [{"id": etiqueta.id, "nombre": etiqueta.nombre} for etiqueta in postulante.etiquetas],
-                    "ai_feedback": None,  # No hay campo ai_feedback en tu modelo actual
                     "descripcion": postulante.descripcion,
                     "linkedin": postulante.linkedin,
                     "github": postulante.github,
                     "portfolio": postulante.portfolio,
-                    "cv_filename": postulante.cv_filename
+                    "cv_filename": postulante.cv_filename,
+                    "cv_mime": postulante.cv_mime,
+                    "cv_size": postulante.cv_size,
+                    "creado_en": postulante.creado_en.isoformat() if postulante.creado_en else None,
+                    "etiquetas": [{"id": etiqueta.id, "nombre": etiqueta.nombre} for etiqueta in postulante.etiquetas],
+                    "usuario": {
+                        "id": usuario.id_usuario if usuario else None,
+                        "nombre": usuario.nombre if usuario else None,
+                        "correo": usuario.correo if usuario else None
+                    }
                 })
             
             return {
@@ -337,9 +342,7 @@ class PostulanteService:
                 result.append({
                     "id": etiqueta.id,
                     "nombre": etiqueta.nombre,
-                    "descripcion": None,  # No hay campo descripción en tu modelo actual
-                    "color": None,       # No hay campo color en tu modelo actual
-                    "count": len(etiqueta.postulante_registro)
+                    "count": len(etiqueta.postulante)
                 })
             
             return {"etiquetas": result}

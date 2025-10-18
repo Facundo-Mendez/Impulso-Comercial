@@ -106,7 +106,9 @@ class UserService:
             "id": user.id,
             "nombre": user.nombre,
             "correo": user.correo,
-            "rol": user.rol
+            "rol": user.rol,
+            "foto_perfil": user.foto_perfil,
+            "descripcion": user.descripcion
         }
 
         if user.rol == "empresa" and user.empresas:
@@ -117,3 +119,63 @@ class UserService:
             }
 
         return out
+
+    @staticmethod
+    def update_perfil(user: Usuario, data: dict) -> dict:
+        """Actualizar perfil del usuario"""
+        # Campos que se pueden actualizar
+        if "nombre" in data and data["nombre"].strip():
+            user.nombre = data["nombre"].strip()
+        
+        if "descripcion" in data:
+            user.descripcion = data["descripcion"].strip() if data["descripcion"] else None
+        
+        # Manejar la foto de perfil
+        if "foto_perfil" in data:
+            user.foto_perfil = data["foto_perfil"]
+        
+        db.session.commit()
+        
+        logger.info(f"Perfil actualizado para usuario {user.correo}")
+        
+        return {
+            "id": user.id,
+            "nombre": user.nombre,
+            "correo": user.correo,
+            "rol": user.rol,
+            "foto_perfil": user.foto_perfil,
+            "descripcion": user.descripcion
+        }
+
+    @staticmethod
+    def upload_foto_perfil(user: Usuario, file) -> str:
+        """Subir foto de perfil del usuario"""
+        import os
+        from datetime import datetime
+        
+        if not file or file.filename == '':
+            raise ValidationError("No se seleccionó ningún archivo")
+        
+        # Validar extensión
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if ext not in allowed_extensions:
+            raise ValidationError("Formato de imagen no permitido. Use: png, jpg, jpeg, gif, webp")
+        
+        # Crear nombre único para el archivo
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        filename = f"perfil_{user.id}_{timestamp}.{ext}"
+        
+        # Guardar archivo
+        upload_folder = os.path.join('app', 'static', 'uploads', 'perfiles')
+        os.makedirs(upload_folder, exist_ok=True)
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+        
+        # Actualizar usuario
+        user.foto_perfil = f"/uploads/perfiles/{filename}"
+        db.session.commit()
+        
+        logger.info(f"Foto de perfil actualizada para usuario {user.correo}")
+        
+        return user.foto_perfil

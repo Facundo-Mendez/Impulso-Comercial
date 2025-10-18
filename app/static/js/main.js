@@ -32,22 +32,20 @@ function updateHeaderForRRHH(userName) {
 
   // Agregar elementos específicos para RRHH
   const menuItems = [
-    { text: 'Inicio', href: '/index.html' },
-    { text: 'Gestión', href: '/pages/dashboard-rrhh.html', active: window.location.pathname.includes('dashboard-rrhh') },
-    { text: 'Mis Postulantes', href: '/pages/postulantes.html', active: window.location.pathname.includes('postulantes') },
-    { text: 'Gestionar Etiquetas', href: '#', onclick: 'rrhhDashboard.showEtiquetas()' },
-    { text: 'Reportes', href: '#', onclick: 'rrhhDashboard.showAnalytics()' },
-        {
-          text: `<i class="fas fa-user"></i> Hola, ${userName}`,
-          href: '#',
-          class: 'user-greeting'
-        },
-    {
-      text: `<i class="fas fa-cog"></i>`,
-      href: '#',
-      class: 'settings-btn',
-      onclick: 'toggleUserMenu()'
-    }
+      { text: 'Inicio', href: '/index.html' },
+      { text: 'Mis Postulantes', href: '/pages/dashboard-rrhh.html', active: window.location.pathname.includes('dashboard-rrhh') },
+      { text: 'Gestionar Etiquetas', href: '#', onclick: 'rrhhDashboard.showEtiquetas()' },
+      {
+        text: `<i class="fas fa-user"></i> Hola, ${userName}`,
+        href: '#',
+        class: 'user-greeting'
+      },
+      {
+        text: `<i class="fas fa-cog"></i>`,
+        href: '#',
+        class: 'settings-btn',
+        onclick: 'toggleUserMenu()'
+      }
   ];
 
   menuItems.forEach((item, index) => {
@@ -148,9 +146,319 @@ function toggleUserMenu() {
 }
 
 function showProfile() {
-  // Función para mostrar el perfil del usuario
-  alert('Función de Mi Perfil - Próximamente disponible');
-  // Aquí puedes agregar la lógica para mostrar el perfil del usuario
+  // Obtener información del usuario desde el token
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+  if (!token) {
+    alert('No estás autenticado');
+    return;
+  }
+
+  // Hacer petición para obtener información del usuario
+  fetch('/api/auth/me', {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      mostrarPerfilUsuario(data.user);
+    } else {
+      throw new Error(data.error || 'Error obteniendo información del usuario');
+    }
+  })
+  .catch(error => {
+    console.error('Error obteniendo perfil:', error);
+    alert('Error obteniendo información del perfil: ' + error.message);
+  });
+}
+
+function mostrarPerfilUsuario(usuario) {
+  // Crear modal para mostrar el perfil
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'profileModal';
+  modal.style.display = 'block';
+
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-user"></i> Mi Perfil</h3>
+        <button class="modal-close" onclick="cerrarModalPerfil()" title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-info">
+          <div class="profile-avatar">
+            ${usuario.foto_perfil ?
+              `<img src="${usuario.foto_perfil}" alt="Foto de perfil" class="profile-foto">` :
+              `<i class="fas fa-user-circle"></i>`
+            }
+          </div>
+          <div class="profile-details">
+            <h4>${usuario.nombre || 'Sin nombre'}</h4>
+            <p class="profile-email">${usuario.correo || 'Sin email'}</p>
+            <p class="profile-role">
+              <span class="role-badge rrhh">RRHH</span>
+            </p>
+          </div>
+        </div>
+
+        ${usuario.descripcion ? `
+          <div class="profile-description">
+            <h5><i class="fas fa-info-circle"></i> Sobre mí</h5>
+            <p>${usuario.descripcion}</p>
+          </div>
+        ` : ''}
+
+        <div class="profile-sections">
+          <div class="profile-section">
+            <h5><i class="fas fa-info-circle"></i> Información Personal</h5>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Nombre:</label>
+                <span>${usuario.nombre || 'No especificado'}</span>
+              </div>
+              <div class="info-item">
+                <label>Email:</label>
+                <span>${usuario.correo || 'No especificado'}</span>
+              </div>
+              <div class="info-item">
+                <label>Rol:</label>
+                <span class="role-text">Recursos Humanos</span>
+              </div>
+              <div class="info-item">
+                <label>Estado:</label>
+                <span class="status-active">Activo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h5><i class="fas fa-cog"></i> Configuración</h5>
+            <div class="profile-actions">
+              <button class="btn btn-secondary" onclick="cambiarPassword()">
+                <i class="fas fa-key"></i> Cambiar Contraseña
+              </button>
+              <button class="btn btn-secondary" onclick="editarPerfil()">
+                <i class="fas fa-edit"></i> Editar Perfil
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="cerrarModalPerfil()">Cerrar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Cerrar modal al hacer clic fuera
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      cerrarModalPerfil();
+    }
+  });
+}
+
+function cerrarModalPerfil() {
+  const modal = document.getElementById('profileModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+function cambiarPassword() {
+  alert('Funcionalidad de cambio de contraseña - Próximamente disponible');
+}
+
+function editarPerfil() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    if (!token) {
+      alert('No estás autenticado');
+      return;
+    }
+
+    // Obtener información actual del usuario
+    fetch('/api/auth/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        mostrarFormularioEdicion(data.user);
+      } else {
+        throw new Error(data.error || 'Error obteniendo información del usuario');
+      }
+    })
+    .catch(error => {
+      console.error('Error obteniendo perfil:', error);
+      alert('Error obteniendo información del perfil: ' + error.message);
+    });
+}
+
+function mostrarFormularioEdicion(usuario) {
+  // Cerrar modal de perfil si está abierto
+  cerrarModalPerfil();
+
+  // Crear modal de edición
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'editProfileModal';
+  modal.style.display = 'block';
+
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-edit"></i> Editar Perfil</h3>
+        <button class="modal-close" onclick="cerrarModalEdicion()" title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editProfileForm" class="edit-profile-form">
+          <div class="form-group-edit">
+            <label for="editNombre">Nombre:</label>
+            <input type="text" id="editNombre" name="nombre" value="${usuario.nombre || ''}" required>
+          </div>
+
+          <div class="form-group-edit">
+            <label for="editDescripcion">Descripción:</label>
+            <textarea id="editDescripcion" name="descripcion" rows="4" placeholder="Cuéntanos un poco sobre ti...">${usuario.descripcion || ''}</textarea>
+          </div>
+
+          <div class="form-group-edit">
+            <label for="editFoto">Foto de Perfil:</label>
+            <div class="foto-upload-container">
+              <div class="foto-preview">
+                ${usuario.foto_perfil ?
+                  `<img src="${usuario.foto_perfil}" alt="Foto actual" id="fotoPreview">` :
+                  `<div class="no-foto" id="fotoPreview"><i class="fas fa-user-circle"></i></div>`
+                }
+              </div>
+              <input type="file" id="editFoto" name="foto" accept="image/*" onchange="previewFoto(event)">
+              <small>Formatos permitidos: PNG, JPG, JPEG, GIF, WEBP</small>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="cerrarModalEdicion()">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarCambiosPerfil()">
+          <i class="fas fa-save"></i> Guardar Cambios
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Cerrar modal al hacer clic fuera
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      cerrarModalEdicion();
+    }
+  });
+}
+
+function previewFoto(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('fotoPreview');
+      if (preview) {
+        preview.innerHTML = `<img src="${e.target.result}" alt="Vista previa">`;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function cerrarModalEdicion() {
+  const modal = document.getElementById('editProfileModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function guardarCambiosPerfil() {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+  if (!token) {
+    alert('No estás autenticado');
+    return;
+  }
+
+  const nombre = document.getElementById('editNombre').value;
+  const descripcion = document.getElementById('editDescripcion').value;
+  const fotoInput = document.getElementById('editFoto');
+
+  try {
+    // Primero subir la foto si hay una nueva
+    let fotoUrl = null;
+    if (fotoInput.files.length > 0) {
+      const formData = new FormData();
+      formData.append('foto', fotoInput.files[0]);
+
+      const fotoResponse = await fetch('/api/auth/perfil/foto', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const fotoData = await fotoResponse.json();
+      if (fotoData.success) {
+        fotoUrl = fotoData.foto_url;
+      } else {
+        throw new Error(fotoData.error || 'Error subiendo foto');
+      }
+    }
+
+    // Luego actualizar el perfil
+    const perfilData = {
+      nombre: nombre,
+      descripcion: descripcion
+    };
+
+    if (fotoUrl) {
+      perfilData.foto_perfil = fotoUrl;
+    }
+
+    const response = await fetch('/api/auth/perfil', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(perfilData)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Perfil actualizado correctamente');
+      cerrarModalEdicion();
+      // Recargar la página para ver los cambios
+      window.location.reload();
+    } else {
+      throw new Error(data.error || 'Error actualizando perfil');
+    }
+  } catch (error) {
+    console.error('Error guardando perfil:', error);
+    alert('Error guardando cambios: ' + error.message);
+  }
 }
 
 // Cerrar el dropdown al hacer clic fuera de él

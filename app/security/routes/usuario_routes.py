@@ -130,3 +130,54 @@ def validate_token():
     except Exception as e:
         logger.error(f"Error validando token: {str(e)}", exc_info=True)
         raise AppError("Error interno del servidor durante la validación")
+
+@auth_bp.put("/perfil")
+@jwt_utils.require_auth
+def update_perfil():
+    """Actualizar perfil del usuario autenticado"""
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Datos JSON requeridos")
+        
+        usuario = request.current_user
+        user_data = UserService.update_perfil(usuario, data)
+        
+        return jsonify({
+            "success": True,
+            "message": "Perfil actualizado correctamente",
+            "user": user_data
+        }), 200
+        
+    except (ValidationError, ConflictError):
+        raise
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error actualizando perfil: {str(e)}", exc_info=True)
+        raise AppError("Error interno del servidor al actualizar el perfil")
+
+@auth_bp.post("/perfil/foto")
+@jwt_utils.require_auth
+def upload_foto_perfil():
+    """Subir foto de perfil"""
+    try:
+        if 'foto' not in request.files:
+            raise ValidationError("No se envió ninguna foto")
+        
+        file = request.files['foto']
+        usuario = request.current_user
+        
+        foto_url = UserService.upload_foto_perfil(usuario, file)
+        
+        return jsonify({
+            "success": True,
+            "message": "Foto de perfil actualizada correctamente",
+            "foto_url": foto_url
+        }), 200
+        
+    except (ValidationError, AppError):
+        raise
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error subiendo foto de perfil: {str(e)}", exc_info=True)
+        raise AppError("Error interno del servidor al subir la foto")
