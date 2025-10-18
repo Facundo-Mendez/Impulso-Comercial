@@ -342,7 +342,7 @@ class PostulanteService:
                 result.append({
                     "id": etiqueta.id,
                     "nombre": etiqueta.nombre,
-                    "count": len(etiqueta.postulante)
+                    "count": len(etiqueta.postulante_registro)
                 })
             
             return {"etiquetas": result}

@@ -99,7 +99,7 @@
   });
 
   function checkUserRole() {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (token) {
       // Validar token y obtener información del usuario
@@ -114,8 +114,9 @@
         console.log('Datos recibidos en postulantes:', data); // Debug
         const userRole = data.rol || (data.usuario && data.usuario.rol);
         if (data.success && userRole === 'rrhh') {
-          // Usuario es de RRHH - mostrar sección RRHH
-          showRRHHSection();
+          // Usuario es de RRHH - redirigir al dashboard de RRHH
+          console.log('Usuario RRHH detectado, redirigiendo al dashboard...');
+          window.location.href = '/pages/dashboard-rrhh.html';
         } else {
           // Usuario no es RRHH - redirigir al login
           window.location.href = '/pages/login.html';
@@ -140,7 +141,7 @@
 
   // Funciones para la sección RRHH
   function loadPostulantes() {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (!token) {
       alert('No estás autenticado');
@@ -277,7 +278,7 @@
   }
 
   function updateAvisoEstado(avisoId, nuevoEstado) {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     if (!token) {
       alert('No estás autenticado');

@@ -90,13 +90,26 @@ def login():
         raise AppError("Error interno del servidor durante el login")
 
 @auth_bp.get("/me")
+@limiter.limit("100 per minute")
 @jwt_utils.require_auth
 def me():
     """Obtener información del usuario autenticado"""
-    u = request.current_user  # ya lo resuelve el decorador
-    out = UserService.me(u)
-
-    return jsonify(out), 200
+    try:
+        u = request.current_user  # ya lo resuelve el decorador
+        user_data = UserService.me(u)
+        
+        return jsonify({
+            "success": True,
+            "user": user_data
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error obteniendo información del usuario: {str(e)}", exc_info=True)
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor"
+        }), 500
 
 @auth_bp.get("/validate")
 def validate_token():

@@ -1,5 +1,5 @@
 from app import db
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class Usuario(db.Model):

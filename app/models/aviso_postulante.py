@@ -9,7 +9,7 @@ class AvisoPostulante(db.Model):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     empresa_id: Mapped[int] = mapped_column(Integer, ForeignKey("empresa.id"), nullable=False)
-    solicitud_id: Mapped[int] = mapped_column(Integer, ForeignKey("solicitud_empresa.id"), nullable=False)
+    solicitud_id: Mapped[int] = mapped_column(Integer, ForeignKey("solicitud.id"), nullable=False)
     postulante_id: Mapped[int] = mapped_column(Integer, ForeignKey("postulante_registro.id"), nullable=False)
     estado: Mapped[str] = mapped_column(String(20), default="pendiente", nullable=False)  # pendiente, revisado, contactado, descartado
     observaciones: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -18,7 +18,7 @@ class AvisoPostulante(db.Model):
     
     # Relaciones
     empresa = relationship("Empresa", backref="avisos_postulantes")
-    solicitud = relationship("SolicitudEmpresa", backref="avisos_postulantes")
+    solicitud = relationship("Solicitud", backref="avisos_postulantes")
     postulante = relationship("PostulanteRegistro", backref="avisos_postulantes")
     
     def __repr__(self):

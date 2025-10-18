@@ -24,8 +24,8 @@ class UserService:
         correo = data.get("correo", "").strip()
         password = data.get("password", "")
         tipo = (data.get("tipo") or "postulante" or "rrhh").lower()
-        nombre_empresa = data.get("nombre_empresa" or "").strip()
-        descripcion = data.get("descripcion" or "").strip()
+        nombre_empresa = (data.get("nombre_empresa") or "").strip()
+        descripcion = (data.get("descripcion") or "").strip()
 
         # Validaciones básicas
         if not all([nombre, correo, password]):

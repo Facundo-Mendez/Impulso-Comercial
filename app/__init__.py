@@ -99,7 +99,7 @@ def create_app():
     # Routes de RRHH
     try:
         from .routes.rrhh_routes import rrhh_bp
-        app.register_blueprint(rrhh_bp, url_prefix="/api")
+        app.register_blueprint(rrhh_bp, url_prefix="/api/rrhh")
     except Exception as e:
         print("⚠️ No se pudo registrar rrhh_bp:", e)
 
@@ -117,31 +117,7 @@ def create_app():
 
     @app.get("/pages/postulantes.html")
     def postulantes_page():
-        """Redirigir usuarios RRHH al dashboard, otros al módulo de postulantes"""
-        try:
-            # Verificar si hay token en el header
-            auth = request.headers.get("Authorization", "")
-            if auth.startswith("Bearer "):
-                token = auth.split(" ", 1)[1]
-
-                # Decodificar token JWT
-                import jwt
-                SECRET = os.getenv("SECRET_KEY", "cambia_esta_clave")
-                payload = jwt.decode(token, SECRET, algorithms=["HS256"])
-                user_id = payload.get("sub")
-
-                # Obtener usuario de la base de datos
-                from .models.models import Usuario
-                user = Usuario.query.get(user_id)
-
-                # Si el usuario es RRHH, redirigir al dashboard
-                if user and user.rol == 'rrhh':
-                    return redirect('/api/rrhh/dashboard')
-        except Exception as e:
-            # En caso de error, continuar con la página normal
-            pass
-
-        # Si no es RRHH o no está autenticado, mostrar la página normal
+        """Página de postulantes - la lógica de redirección se maneja en el frontend"""
         return render_template('pages/postulantes.html')
 
 

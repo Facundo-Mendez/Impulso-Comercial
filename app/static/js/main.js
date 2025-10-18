@@ -2,51 +2,219 @@
 // HEADER DINÁMICO SEGÚN TIPO DE USUARIO
 
 function updateHeaderForUser() {
+  console.log('🔍 updateHeaderForUser ejecutándose...');
   const token = localStorage.getItem('token');
-  if (!token) return;
+  console.log('🔑 Token encontrado:', !!token);
 
-  // Verificar el tipo de usuario
+  if (!token) {
+    console.log('❌ No hay token, saliendo de updateHeaderForUser');
+    return;
+  }
+
+  // Verificar si estamos en rate limit
+  const rateLimitUntil = localStorage.getItem('rateLimitUntil');
+  const now = Date.now();
+
+  if (rateLimitUntil && now < parseInt(rateLimitUntil)) {
+    console.log('⏰ Rate limit activo, usando información guardada');
+    useCachedUserInfo();
+    return;
+  }
+
+  // Verificar si ya tenemos la información del usuario guardada
+  const userInfo = localStorage.getItem('userInfo');
+  const lastUpdate = localStorage.getItem('userInfoLastUpdate');
+
+  // Si tenemos información reciente (menos de 10 minutos), usarla
+  if (userInfo && lastUpdate && (now - parseInt(lastUpdate)) < 600000) {
+    console.log('📋 Usando información del usuario guardada');
+    useCachedUserInfo();
+    return;
+  }
+
+  // Si no tenemos información reciente, hacer la solicitud
+  console.log('🌐 Haciendo solicitud al servidor para obtener información del usuario');
   fetch('/api/auth/me', {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     }
   })
-  .then(response => response.json())
+  .then(response => {
+    if (response.status === 429) {
+      // Rate limit detectado, guardar timestamp y usar cache
+      console.log('🚫 Rate limit detectado, guardando timestamp');
+      localStorage.setItem('rateLimitUntil', (now + 300000).toString()); // 5 minutos
+      useCachedUserInfo();
+      return null;
+    }
+    return response.json();
+  })
   .then(data => {
-    if (data.rol === 'rrhh') {
-      updateHeaderForRRHH(data.nombre);
+    if (!data) return; // Rate limit manejado arriba
+
+    console.log('📊 Datos del usuario:', data);
+
+    // Si hay error de rate limit en la respuesta
+    if (data.error && data.error_code === 'RATE_LIMIT_ERROR') {
+      console.log('🚫 Rate limit en respuesta, guardando timestamp');
+      localStorage.setItem('rateLimitUntil', (now + 300000).toString()); // 5 minutos
+      useCachedUserInfo();
+      return;
+    }
+
+    // Limpiar rate limit si la solicitud fue exitosa
+    localStorage.removeItem('rateLimitUntil');
+
+    // Guardar la información del usuario para uso futuro
+    if (data.success && !data.error) {
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      localStorage.setItem('userInfoLastUpdate', now.toString());
+    }
+
+    const userRole = data.rol || (data.usuario && data.usuario.rol);
+    const userName = data.usuario ? data.usuario.nombre : (data.nombre || 'Usuario');
+
+    console.log('👤 Rol del usuario:', userRole);
+    console.log('👤 Nombre del usuario:', userName);
+
+    if (userRole === 'rrhh') {
+      console.log('✅ Usuario es RRHH, actualizando header...');
+      updateHeaderForRRHH(userName);
+    } else if (userRole === 'empresa') {
+      console.log('✅ Usuario es Empresa, actualizando header...');
+      updateHeaderForEmpresa(userName);
+    } else {
+      console.log('❌ Usuario no es RRHH ni Empresa, no actualizando header');
     }
   })
   .catch(error => {
-    console.error('Error verificando usuario:', error);
+    console.error('❌ Error verificando usuario:', error);
+    // En caso de error, intentar usar información guardada
+    useCachedUserInfo();
   });
 }
 
-function updateHeaderForRRHH(userName) {
+function useCachedUserInfo() {
+  const userInfo = localStorage.getItem('userInfo');
+  if (!userInfo) {
+    console.log('❌ No hay información del usuario guardada');
+    return;
+  }
+
+  try {
+    const data = JSON.parse(userInfo);
+    const userRole = data.rol || (data.usuario && data.usuario.rol);
+    const userName = data.usuario ? data.usuario.nombre : (data.nombre || 'Usuario');
+
+    console.log('👤 Rol del usuario (cached):', userRole);
+    console.log('👤 Nombre del usuario (cached):', userName);
+
+    if (userRole === 'rrhh') {
+      console.log('✅ Usuario es RRHH, actualizando header...');
+      updateHeaderForRRHH(userName);
+    } else {
+      console.log('❌ Usuario no es RRHH, no actualizando header');
+    }
+  } catch (error) {
+    console.error('❌ Error parseando información del usuario guardada:', error);
+  }
+}
+
+function updateNavigationForRRHH() {
+  // Los botones del hero section ya no existen, 
+  // la navegación se maneja completamente desde el navbar
+  console.log('✅ Navegación RRHH actualizada - usando navbar únicamente');
+}
+
+function updateHeaderForEmpresa(userName) {
+  console.log('🏢 updateHeaderForEmpresa ejecutándose para:', userName);
   const navList = document.querySelector('.nav-list');
-  if (!navList) return;
+  console.log('📋 NavList encontrado:', !!navList);
+
+  if (!navList) {
+    console.log('❌ No se encontró .nav-list');
+    return;
+  }
+
+  // Limpiar el menú actual
+  navList.innerHTML = '';
+
+  // Agregar elementos específicos para Empresa
+  const menuItems = [
+    { text: 'Inicio', href: '/index.html' },
+    { text: 'Módulo Empresa', href: '/pages/dashboard-empresa.html', active: window.location.pathname.includes('dashboard-empresa') },
+    {
+      text: `<i class="fas fa-user"></i> Hola, ${userName}`,
+      href: '#',
+      class: 'user-greeting'
+    },
+    {
+      text: `<i class="fas fa-cog"></i>`,
+      href: '#',
+      class: 'settings-btn',
+      onclick: 'toggleUserMenu()'
+    }
+  ];
+
+  menuItems.forEach((item, index) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    
+    if (item.onclick) {
+      a.setAttribute('onclick', item.onclick);
+    }
+    
+    if (item.class) {
+      a.className = item.class;
+    }
+    
+    if (item.active) {
+      a.classList.add('active');
+    }
+    
+    a.href = item.href;
+    a.innerHTML = item.text;
+    
+    li.appendChild(a);
+    navList.appendChild(li);
+  });
+
+  // Agregar dropdown del usuario
+  addUserDropdown(userName);
+  
+  console.log('✅ Header actualizado para Empresa');
+}
+
+function updateHeaderForRRHH(userName) {
+  console.log('🎯 updateHeaderForRRHH ejecutándose para:', userName);
+  const navList = document.querySelector('.nav-list');
+  console.log('📋 NavList encontrado:', !!navList);
+
+  if (!navList) {
+    console.log('❌ No se encontró .nav-list, saliendo');
+    return;
+  }
 
   // Limpiar el menú actual
   navList.innerHTML = '';
 
   // Agregar elementos específicos para RRHH
-  const menuItems = [
-      { text: 'Inicio', href: '/index.html' },
-      { text: 'Mis Postulantes', href: '/pages/dashboard-rrhh.html', active: window.location.pathname.includes('dashboard-rrhh') },
-      { text: 'Gestionar Etiquetas', href: '#', onclick: 'rrhhDashboard.showEtiquetas()' },
-      {
-        text: `<i class="fas fa-user"></i> Hola, ${userName}`,
-        href: '#',
-        class: 'user-greeting'
-      },
-      {
-        text: `<i class="fas fa-cog"></i>`,
-        href: '#',
-        class: 'settings-btn',
-        onclick: 'toggleUserMenu()'
-      }
-  ];
+        const menuItems = [
+          { text: 'Inicio', href: '/index.html' },
+          { text: 'Módulo RRHH', href: '/pages/dashboard-rrhh.html', active: window.location.pathname.includes('dashboard-rrhh') },
+          {
+            text: `<i class="fas fa-user"></i> Hola, ${userName}`,
+            href: '#',
+            class: 'user-greeting'
+          },
+          {
+            text: `<i class="fas fa-cog"></i>`,
+            href: '#',
+            class: 'settings-btn',
+            onclick: 'toggleUserMenu()'
+          }
+        ];
 
   menuItems.forEach((item, index) => {
     const li = document.createElement('li');
@@ -84,11 +252,14 @@ function updateHeaderForRRHH(userName) {
   // Agregar el dropdown del menú de usuario
   addUserDropdown(userName);
 
+  console.log('✅ Header de RRHH actualizado correctamente');
+
   // Ocultar elementos que no deberían estar visibles para RRHH
   const elementsToHide = [
     'a[href*="contacto"]',
     'a[href*="campus"]',
-    'a[href*="login"]'
+    'a[href*="login"]',
+    'a[href*="postulantes"]'
   ];
 
   elementsToHide.forEach(selector => {
@@ -104,6 +275,10 @@ function updateHeaderForRRHH(userName) {
 function logout() {
   localStorage.removeItem('token');
   sessionStorage.removeItem('token');
+  // Limpiar también la información del usuario guardada
+  localStorage.removeItem('userInfo');
+  localStorage.removeItem('userInfoLastUpdate');
+  localStorage.removeItem('rateLimitUntil');
   window.location.href = '/pages/login.html';
 }
 
@@ -719,15 +894,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!res.ok) throw data;
         localStorage.setItem('token', data.token);
         sessionStorage.setItem('token', data.token);
+        // Guardar información del usuario inmediatamente después del login
+        const userInfo = {
+          success: true,
+          rol: data.rol,
+          usuario: {
+            nombre: data.nombre,
+            correo: body.correo,
+            rol: data.rol
+          }
+        };
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        localStorage.setItem('userInfoLastUpdate', Date.now().toString());
+
         if (loginMsg) {
           loginMsg.textContent = '¡Listo! Redirigiendo...';
-          loginMsg.style.background = '#d1fae5';
-          loginMsg.style.color = '#065f46';
-          loginMsg.style.border = '1px solid #16a34a';
+          loginMsg.className = 'form-message success';
         }
-        // Redirigir según el tipo de usuario
-        // Actualizar navegación antes de redirigir
-        await updateNavigationForUser();
 
         // Pequeño delay para asegurar que la navegación se actualice
         setTimeout(() => {
@@ -902,6 +1085,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 })();
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- Emparejamos IDs de formularios ---
   const formEmpresa = document.getElementById('formEmpresa');
@@ -983,10 +1167,24 @@ async function updateNavigationForUser() {
           navPostulantes.textContent = 'Nueva Solicitud de Empleo';
           navPostulantes.href = '/pages/solicitud-empleo.html';
           console.log('Navegación actualizada para empresa');
+        } else if (user.rol === 'rrhh') {
+          navPostulantes.textContent = 'Postulantes';
+          navPostulantes.href = '/pages/postulantes.html';
+          console.log('Navegación actualizada para RRHH');
         } else {
           navPostulantes.textContent = 'Postulantes';
           navPostulantes.href = '/pages/postulantes.html';
           console.log('Navegación actualizada para no-empresa');
+        }
+        
+        // Ocultar módulo RRHH para usuarios no-RRHH
+        const rrhhModule = document.querySelector('a[href*="dashboard-rrhh"]');
+        if (rrhhModule && user.rol !== 'rrhh') {
+          rrhhModule.style.display = 'none';
+          console.log('Módulo RRHH ocultado para usuario no-RRHH');
+        } else if (rrhhModule && user.rol === 'rrhh') {
+          rrhhModule.style.display = 'block';
+          console.log('Módulo RRHH mostrado para usuario RRHH');
         }
       } else {
         console.log('Error en respuesta:', response.status);
@@ -1003,36 +1201,55 @@ document.addEventListener('DOMContentLoaded', () => {
   // Actualizar header según el tipo de usuario
   updateHeaderForUser();
 
-  const btnPostular = document.getElementById('btnPostularme');
-  const btnTalento = document.getElementById('btnBuscoTalento');
-  const btnCompletar = document.getElementById('btnCompletarFormulario'); // 👈 nuevo botón
-
-  function destino() {
-    // si hay token => postulantes, si no => login
-    return localStorage.getItem('token') ? './pages/postulantes.html' : './pages/login.html';
-  }
+  // También verificar si el usuario es RRHH y actualizar botones de navegación
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const userRole = data.rol || (data.usuario && data.usuario.rol);
+        if (userRole === 'rrhh') {
+          // Actualizar botones de navegación para RRHH
+          updateNavigationForRRHH();
+        }
+      })
+      .catch(error => {
+        console.error('Error verificando usuario:', error);
+      });
+    }
 
   // Actualizar navegación al cargar la página
   updateNavigationForUser();
-
-  if (btnPostular) {
-    btnPostular.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = destino();
-    });
-  }
-
-  if (btnTalento) {
-    btnTalento.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = destino();
-    });
-  }
-
-  if (btnCompletar) {
-    btnCompletar.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = destino();
-    });
-  }
 });
+
+
+// Llamada adicional para asegurar que el header se actualice en todas las páginas
+updateHeaderForUser();
+
+// Actualizar header cuando se navega entre páginas (solo si no es desde cache)
+window.addEventListener('pageshow', function(event) {
+    console.log('📄 Evento pageshow disparado, persisted:', event.persisted);
+    if (!event.persisted) {
+        updateHeaderForUser();
+    }
+});
+
+// Actualizar header cuando la página se vuelve visible (con throttling)
+let visibilityTimeout;
+document.addEventListener('visibilitychange', function() {
+    console.log('👁️ Evento visibilitychange disparado, página visible:', !document.hidden);
+    if (!document.hidden) {
+        // Throttling: solo actualizar si no se ha actualizado en los últimos 2 segundos
+        clearTimeout(visibilityTimeout);
+        visibilityTimeout = setTimeout(() => {
+            updateHeaderForUser();
+        }, 2000);
+    }
+});
+
+// Actualización periódica removida para evitar rate limiting

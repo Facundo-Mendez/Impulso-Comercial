@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from app import db
-from app.security.auth import require_rrhh
+from app.security.service.jwt_utils import require_rrhh
 from app.services.rrhh_service import RRHHService
 from app.exceptions.logger import get_logger
 
@@ -85,6 +85,17 @@ def crear_etiqueta():
     except Exception as e:
         return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
+@rrhh_bp.route("/etiquetas", methods=["GET"])
+@require_rrhh
+def get_etiquetas():
+    """Obtener todas las etiquetas"""
+    try:
+        from app.services.postulante_service import PostulanteService
+        resultado = PostulanteService.get_etiquetas_for_rrhh()
+        return jsonify({"ok": True, **resultado}), 200
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
 @rrhh_bp.route("/etiquetas/<int:etiqueta_id>", methods=["DELETE"])
 @require_rrhh
 def eliminar_etiqueta(etiqueta_id):
@@ -94,6 +105,17 @@ def eliminar_etiqueta(etiqueta_id):
         return jsonify({"ok": True, **resultado}), 200
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
+@rrhh_bp.route("/postulantes", methods=["GET"])
+@require_rrhh
+def get_postulantes():
+    """Obtener postulantes para RRHH"""
+    try:
+        from app.services.postulante_service import PostulanteService
+        resultado = PostulanteService.get_postulantes_for_rrhh()
+        return jsonify({"ok": True, **resultado}), 200
     except Exception as e:
         return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 

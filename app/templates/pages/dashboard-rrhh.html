@@ -34,13 +34,18 @@
 <main class="rrhh-dashboard">
     <div class="container">
 
-        <!-- Lista de Postulantes con Filtros -->
+        <!-- Módulo RRHH - Conexión de Postulantes con Empresas -->
         <div class="recent-postulantes">
             <div class="section-header">
-                <h2><i class="fas fa-users"></i> Mis Postulantes</h2>
-                <button class="btn btn-primary" onclick="rrhhDashboard.showEtiquetas()">
-                    <i class="fas fa-tags"></i> Gestionar Etiquetas
-                </button>
+                <h2><i class="fas fa-handshake"></i> Módulo RRHH - Conexión Empresas</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="rrhhDashboard.showAvisosEmpresas()">
+                        <i class="fas fa-briefcase"></i> Ver Avisos de Empresas
+                    </button>
+                    <button class="btn btn-secondary" onclick="rrhhDashboard.showEtiquetas()">
+                        <i class="fas fa-tags"></i> Gestionar Etiquetas
+                    </button>
+                </div>
             </div>
 
             <!-- Controles de Filtrado -->

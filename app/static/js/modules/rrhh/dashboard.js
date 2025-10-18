@@ -404,6 +404,7 @@ class RRHHDashboard {
     }
 
     async showEtiquetas() {
+        console.log('🏷️ Mostrando etiquetas...');
         try {
             const response = await fetch('/api/rrhh/etiquetas', {
                 headers: {
@@ -417,12 +418,14 @@ class RRHHDashboard {
             }
 
             const data = await response.json();
+            console.log('📊 Datos de etiquetas recibidos:', data);
 
             if (data.ok) {
+                console.log('✅ Mostrando', data.etiquetas.length, 'etiquetas');
                 this.displayEtiquetas(data.etiquetas);
             }
         } catch (error) {
-            console.error('Error cargando etiquetas:', error);
+            console.error('❌ Error cargando etiquetas:', error);
             this.showError('Error cargando etiquetas');
         }
     }
@@ -1015,8 +1018,14 @@ class RRHHDashboard {
     }
 
     async crearNuevaEtiqueta() {
+        console.log('🏷️ Creando nueva etiqueta...');
         const nombre = prompt('Ingrese el nombre de la nueva etiqueta:');
-        if (!nombre || nombre.trim() === '') return;
+        if (!nombre || nombre.trim() === '') {
+            console.log('❌ Nombre de etiqueta vacío, cancelando');
+            return;
+        }
+
+        console.log('📝 Nombre de etiqueta:', nombre.trim());
 
         try {
             const response = await fetch('/api/rrhh/etiquetas', {
@@ -1033,15 +1042,22 @@ class RRHHDashboard {
             }
 
             const data = await response.json();
+            console.log('📊 Respuesta del servidor:', data);
 
             if (data.ok) {
                 alert('Etiqueta creada correctamente');
-                this.showEtiquetas(); // Recargar la vista
+                console.log('✅ Etiqueta creada, cerrando modal...');
+                // Cerrar modal actual y recargar
+                this.closeModal();
+                setTimeout(() => {
+                    console.log('🔄 Recargando vista de etiquetas...');
+                    this.showEtiquetas(); // Recargar la vista
+                }, 100);
             } else {
                 throw new Error(data.error || 'Error creando etiqueta');
             }
         } catch (error) {
-            console.error('Error creando etiqueta:', error);
+            console.error('❌ Error creando etiqueta:', error);
             this.showError('Error creando etiqueta: ' + error.message);
         }
     }
@@ -1068,7 +1084,11 @@ class RRHHDashboard {
 
             if (data.ok) {
                 alert('Etiqueta eliminada correctamente');
-                this.showEtiquetas(); // Recargar la vista
+                // Cerrar modal actual y recargar
+                this.closeModal();
+                setTimeout(() => {
+                    this.showEtiquetas(); // Recargar la vista
+                }, 100);
             } else {
                 throw new Error(data.error || 'Error eliminando etiqueta');
             }
@@ -1082,6 +1102,182 @@ class RRHHDashboard {
         console.error(message);
         // Aquí podrías implementar un sistema de notificaciones más elegante
         alert(message);
+    }
+
+    async showAvisosEmpresas() {
+        try {
+            // Mostrar loading
+            const postulantesList = document.getElementById('recentPostulantes');
+            postulantesList.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando avisos de empresas...</p>
+                </div>
+            `;
+
+            // Cargar avisos de empresas
+            const response = await fetch('/api/rrhh/avisos-postulantes', {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error cargando avisos de empresas');
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                this.displayAvisosEmpresas(data.avisos);
+            } else {
+                throw new Error(data.error || 'Error cargando avisos');
+            }
+        } catch (error) {
+            console.error('Error cargando avisos de empresas:', error);
+            const postulantesList = document.getElementById('recentPostulantes');
+            postulantesList.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Error al cargar avisos de empresas</h4>
+                    <p>${error.message}</p>
+                    <button onclick="rrhhDashboard.showAvisosEmpresas()" class="btn btn-primary">Reintentar</button>
+                </div>
+            `;
+        }
+    }
+
+    displayAvisosEmpresas(avisos) {
+        const container = document.getElementById('recentPostulantes');
+
+        if (avisos.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-briefcase"></i>
+                    <h4>No hay avisos de empresas</h4>
+                    <p>Las empresas aún no han enviado avisos sobre postulantes interesantes</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '<div class="avisos-empresas-grid">';
+
+        avisos.forEach(aviso => {
+            const fechaCreacion = new Date(aviso.creado_en).toLocaleDateString('es-ES');
+            const estadoClass = this.getEstadoClass(aviso.estado);
+            const cvInfo = aviso.postulante.cv_filename ?
+                `<a href="#" onclick="rrhhDashboard.viewCV(${aviso.postulante.id})" class="cv-link">
+                    <i class="fas fa-file-pdf"></i> Ver CV
+                </a>` :
+                '<span class="no-cv">Sin CV</span>';
+
+            html += `
+                <div class="aviso-empresa-card">
+                    <div class="aviso-header">
+                        <div class="empresa-info">
+                            <h4><i class="fas fa-building"></i> ${aviso.empresa.nombre_empresa}</h4>
+                            <span class="fecha">${fechaCreacion}</span>
+                        </div>
+                        <div class="aviso-estado ${estadoClass}">
+                            ${this.getEstadoText(aviso.estado)}
+                        </div>
+                    </div>
+
+                    <div class="aviso-content">
+                        <div class="solicitud-info">
+                            <h5><i class="fas fa-briefcase"></i> ${aviso.solicitud.cargo}</h5>
+                            <p><strong>Modalidad:</strong> ${aviso.solicitud.modalidad || 'No especificada'}</p>
+                            <p><strong>Requisitos:</strong> ${aviso.solicitud.requisitos || 'No especificados'}</p>
+                        </div>
+
+                        <div class="postulante-info">
+                            <h5><i class="fas fa-user"></i> Postulante Recomendado</h5>
+                            <p><strong>Nombre:</strong> ${aviso.postulante.usuario ? aviso.postulante.usuario.nombre : 'No especificado'}</p>
+                            <p><strong>Email:</strong> ${aviso.postulante.usuario ? aviso.postulante.usuario.correo : 'No especificado'}</p>
+                            <p><strong>CV:</strong> ${cvInfo}</p>
+                            ${aviso.postulante.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${aviso.postulante.linkedin}" target="_blank">Ver perfil</a></p>` : ''}
+                        </div>
+
+                        ${aviso.observaciones ? `
+                            <div class="observaciones">
+                                <h6><i class="fas fa-comment"></i> Observaciones de la Empresa:</h6>
+                                <p>${aviso.observaciones}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="aviso-actions">
+                        <button onclick="rrhhDashboard.updateAvisoEstado(${aviso.id}, 'revisado')" class="btn-small primary">
+                            <i class="fas fa-eye"></i> Marcar como Revisado
+                        </button>
+                        <button onclick="rrhhDashboard.updateAvisoEstado(${aviso.id}, 'contactado')" class="btn-small success">
+                            <i class="fas fa-phone"></i> Contactar Postulante
+                        </button>
+                        <button onclick="rrhhDashboard.updateAvisoEstado(${aviso.id}, 'descartado')" class="btn-small danger">
+                            <i class="fas fa-times"></i> Descartar
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    getEstadoClass(estado) {
+        const estados = {
+            'pendiente': 'estado-pendiente',
+            'revisado': 'estado-revisado',
+            'contactado': 'estado-contactado',
+            'descartado': 'estado-descartado'
+        };
+        return estados[estado] || 'estado-pendiente';
+    }
+
+    getEstadoText(estado) {
+        const estados = {
+            'pendiente': 'Pendiente',
+            'revisado': 'Revisado',
+            'contactado': 'Contactado',
+            'descartado': 'Descartado'
+        };
+        return estados[estado] || 'Pendiente';
+    }
+
+    async updateAvisoEstado(avisoId, nuevoEstado) {
+        try {
+            const response = await fetch(`/api/rrhh/avisos-postulantes/${avisoId}/estado`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    estado: nuevoEstado,
+                    observaciones: ''
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error actualizando estado');
+            }
+
+            const data = await response.json();
+
+            if (data.ok) {
+                alert('Estado actualizado correctamente');
+                // Recargar avisos
+                this.showAvisosEmpresas();
+            } else {
+                throw new Error(data.error || 'Error actualizando estado');
+            }
+        } catch (error) {
+            console.error('Error actualizando estado:', error);
+            alert('Error actualizando estado: ' + error.message);
+        }
     }
 }
 
