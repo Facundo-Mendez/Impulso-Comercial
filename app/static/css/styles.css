@@ -898,6 +898,44 @@ textarea {
   color: #d32f2f;
 }
 
+.error-state h4 {
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.error-state p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* Responsive para avisos */
+@media (max-width: 768px) {
+  .avisos-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .aviso-card {
+    padding: 1rem;
+  }
+
+  .aviso-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .aviso-actions {
+    flex-direction: column;
+  }
+
+  .btn-small {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Responsividad para el header de RRHH */
 @media (max-width: 1200px) {
   .nav-list {

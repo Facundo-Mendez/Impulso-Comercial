@@ -33,8 +33,8 @@ function updateHeaderForRRHH(userName) {
   // Agregar elementos específicos para RRHH
   const menuItems = [
     { text: 'Inicio', href: '/index.html' },
-    { text: 'Dashboard RRHH', href: '/pages/dashboard-rrhh.html', active: true },
-    { text: 'Mis Postulantes', href: '/pages/postulantes.html' },
+    { text: 'Gestión', href: '/pages/dashboard-rrhh.html', active: window.location.pathname.includes('dashboard-rrhh') },
+    { text: 'Mis Postulantes', href: '/pages/postulantes.html', active: window.location.pathname.includes('postulantes') },
     { text: 'Gestionar Etiquetas', href: '#', onclick: 'rrhhDashboard.showEtiquetas()' },
     { text: 'Reportes', href: '#', onclick: 'rrhhDashboard.showAnalytics()' },
         {

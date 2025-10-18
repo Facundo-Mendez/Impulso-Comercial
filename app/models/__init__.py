@@ -17,3 +17,4 @@ from . import etiqueta
 from . import postulante_empresa
 from . import postulante_registro
 from . import solicitud
+from . import aviso_postulante

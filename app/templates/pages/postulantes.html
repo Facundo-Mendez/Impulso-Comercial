@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title id="pageTitle">Postulantes | Impulso Comercial</title>
+  <title>Postulantes | Impulso Comercial</title>
   <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/empresa.css') }}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body>
@@ -23,7 +22,7 @@
       <ul class="nav-list">
         <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
         <li><a href="{{ url_for('pages', page='contacto') }}">Contacto</a></li>
-        <li><a href="{{ url_for('pages', page='postulantes') }}" class="active" id="navPostulantes">Postulantes</a></li>
+        <li><a href="{{ url_for('pages', page='postulantes') }}" class="active">Postulantes</a></li>
         <li><a href="/campus">Ir al Campus</a></li>
         <li><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
       </ul>
@@ -35,114 +34,36 @@
 </header>
 
 <main class="page-content container">
-  <h2 class="page-title" id="mainTitle">Postulantes</h2>
+  <h2 class="page-title">Postulantes</h2>
 
-  <div id="postTabs" class="tabs" role="tablist" aria-label="Tipo de formulario" style="display: none;">
-    <button class="tab-btn active" data-target="#formEmpresa" role="tab">Soy Empresa</button>
-    <button class="tab-btn" data-target="#formPostulante" role="tab">Soy Postulante</button>
+  <!-- Sección para usuarios RRHH -->
+  <div id="rrhhSection" class="rrhh-section hidden">
+    <div class="rrhh-header">
+      <h3>Mis Postulantes</h3>
+      <p>Administra y gestiona los postulantes de tu empresa</p>
+    </div>
+
+    <div class="rrhh-actions">
+      <button class="cta-btn primary" onclick="loadPostulantes()">
+        <i class="fas fa-users"></i>
+        Ver Todos los Postulantes
+      </button>
+      <button class="cta-btn secondary" onclick="filterPostulantes()">
+        <i class="fas fa-filter"></i>
+        Filtrar Postulantes
+      </button>
+    </div>
+
+    <div id="postulantesList" class="postulantes-list">
+      <!-- Aquí se cargarán los postulantes dinámicamente -->
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <h4>No hay postulantes registrados</h4>
+        <p>Los postulantes aparecerán aquí cuando se registren</p>
+      </div>
+    </div>
   </div>
 
-  <div class="tab-panels">
-    <!-- FORM EMPRESA -->
-    <form id="formEmpresa" class="tab-panel solicitud-form" enctype="application/json">
-      <div class="form-section">
-        <h3 class="form-section-title">
-          <i class="fas fa-briefcase"></i>
-          Información del Puesto
-        </h3>
-
-        <div class="grid-2">
-          <label>
-            Cargo / Puesto *
-            <input type="text" name="empresa_cargo" required placeholder="Ej: Ejecutivo de Cuentas" />
-          </label>
-          <label>
-            Modalidad de trabajo
-            <select name="empresa_modalidad">
-              <option value="">Seleccionar modalidad</option>
-              <option value="Presencial">Presencial</option>
-              <option value="Híbrido">Híbrido</option>
-              <option value="Remoto">Remoto</option>
-            </select>
-          </label>
-        </div>
-
-        <label>
-          Expectativa salarial
-          <input type="text" name="empresa_expectativa" placeholder="Ej: $2.000.000 - $3.000.000" />
-        </label>
-      </div>
-
-      <div class="form-section">
-        <h3 class="form-section-title">
-          <i class="fas fa-list-check"></i>
-          Requisitos y Habilidades
-        </h3>
-
-        <label>
-          Requisitos del puesto
-          <textarea name="empresa_requisitos" rows="4" placeholder="Describe los requisitos, experiencia y competencias necesarias..."></textarea>
-        </label>
-
-        <label>
-          Habilidades específicas
-          <textarea name="empresa_skills" rows="3" placeholder="Lista las habilidades técnicas o soft skills específicas..."></textarea>
-        </label>
-      </div>
-
-      <div class="form-section">
-        <h3 class="form-section-title">
-          <i class="fas fa-plus-circle"></i>
-          Información Adicional
-        </h3>
-
-        <label>
-          Información extra
-          <textarea name="empresa_extra" rows="3" placeholder="Cualquier información adicional sobre la empresa, beneficios, horarios, etc."></textarea>
-        </label>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="cta-btn primary">
-          <i class="fas fa-paper-plane"></i>
-          Crear Solicitud
-        </button>
-      </div>
-    </form>
-
-    <!-- FORM POSTULANTE -->
-    <form id="formPostulante" class="tab-panel hidden" enctype="multipart/form-data">
-      <h3 class="form-title">Carga tu postulación</h3>
-      <fieldset>
-        <legend>Datos del Postulante</legend>
-        <div class="grid-3">
-          <label>
-            Nombre
-            <input type="text" name="nombre" required placeholder="Tu nombre"/>
-          </label>
-          <label>
-            Email
-            <input type="email" name="email" required placeholder="tu@correo.com"/>
-          </label>
-          <label>
-            Teléfono
-            <input type="text" name="telefono" placeholder="+54 9 ..."/>
-          </label>
-          <label class="full">
-            Puesto de interés
-            <input type="text" name="puesto" placeholder="Ej: Teleoperador / Vendedor de terreno"/>
-          </label>
-          <label class="full">
-            CV (PDF)
-            <input type="file" name="cv" accept="application/pdf"/>
-          </label>
-        </div>
-      </fieldset>
-      <div class="actions">
-        <button type="submit" class="cta-btn primary">Enviar postulación</button>
-      </div>
-    </form>
-  </div>
 </main>
 
 <footer class="main-footer">
@@ -170,104 +91,233 @@
   </div>
 </footer>
 
-<div id="toast-root" class="toast-root"></div>
-
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/modules/empresa/solicitud-form.js') }}"></script>
-
 <script>
-  // Función para adaptar la interfaz para empresas
-  function adaptForEmpresa() {
-    // Cambiar título de la página
-    document.getElementById('pageTitle').textContent = 'Crear Puesto de Empleo | Impulso Comercial';
-    document.getElementById('mainTitle').textContent = 'Crear Puesto de Empleo';
+  // Verificar si el usuario es de RRHH al cargar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    checkUserRole();
+  });
 
-    // Cambiar texto del enlace de navegación
-    document.getElementById('navPostulantes').textContent = 'Crear Puesto de Empleo';
+  function checkUserRole() {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-    // Ocultar tabs
-    document.getElementById('postTabs').style.display = 'none';
-
-    // Mostrar solo el formulario de empresa
-    document.getElementById('formEmpresa').classList.remove('hidden');
-    document.getElementById('formPostulante').classList.add('hidden');
-
-    // Cambiar el título del formulario
-    const formTitle = document.querySelector('#formEmpresa .form-section-title');
-    if (formTitle) {
-      formTitle.innerHTML = '<i class="fas fa-briefcase"></i> Crear Nueva Solicitud de Empleo';
+    if (token) {
+      // Validar token y obtener información del usuario
+      fetch('/api/auth/validate', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.rol === 'rrhh') {
+          // Usuario es de RRHH - mostrar sección RRHH
+          showRRHHSection();
+        } else {
+          // Usuario no es RRHH - redirigir al login
+          window.location.href = '/pages/login.html';
+        }
+      })
+      .catch(error => {
+        console.error('Error validando token:', error);
+        // Si hay error, redirigir al login
+        window.location.href = '/pages/login.html';
+      });
+    } else {
+      // No hay token - redirigir al login
+      window.location.href = '/pages/login.html';
     }
   }
 
-  // Detectar tipo de usuario y adaptar la interfaz INMEDIATAMENTE
-  (async () => {
-    const token = localStorage.getItem('token');
+  function showRRHHSection() {
+    document.getElementById('rrhhSection').classList.remove('hidden');
+    // Cargar automáticamente los avisos de postulantes
+    loadPostulantes();
+  }
 
-    if (token) {
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+  // Funciones para la sección RRHH
+  function loadPostulantes() {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-        if (response.ok) {
-          const user = await response.json();
-
-          if (user.rol === 'empresa') {
-            // Adaptar interfaz para empresa INMEDIATAMENTE
-            adaptForEmpresa();
-          } else {
-            // Mostrar tabs para usuarios no-empresa
-            document.getElementById('postTabs').style.display = 'block';
-          }
-        } else {
-          // Si no hay usuario autenticado, mostrar tabs
-          document.getElementById('postTabs').style.display = 'block';
-        }
-      } catch (error) {
-        console.log('Error verificando usuario:', error);
-        // Si hay error, mostrar tabs por defecto
-        document.getElementById('postTabs').style.display = 'block';
-      }
-    } else {
-      // Si no hay token, mostrar tabs por defecto
-      document.getElementById('postTabs').style.display = 'block';
+    if (!token) {
+      alert('No estás autenticado');
+      return;
     }
-  })();
 
-  // También ejecutar cuando el DOM esté listo (por si acaso)
-  document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('token');
+    // Mostrar loading
+    const postulantesList = document.getElementById('postulantesList');
+    postulantesList.innerHTML = `
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Cargando avisos de postulantes...</p>
+      </div>
+    `;
 
-    if (token) {
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-          const user = await response.json();
-
-          if (user.rol === 'empresa') {
-            // Adaptar interfaz para empresa
-            adaptForEmpresa();
-          } else {
-            // Mostrar tabs para usuarios no-empresa
-            document.getElementById('postTabs').style.display = 'block';
-          }
-        } else {
-          // Si no hay usuario autenticado, mostrar tabs
-          document.getElementById('postTabs').style.display = 'block';
-        }
-      } catch (error) {
-        console.log('Error verificando usuario:', error);
-        // Si hay error, mostrar tabs por defecto
-        document.getElementById('postTabs').style.display = 'block';
+    // Cargar avisos de postulantes
+    fetch('/api/rrhh/avisos-postulantes', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    } else {
-      // Si no hay token, mostrar tabs por defecto
-      document.getElementById('postTabs').style.display = 'block';
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.ok) {
+        displayAvisosPostulantes(data.avisos);
+      } else {
+        throw new Error(data.error || 'Error cargando avisos');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      postulantesList.innerHTML = `
+        <div class="error-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h4>Error al cargar avisos</h4>
+          <p>${error.message}</p>
+          <button onclick="loadPostulantes()" class="cta-btn primary">Reintentar</button>
+        </div>
+      `;
+    });
+  }
+
+  function displayAvisosPostulantes(avisos) {
+    const postulantesList = document.getElementById('postulantesList');
+
+    if (avisos.length === 0) {
+      postulantesList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-bell-slash"></i>
+          <h4>No hay avisos de postulantes</h4>
+          <p>Las empresas aún no han enviado avisos de postulantes</p>
+        </div>
+      `;
+      return;
     }
-  });
+
+    let html = '<div class="avisos-grid">';
+
+    avisos.forEach(aviso => {
+      const fechaCreacion = new Date(aviso.creado_en).toLocaleDateString('es-ES');
+      const estadoClass = getEstadoClass(aviso.estado);
+      const cvInfo = aviso.postulante.cv_filename ?
+        `<a href="#" onclick="viewCV(${aviso.postulante.id})" class="cv-link">
+          <i class="fas fa-file-pdf"></i> Ver CV
+        </a>` :
+        '<span class="no-cv">Sin CV</span>';
+
+      html += `
+        <div class="aviso-card">
+          <div class="aviso-header">
+            <div class="aviso-empresa">
+              <h4>${aviso.empresa.nombre}</h4>
+              <span class="aviso-fecha">${fechaCreacion}</span>
+            </div>
+            <div class="aviso-estado ${estadoClass}">
+              ${getEstadoText(aviso.estado)}
+            </div>
+          </div>
+
+          <div class="aviso-content">
+            <div class="solicitud-info">
+              <h5><i class="fas fa-briefcase"></i> ${aviso.solicitud.cargo}</h5>
+              <p><strong>Modalidad:</strong> ${aviso.solicitud.modalidad || 'No especificada'}</p>
+              <p><strong>Requisitos:</strong> ${aviso.solicitud.requisitos || 'No especificados'}</p>
+            </div>
+
+            <div class="postulante-info">
+              <h5><i class="fas fa-user"></i> Postulante</h5>
+              <p><strong>Nombre:</strong> ${aviso.postulante.usuario ? aviso.postulante.usuario.nombre : 'No especificado'}</p>
+              <p><strong>Email:</strong> ${aviso.postulante.usuario ? aviso.postulante.usuario.correo : 'No especificado'}</p>
+              <p><strong>CV:</strong> ${cvInfo}</p>
+              ${aviso.postulante.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${aviso.postulante.linkedin}" target="_blank">Ver perfil</a></p>` : ''}
+            </div>
+          </div>
+
+          <div class="aviso-actions">
+            <button onclick="updateAvisoEstado(${aviso.id}, 'revisado')" class="btn-small primary">
+              <i class="fas fa-eye"></i> Marcar como Revisado
+            </button>
+            <button onclick="updateAvisoEstado(${aviso.id}, 'contactado')" class="btn-small success">
+              <i class="fas fa-phone"></i> Contactado
+            </button>
+            <button onclick="updateAvisoEstado(${aviso.id}, 'descartado')" class="btn-small danger">
+              <i class="fas fa-times"></i> Descartar
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    postulantesList.innerHTML = html;
+  }
+
+  function getEstadoClass(estado) {
+    const estados = {
+      'pendiente': 'estado-pendiente',
+      'revisado': 'estado-revisado',
+      'contactado': 'estado-contactado',
+      'descartado': 'estado-descartado'
+    };
+    return estados[estado] || 'estado-pendiente';
+  }
+
+  function getEstadoText(estado) {
+    const estados = {
+      'pendiente': 'Pendiente',
+      'revisado': 'Revisado',
+      'contactado': 'Contactado',
+      'descartado': 'Descartado'
+    };
+    return estados[estado] || 'Pendiente';
+  }
+
+  function updateAvisoEstado(avisoId, nuevoEstado) {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    if (!token) {
+      alert('No estás autenticado');
+      return;
+    }
+
+    fetch(`/api/rrhh/avisos-postulantes/${avisoId}/estado`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        estado: nuevoEstado,
+        observaciones: ''
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.ok) {
+        alert('Estado actualizado correctamente');
+        loadPostulantes(); // Recargar la lista
+      } else {
+        throw new Error(data.error || 'Error actualizando estado');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error actualizando estado: ' + error.message);
+    });
+  }
+
+  function viewCV(postulanteId) {
+    alert('Función de ver CV - Próximamente disponible');
+    // Aquí se implementará la lógica para ver el CV
+  }
+
+
+  function filterPostulantes() {
+    alert('Función de filtrar postulantes - Próximamente disponible');
+    // Aquí se implementará la lógica para filtrar postulantes
+  }
 </script>
 </body>
 </html>
