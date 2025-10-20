@@ -168,8 +168,23 @@ img {
   border-color: transparent
 }
 
+.cta-btn.secondary {
+  background: #f8f9fa;
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
 .cta-btn.secondary:hover {
-  background: #121a30
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .main-content {

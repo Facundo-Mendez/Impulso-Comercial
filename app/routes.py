@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import os
 
 from . import db
-from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario, Etiqueta # <-- 1. Importar Etiqueta
+from .models.models import SolicitudEmpresa, PostulanteRegistro, Usuario, Etiqueta, Empresa, Trabajo, Postulacion # <-- Importar modelos adicionales
 from .ia_service import analizar_cv_y_extraer_etiquetas # <-- 2. Importar el servicio de IA
 
 routes_bp = Blueprint("routes", __name__)
@@ -505,3 +505,164 @@ def crear_postulacion():
         current_app.logger.error(f"Error en postulación: {str(e)}")
         db.session.rollback()
         return jsonify({"error": "Error interno del servidor"}), 500
+
+# ===== NUEVAS RUTAS PARA EMPRESAS Y POSTULACIONES =====
+
+@routes_bp.get("/empresas")
+def get_empresas():
+    """Obtiene todas las empresas disponibles con búsqueda opcional"""
+    search = request.args.get('search', '').strip()
+    
+    query = Empresa.query
+    if search:
+        query = query.filter(Empresa.nombre_empresa.ilike(f'%{search}%'))
+    
+    empresas = query.order_by(Empresa.nombre_empresa).all()
+    
+    empresas_data = []
+    for empresa in empresas:
+        # Contar trabajos activos
+        trabajos_activos = Trabajo.query.filter_by(empresa_id=empresa.id_empresa, activo=True).count()
+        
+        empresas_data.append({
+            'id': empresa.id_empresa,
+            'nombre': empresa.nombre_empresa,
+            'descripcion': empresa.descripcion,
+            'trabajos_activos': trabajos_activos
+        })
+    
+    return jsonify({"ok": True, "empresas": empresas_data})
+
+@routes_bp.get("/empresas/<int:empresa_id>/trabajos")
+def get_trabajos_empresa(empresa_id):
+    """Obtiene todos los trabajos activos de una empresa específica"""
+    empresa = Empresa.query.get_or_404(empresa_id)
+    
+    trabajos = Trabajo.query.filter_by(empresa_id=empresa_id, activo=True).order_by(Trabajo.creado_en.desc()).all()
+    
+    trabajos_data = []
+    for trabajo in trabajos:
+        trabajos_data.append({
+            'id': trabajo.id,
+            'titulo': trabajo.titulo,
+            'descripcion': trabajo.descripcion,
+            'requisitos': trabajo.requisitos,
+            'ubicacion': trabajo.ubicacion,
+            'modalidad': trabajo.modalidad,
+            'salario_min': trabajo.salario_min,
+            'salario_max': trabajo.salario_max,
+            'experiencia_requerida': trabajo.experiencia_requerida,
+            'fecha_publicacion': trabajo.creado_en.isoformat(),
+            'empresa_nombre': empresa.nombre_empresa
+        })
+    
+    return jsonify({
+        "ok": True, 
+        "empresa": {
+            'id': empresa.id_empresa,
+            'nombre': empresa.nombre_empresa,
+            'descripcion': empresa.descripcion
+        },
+        "trabajos": trabajos_data
+    })
+
+@routes_bp.post("/empresas/<int:empresa_id>/trabajos/<int:trabajo_id>/postular")
+def postular_a_trabajo(empresa_id, trabajo_id):
+    """Permite a un usuario postularse a un trabajo específico"""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    # Verificar que el trabajo existe y pertenece a la empresa
+    trabajo = Trabajo.query.filter_by(id=trabajo_id, empresa_id=empresa_id, activo=True).first()
+    if not trabajo:
+        return jsonify({"ok": False, "error": "Trabajo no encontrado"}), 404
+    
+    # Verificar que el usuario no se haya postulado antes
+    postulacion_existente = Postulacion.query.filter_by(
+        usuario_id=u.id_usuario, 
+        trabajo_id=trabajo_id
+    ).first()
+    
+    if postulacion_existente:
+        return jsonify({"ok": False, "error": "Ya te has postulado a este trabajo"}), 400
+    
+    # Crear nueva postulación
+    nueva_postulacion = Postulacion(
+        usuario_id=u.id_usuario,
+        trabajo_id=trabajo_id,
+        estado="En revisión",
+        fecha_postulacion=datetime.now(timezone.utc)
+    )
+    
+    db.session.add(nueva_postulacion)
+    db.session.commit()
+    
+    return jsonify({
+        "ok": True, 
+        "message": "Postulación enviada exitosamente",
+        "postulacion_id": nueva_postulacion.id
+    })
+
+@routes_bp.get("/mis-postulaciones")
+def get_mis_postulaciones():
+    """Obtiene todas las postulaciones del usuario autenticado"""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    postulaciones = db.session.query(Postulacion, Trabajo, Empresa)\
+        .join(Trabajo, Postulacion.trabajo_id == Trabajo.id)\
+        .join(Empresa, Trabajo.empresa_id == Empresa.id_empresa)\
+        .filter(Postulacion.usuario_id == u.id_usuario)\
+        .order_by(Postulacion.fecha_postulacion.desc())\
+        .all()
+    
+    postulaciones_data = []
+    for postulacion, trabajo, empresa in postulaciones:
+        postulaciones_data.append({
+            'id': postulacion.id,
+            'trabajo': {
+                'id': trabajo.id,
+                'titulo': trabajo.titulo,
+                'descripcion': trabajo.descripcion,
+                'ubicacion': trabajo.ubicacion,
+                'modalidad': trabajo.modalidad,
+                'salario_min': trabajo.salario_min,
+                'salario_max': trabajo.salario_max,
+                'experiencia_requerida': trabajo.experiencia_requerida
+            },
+            'empresa': {
+                'id': empresa.id_empresa,
+                'nombre': empresa.nombre_empresa,
+                'descripcion': empresa.descripcion
+            },
+            'estado': postulacion.estado,
+            'fecha_postulacion': postulacion.fecha_postulacion.isoformat(),
+            'compatibilidad_score': postulacion.compatibilidad_score
+        })
+    
+    return jsonify({"ok": True, "postulaciones": postulaciones_data})
+
+@routes_bp.delete("/mis-postulaciones/<int:postulacion_id>")
+def cancelar_postulacion(postulacion_id):
+    """Permite cancelar una postulación (solo si está en revisión)"""
+    u = _get_user_from_auth()
+    if not u:
+        return jsonify({"ok": False, "error": "Autenticación requerida"}), 401
+    
+    postulacion = Postulacion.query.filter_by(
+        id=postulacion_id, 
+        usuario_id=u.id_usuario
+    ).first()
+    
+    if not postulacion:
+        return jsonify({"ok": False, "error": "Postulación no encontrada"}), 404
+    
+    if postulacion.estado != "En revisión":
+        return jsonify({"ok": False, "error": "No se puede cancelar una postulación que ya fue procesada"}), 400
+    
+    db.session.delete(postulacion)
+    db.session.commit()
+    
+    return jsonify({"ok": True, "message": "Postulación cancelada exitosamente"})

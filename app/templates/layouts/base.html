@@ -9,6 +9,7 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+  <!-- Updated: 2025-10-20 - Added Mis Postulaciones link -->
   <header class="main-header">
     <div class="container header-inner">
       <a class="logo-container" href="{{ url_for('home') }}">
@@ -22,9 +23,22 @@
         <ul class="nav-list">
           <li><a href="{{ url_for('home') }}">Inicio</a></li>
           <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
-          <li><a href="{{ url_for('pages', page='login') }}" class="btn btn-primary">Iniciar Sesión</a></li>
+          <li id="misPostulacionesLink" class="hidden"><a href="{{ url_for('pages', page='ver_empresas') }}">Ver Empresas</a></li>
+          <li id="loginLink"><a href="{{ url_for('pages', page='login') }}" class="btn btn-primary">Iniciar Sesión</a></li>
+          <li id="userMenu" class="hidden">
+            <div class="user-menu">
+              <button id="userMenuBtn" class="user-menu-btn">
+                <i class="fas fa-cog"></i>
+              </button>
+              <div id="userDropdown" class="user-dropdown" style="display: none;">
+                <div class="user-info">
+                  <span id="userName"></span>
+                </div>
+                <button id="logoutBtn" class="dropdown-item">Cerrar Sesión</button>
+              </div>
+            </div>
+          </li>
         </ul>
-        <button class="mobile-menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
       </nav>
     </div>
   </header>
@@ -32,6 +46,101 @@
   {% block content %}{% endblock %}
 
   <div id="toast-root" class="toast-root"></div>
+
+  <script>
+    // Manejo de autenticación en el header - VERSIÓN SIMPLIFICADA
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Script de autenticación del header iniciado');
+      
+      const misPostulacionesLink = document.getElementById('misPostulacionesLink');
+      const loginLink = document.getElementById('loginLink');
+      const userMenu = document.getElementById('userMenu');
+      const userName = document.getElementById('userName');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const userMenuBtn = document.getElementById('userMenuBtn');
+      const userDropdown = document.getElementById('userDropdown');
+
+      // Función para verificar autenticación
+      function checkAuth() {
+        const token = localStorage.getItem('token');
+        console.log('Verificando token:', !!token);
+        
+        if (token) {
+          // Verificar con el servidor
+          fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Datos del usuario:', data);
+            if (data && data.rol === 'usuario') {
+              // Usuario postulante logueado - mostrar "Ver Empresas"
+              console.log('Mostrando Ver Empresas para postulante');
+              if (misPostulacionesLink) misPostulacionesLink.classList.remove('hidden');
+              if (loginLink) loginLink.classList.add('hidden');
+              if (userMenu) userMenu.classList.remove('hidden');
+              if (userName) userName.textContent = data.nombre || data.correo;
+            } else {
+              // No es postulante o error
+              console.log('Ocultando Ver Empresas');
+              if (misPostulacionesLink) misPostulacionesLink.classList.add('hidden');
+              if (loginLink) loginLink.classList.remove('hidden');
+              if (userMenu) userMenu.classList.add('hidden');
+            }
+          })
+          .catch(error => {
+            console.error('Error verificando auth:', error);
+            if (misPostulacionesLink) misPostulacionesLink.classList.add('hidden');
+            if (loginLink) loginLink.classList.remove('hidden');
+            if (userMenu) userMenu.classList.add('hidden');
+          });
+        } else {
+          // No hay token
+          console.log('No hay token, ocultando Ver Empresas');
+          if (misPostulacionesLink) misPostulacionesLink.classList.add('hidden');
+          if (loginLink) loginLink.classList.remove('hidden');
+          if (userMenu) userMenu.classList.add('hidden');
+        }
+      }
+
+      // Manejar dropdown del usuario
+      if (userMenuBtn) {
+        userMenuBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (userDropdown) {
+            userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
+          }
+        });
+      }
+
+      // Cerrar dropdown al hacer clic fuera
+      document.addEventListener('click', function() {
+        if (userDropdown) {
+          userDropdown.style.display = 'none';
+        }
+      });
+
+      // Manejar logout
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+        });
+      }
+
+      // Verificar inmediatamente
+      checkAuth();
+      
+      // Verificar cada 3 segundos
+      setInterval(checkAuth, 3000);
+      
+      // Verificar al hacer foco
+      window.addEventListener('focus', checkAuth);
+      
+      // Función global para debug
+      window.debugAuth = checkAuth;
+    });
+  </script>
 
   {% block extra_js %}{% endblock %}
 </body>

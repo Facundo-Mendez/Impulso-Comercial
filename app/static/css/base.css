@@ -208,3 +208,85 @@ textarea:focus {
   background: var(--bg-soft);
   color: #0b466b
 }
+
+/* Clase para ocultar elementos */
+.hidden {
+  display: none !important;
+}
+
+/* Estilos para el menú de usuario */
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--fg);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.user-menu-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.user-info {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.user-info span {
+  color: var(--fg);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--fg);
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Responsive para el menú de usuario */
+@media (max-width: 768px) {
+  .user-menu {
+    flex-direction: column;
+    gap: 5px;
+    align-items: stretch;
+  }
+  
+  .user-menu span {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+}

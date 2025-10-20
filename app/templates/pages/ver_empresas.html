@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ver Empresas | Impulso Comercial</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+</head>
+<body>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a class="logo-container" href="{{ url_for('home_alias') }}">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="logo-img"/>
+        <div class="logo-text">
+          <h1>IMPULSO COMERCIAL</h1>
+          <p>Especialistas en talento comercial</p>
+        </div>
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <ul class="nav-list">
+          <li><a href="{{ url_for('home_alias') }}">Inicio</a></li>
+          <li><a href="{{ url_for('pages', page='postulantes') }}">Postularme</a></li>
+          <li id="verEmpresasLink" class="hidden"><a href="{{ url_for('pages', page='ver_empresas') }}" class="active">Ver Empresas</a></li>
+          <li id="miCVLink" class="hidden"><a href="{{ url_for('pages', page='mi_cv') }}">Mi CV</a></li>
+          <li id="miPerfilLink" class="hidden"><a href="{{ url_for('pages', page='perfil') }}">Mi Perfil</a></li>
+          <li id="loginLink"><a href="{{ url_for('pages', page='login') }}" class="login-btn">Iniciar Sesión <i class="fas fa-sign-in-alt"></i></a></li>
+          <li id="userMenu" class="hidden">
+            <div class="user-menu">
+              <button id="userMenuBtn" class="user-menu-btn">
+                <i class="fas fa-cog"></i>
+              </button>
+              <div id="userDropdown" class="user-dropdown" style="display: none;">
+                <div class="user-info">
+                  <span id="userName"></span>
+                </div>
+                <button id="logoutBtn" class="dropdown-item">Cerrar Sesión</button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content container">
+    <h2 class="page-title">Ver Empresas</h2>
+    <p class="page-subtitle">Explora empresas disponibles y gestiona tus postulaciones</p>
+
+    <!-- Buscador de Empresas -->
+    <div class="form-card">
+      <h3>Buscar Empresas</h3>
+        <div class="search-container">
+        <div class="input-group">
+          <input type="text" id="searchInput" placeholder="Buscar empresas por nombre..." class="form-input">
+          <button id="searchBtn" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+            </div>
+        </div>
+        
+        <!-- Resultados de búsqueda -->
+        <div id="searchResults" class="search-results" style="display: none;">
+        <h4>Empresas Encontradas</h4>
+            <div id="empresasList" class="empresas-grid"></div>
+        </div>
+    </div>
+
+    <!-- Mis Postulaciones -->
+    <div class="form-card">
+      <div class="card-header">
+        <h3>Mis Postulaciones</h3>
+        <select id="estadoFilter" class="form-select" title="Filtrar por estado de postulación">
+                    <option value="">Todos los estados</option>
+                    <option value="En revisión">En revisión</option>
+                    <option value="Aceptado">Aceptado</option>
+                    <option value="Rechazado">Rechazado</option>
+                </select>
+        </div>
+
+        <div id="postulacionesList" class="postulaciones-list">
+            <div class="loading" id="loadingPostulaciones">
+                <div class="spinner"></div>
+                <p>Cargando postulaciones...</p>
+            </div>
+        </div>
+    </div>
+  </main>
+
+<!-- Modal para ver detalles de trabajo -->
+<div id="trabajoModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitulo"></h3>
+            <span class="close" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="modalContent"></div>
+        </div>
+        <div class="modal-footer">
+            <button id="postularBtn" class="btn btn-primary" style="display: none;">Postularme</button>
+            <button class="btn btn-secondary" id="cancelModal">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Impulso Comercial" class="footer-logo"/>
+        <p>Especialistas en reclutamiento de talento comercial.</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contacto</h4>
+        <p><i class="fas fa-envelope"></i> info@impulsocomercial.com</p>
+        <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+      </div>
+      <div class="footer-social">
+        <h4>Seguinos</h4>
+        <div class="social-links">
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; Impulso Comercial. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <style>
+    /* Estilos específicos para Ver Empresas */
+    .page-subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .form-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .input-group .form-input {
+      flex: 1;
+    }
+    
+    .search-results {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    
+    .empresas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .empresa-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .empresa-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .empresa-card h4 {
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    
+    .empresa-card p {
+      color: #666;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .empresa-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #888;
+    }
+    
+    .trabajos-count {
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+    }
+    
+    .postulaciones-list {
+      min-height: 200px;
+    }
+    
+    .postulacion-item {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .postulacion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .postulacion-info h4 {
+      color: #333;
+      margin-bottom: 0.25rem;
+    }
+    
+    .empresa-nombre {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    .postulacion-estado {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .estado-en-revision {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .estado-aceptado {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .estado-rechazado {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .postulacion-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .detail-label {
+      font-size: 0.75rem;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .detail-value {
+      color: #333;
+      font-size: 0.9rem;
+    }
+    
+    .postulacion-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Modal */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      color: #333;
+    }
+    
+    .close {
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s ease;
+    }
+    
+    .close:hover {
+      color: #333;
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+    }
+    
+    .modal-footer {
+      padding: 1.5rem;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .card-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .input-group {
+        flex-direction: column;
+      }
+      
+      .empresas-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .postulacion-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .postulacion-details {
+        grid-template-columns: 1fr;
+      }
+      
+      .postulacion-actions {
+        justify-content: stretch;
+      }
+    }
+    
+    /* Estilos para autenticación */
+    .hidden { display: none !important; }
+    .user-menu { display: flex; align-items: center; gap: 10px; }
+    .user-menu span { color: #333; font-weight: 500; font-size: 0.9rem; }
+    .user-menu .btn { padding: 6px 12px; font-size: 0.8rem; }
+  </style>
+
+  <script>
+    // Manejo de autenticación en el header - VERSIÓN SIMPLIFICADA
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Script de autenticación del header iniciado en ver empresas');
+      
+      const verEmpresasLink = document.getElementById('verEmpresasLink');
+      const miCVLink = document.getElementById('miCVLink');
+      const miPerfilLink = document.getElementById('miPerfilLink');
+      const loginLink = document.getElementById('loginLink');
+      const userMenu = document.getElementById('userMenu');
+      const userName = document.getElementById('userName');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const userMenuBtn = document.getElementById('userMenuBtn');
+      const userDropdown = document.getElementById('userDropdown');
+
+      // Función para verificar autenticación
+      function checkAuth() {
+        const token = localStorage.getItem('token');
+        console.log('Verificando token en ver empresas:', !!token);
+        
+        if (token) {
+          // Verificar con el servidor
+          fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Datos del usuario en ver empresas:', data);
+            if (data && data.rol === 'usuario') {
+              // Usuario postulante logueado - mostrar enlaces de usuario
+              console.log('Mostrando enlaces de usuario para postulante en ver empresas');
+              if (verEmpresasLink) verEmpresasLink.classList.remove('hidden');
+              if (miCVLink) miCVLink.classList.remove('hidden');
+              if (miPerfilLink) miPerfilLink.classList.remove('hidden');
+              if (loginLink) loginLink.classList.add('hidden');
+              if (userMenu) userMenu.classList.remove('hidden');
+              if (userName) userName.textContent = data.nombre || data.correo;
+            } else {
+              // No es postulante o error
+              console.log('Ocultando enlaces de usuario en ver empresas');
+              if (verEmpresasLink) verEmpresasLink.classList.add('hidden');
+              if (miCVLink) miCVLink.classList.add('hidden');
+              if (miPerfilLink) miPerfilLink.classList.add('hidden');
+              if (loginLink) loginLink.classList.remove('hidden');
+              if (userMenu) userMenu.classList.add('hidden');
+            }
+          })
+          .catch(error => {
+            console.error('Error verificando auth en ver empresas:', error);
+            if (verEmpresasLink) verEmpresasLink.classList.add('hidden');
+            if (miCVLink) miCVLink.classList.add('hidden');
+            if (miPerfilLink) miPerfilLink.classList.add('hidden');
+            if (loginLink) loginLink.classList.remove('hidden');
+            if (userMenu) userMenu.classList.add('hidden');
+          });
+        } else {
+          // No hay token
+          console.log('No hay token, ocultando enlaces de usuario en ver empresas');
+          if (verEmpresasLink) verEmpresasLink.classList.add('hidden');
+          if (miCVLink) miCVLink.classList.add('hidden');
+          if (miPerfilLink) miPerfilLink.classList.add('hidden');
+          if (loginLink) loginLink.classList.remove('hidden');
+          if (userMenu) userMenu.classList.add('hidden');
+        }
+      }
+
+      // Manejar dropdown del usuario
+      if (userMenuBtn) {
+        userMenuBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (userDropdown) {
+            userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
+          }
+        });
+      }
+
+      // Cerrar dropdown al hacer clic fuera
+      document.addEventListener('click', function() {
+        if (userDropdown) {
+          userDropdown.style.display = 'none';
+        }
+      });
+
+      // Manejar logout
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('token');
+          window.location.href = '/';
+        });
+      }
+
+      // Verificar inmediatamente
+      checkAuth();
+      
+      // Verificar cada 3 segundos
+      setInterval(checkAuth, 3000);
+      
+      // Verificar al hacer foco
+      window.addEventListener('focus', checkAuth);
+      
+      // Función global para debug
+      window.debugAuth = checkAuth;
+    });
+  </script>
+
+  <script src="{{ url_for('static', filename='js/ver_empresas.js') }}"></script>
+</body>
+</html>
+
