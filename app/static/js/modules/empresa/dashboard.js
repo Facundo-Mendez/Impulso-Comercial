@@ -108,7 +108,8 @@ class EmpresaDashboard {
   async checkAuth() {
     try {
       this.user = await api.get('/auth/me');
-      document.getElementById('empresaNombre').textContent = this.user.nombre || 'Mi Empresa';
+      // No establecer el nombre aquí, se establecerá en loadCompanyConfig
+      document.getElementById('empresaNombre').textContent = 'Mi Empresa';
     } catch (error) {
       if (error.message === '401') {
         // Ya redirigido por onAuthError
@@ -155,9 +156,13 @@ class EmpresaDashboard {
 
     // Mostrar sección actual
     const currentSectionEl = document.getElementById(`${section}Section`);
+    console.log('Sección actual encontrada:', !!currentSectionEl);
     if (currentSectionEl) {
       currentSectionEl.style.display = 'block';
       currentSectionEl.classList.remove('hidden');
+      console.log('Sección mostrada correctamente');
+    } else {
+      console.error(`Sección ${section}Section no encontrada`);
     }
 
     // Actualizar títulos
@@ -206,6 +211,7 @@ class EmpresaDashboard {
 
   async loadInitialData() {
     await this.loadSolicitudes();
+    await this.loadCompanyConfig(); // Cargar configuración de empresa al inicio
     this.updateStats();
   }
 
@@ -348,12 +354,18 @@ class EmpresaDashboard {
   // Métodos de acción
   async editSolicitud(id) {
     try {
+      console.log('Intentando editar solicitud ID:', id);
+      console.log('Solicitudes disponibles:', this.solicitudes);
+      
       // Buscar la solicitud en los datos cargados
       const solicitud = this.solicitudes.find(s => s.id === id);
       if (!solicitud) {
+        console.error('Solicitud no encontrada con ID:', id);
         notifier.error('Solicitud no encontrada');
         return;
       }
+
+      console.log('Solicitud encontrada:', solicitud);
 
       // Llenar el formulario con los datos actuales
       document.getElementById('editSolicitudId').value = solicitud.id;
@@ -365,6 +377,7 @@ class EmpresaDashboard {
       document.getElementById('editExtra').value = solicitud.extra || '';
 
       // Mostrar el modal
+      console.log('Mostrando modal de edición...');
       this.showEditModal();
     } catch (error) {
       console.error('Error al abrir modal de edición:', error);
@@ -372,11 +385,16 @@ class EmpresaDashboard {
     }
   }
 
-  viewCandidatos(id) {
+  async viewCandidatos(id) {
     // Navegar a la sección de candidatos y filtrar por esta solicitud
     this.navigateToSection('candidatos');
     // Guardar el ID de la solicitud para filtrar candidatos
     this.selectedSolicitudId = id;
+    
+    // Cargar candidatos y aplicar filtro
+    await this.loadCandidatos();
+    this.filterCandidatos();
+    
     notifier.info(`Mostrando candidatos para la solicitud ID: ${id}`);
   }
 
@@ -400,7 +418,9 @@ class EmpresaDashboard {
       console.log('Cargando estadísticas...');
       // Cargar postulaciones y estadísticas
       const response = await api.get('/empresa/postulaciones');
+      console.log('Respuesta de postulaciones:', response);
       const postulaciones = response.postulaciones || [];
+      console.log('Postulaciones encontradas:', postulaciones.length);
 
       this.renderEstadisticasResumen(postulaciones);
       this.renderPostulacionesList(postulaciones);
@@ -408,8 +428,9 @@ class EmpresaDashboard {
 
     } catch (error) {
       console.error('Error cargando estadísticas:', error);
-      // Mostrar datos de ejemplo para demostración
-      this.renderEstadisticasDemo();
+      // Mostrar datos vacíos en caso de error
+      this.renderEstadisticasResumen([]);
+      this.renderPostulacionesList([]);
     }
   }
 
@@ -419,10 +440,14 @@ class EmpresaDashboard {
     const aprobados = postulaciones.filter(p => p.estado === 'cv_aprobado' || p.estado === 'notificado_rrhh').length;
     const entrevistas = postulaciones.filter(p => p.estado === 'entrevista_programada' || p.estado === 'espera_entrevista').length;
 
+    console.log('Renderizando estadísticas:', { total, enRevision, aprobados, entrevistas });
+
     document.getElementById('totalPostulaciones').textContent = total;
     document.getElementById('enRevision').textContent = enRevision;
     document.getElementById('aprobados').textContent = aprobados;
     document.getElementById('entrevistas').textContent = entrevistas;
+    
+    console.log('Elementos actualizados correctamente');
   }
 
   renderPostulacionesList(postulaciones) {
@@ -559,33 +584,9 @@ class EmpresaDashboard {
   }
 
   renderEstadisticasDemo() {
-    // Datos de demostración
-    const demoData = [
-      {
-        id: 1,
-        nombre_postulante: 'Ana García',
-        cargo: 'Ejecutivo de Cuentas',
-        estado: 'en_revision',
-        fecha_postulacion: new Date().toISOString()
-      },
-      {
-        id: 2,
-        nombre_postulante: 'Carlos López',
-        cargo: 'Vendedor de Terreno',
-        estado: 'cv_aprobado',
-        fecha_postulacion: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        id: 3,
-        nombre_postulante: 'María Rodríguez',
-        cargo: 'Teleoperador',
-        estado: 'espera_entrevista',
-        fecha_postulacion: new Date(Date.now() - 172800000).toISOString()
-      }
-    ];
-
-    this.renderEstadisticasResumen(demoData);
-    this.renderPostulacionesList(demoData);
+    // Sin datos de demostración - mostrar estado vacío
+    this.renderEstadisticasResumen([]);
+    this.renderPostulacionesList([]);
   }
 
   async updateEstado(postulacionId, nuevoEstado) {
@@ -759,8 +760,11 @@ class EmpresaDashboard {
 
     let candidatosFiltrados = this.candidatos || [];
 
-    if (solicitudFilter) {
-      candidatosFiltrados = candidatosFiltrados.filter(c => c.solicitud_id == solicitudFilter);
+    // Si hay una solicitud seleccionada desde el botón, usarla
+    const solicitudId = this.selectedSolicitudId || solicitudFilter;
+    
+    if (solicitudId) {
+      candidatosFiltrados = candidatosFiltrados.filter(c => c.solicitud_id == solicitudId);
     }
 
     if (estadoFilter) {
@@ -820,13 +824,17 @@ class EmpresaDashboard {
       console.log('Cargando configuración de empresa...');
       // Cargar datos de la empresa
       const response = await api.get('/empresa/config');
-      const empresa = response.empresa;
+      console.log('Respuesta completa del servidor:', response);
+      const empresa = response.config;
       console.log('Datos de empresa recibidos:', empresa);
 
       // Llenar formulario con datos actuales
       if (empresa) {
         document.getElementById('companyName').value = empresa.nombre_empresa || '';
         document.getElementById('companyDescription').value = empresa.descripcion || '';
+
+        // Actualizar nombre de la empresa en el sidebar
+        document.getElementById('empresaNombre').textContent = empresa.nombre_empresa || 'Mi Empresa';
 
         // Mostrar logo si existe
         if (empresa.logo_url) {
@@ -975,15 +983,21 @@ class EmpresaDashboard {
   // Métodos del modal
   showEditModal() {
     const modal = document.getElementById('editSolicitudModal');
+    console.log('Modal encontrado:', !!modal);
     if (modal) {
+      modal.style.display = 'block';
       modal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
+      console.log('Modal mostrado correctamente');
+    } else {
+      console.error('Modal editSolicitudModal no encontrado');
     }
   }
 
   hideEditModal() {
     const modal = document.getElementById('editSolicitudModal');
     if (modal) {
+      modal.style.display = 'none';
       modal.classList.add('hidden');
       document.body.style.overflow = '';
     }

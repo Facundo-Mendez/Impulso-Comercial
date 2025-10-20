@@ -113,8 +113,11 @@ function useCachedUserInfo() {
     if (userRole === 'rrhh') {
       console.log('✅ Usuario es RRHH, actualizando header...');
       updateHeaderForRRHH(userName);
+    } else if (userRole === 'empresa') {
+      console.log('✅ Usuario es Empresa, actualizando header...');
+      updateHeaderForEmpresa(userName);
     } else {
-      console.log('❌ Usuario no es RRHH, no actualizando header');
+      console.log('❌ Usuario no es RRHH ni Empresa, no actualizando header');
     }
   } catch (error) {
     console.error('❌ Error parseando información del usuario guardada:', error);
@@ -143,6 +146,7 @@ function updateHeaderForEmpresa(userName) {
   // Agregar elementos específicos para Empresa
   const menuItems = [
     { text: 'Inicio', href: '/index.html' },
+    { text: 'Contacto', href: '/pages/contacto.html' },
     { text: 'Módulo Empresa', href: '/pages/dashboard-empresa.html', active: window.location.pathname.includes('dashboard-empresa') },
     {
       text: `<i class="fas fa-user"></i> Hola, ${userName}`,
@@ -351,6 +355,22 @@ function showProfile() {
 }
 
 function mostrarPerfilUsuario(usuario) {
+  // Determinar el rol y la información específica
+  const rol = usuario.rol || 'usuario';
+  const rolDisplay = getRolDisplay(rol);
+  const rolClass = getRolClass(rol);
+  
+  // Información específica según el rol
+  let infoEspecifica = '';
+  if (rol === 'empresa' && usuario.empresa) {
+    infoEspecifica = `
+      <div class="info-item">
+        <label>Empresa:</label>
+        <span>${usuario.empresa.nombre_empresa || 'No especificado'}</span>
+      </div>
+    `;
+  }
+
   // Crear modal para mostrar el perfil
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -358,7 +378,7 @@ function mostrarPerfilUsuario(usuario) {
   modal.style.display = 'block';
 
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content">
       <div class="modal-header">
         <h3><i class="fas fa-user"></i> Mi Perfil</h3>
         <button class="modal-close" onclick="cerrarModalPerfil()" title="Cerrar">
@@ -377,7 +397,7 @@ function mostrarPerfilUsuario(usuario) {
             <h4>${usuario.nombre || 'Sin nombre'}</h4>
             <p class="profile-email">${usuario.correo || 'Sin email'}</p>
             <p class="profile-role">
-              <span class="role-badge rrhh">RRHH</span>
+              <span class="role-badge ${rolClass}">${rolDisplay}</span>
             </p>
           </div>
         </div>
@@ -403,8 +423,9 @@ function mostrarPerfilUsuario(usuario) {
               </div>
               <div class="info-item">
                 <label>Rol:</label>
-                <span class="role-text">Recursos Humanos</span>
+                <span class="role-text">${rolDisplay}</span>
               </div>
+              ${infoEspecifica}
               <div class="info-item">
                 <label>Estado:</label>
                 <span class="status-active">Activo</span>
@@ -439,6 +460,27 @@ function mostrarPerfilUsuario(usuario) {
       cerrarModalPerfil();
     }
   });
+}
+
+// Funciones auxiliares para manejar roles
+function getRolDisplay(rol) {
+  const roles = {
+    'rrhh': 'RRHH',
+    'empresa': 'Empresa',
+    'postulante': 'Postulante',
+    'usuario': 'Usuario'
+  };
+  return roles[rol] || 'Usuario';
+}
+
+function getRolClass(rol) {
+  const classes = {
+    'rrhh': 'rrhh',
+    'empresa': 'empresa',
+    'postulante': 'postulante',
+    'usuario': 'usuario'
+  };
+  return classes[rol] || 'usuario';
 }
 
 function cerrarModalPerfil() {
@@ -492,7 +534,7 @@ function mostrarFormularioEdicion(usuario) {
   modal.style.display = 'block';
 
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-content">
       <div class="modal-header">
         <h3><i class="fas fa-edit"></i> Editar Perfil</h3>
         <button class="modal-close" onclick="cerrarModalEdicion()" title="Cerrar">
@@ -850,7 +892,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (loginLink) {
     if (isLoggedIn()) {
       const me = await getMe();
-      createUserDropdown(loginLink, me);
+      // Solo usar createUserDropdown para postulantes, no para empresas ni RRHH
+      if (me && me.rol === 'postulante') {
+        createUserDropdown(loginLink, me);
+      } else {
+        // Para empresas y RRHH, usar el sistema de updateHeaderForUser
+        loginLink.style.display = 'none';
+      }
     } else {
       loginLink.setAttribute('href', loginPagePath());
       loginLink.innerHTML = `Iniciar Sesión <i class="fas fa-sign-in-alt"></i>`;
@@ -1250,6 +1298,12 @@ document.addEventListener('visibilitychange', function() {
             updateHeaderForUser();
         }, 2000);
     }
+});
+
+// Asegurar que el header se actualice después de que se carga completamente la página
+window.addEventListener('load', function() {
+    console.log('🔄 Página cargada completamente, actualizando header...');
+    updateHeaderForUser();
 });
 
 // Actualización periódica removida para evitar rate limiting

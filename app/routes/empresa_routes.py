@@ -116,20 +116,9 @@ def get_empresa_postulaciones():
         return jsonify({"ok": True, "postulaciones": data})
     except Exception as e:
         print(f"Error obteniendo postulaciones: {e}")
-        # Fallback a datos de demostración en caso de error
         return jsonify({
             "ok": True,
-            "postulaciones": [
-                {
-                    "id": 1,
-                    "nombre_postulante": "Ana García (Demo)",
-                    "cargo": "Ejecutivo de Cuentas",
-                    "estado": "en_revision",
-                    "fecha_postulacion": "2025-10-01T10:00:00Z",
-                    "solicitud_id": 1,
-                    "postulante_id": 1
-                }
-            ]
+            "postulaciones": []
         })
 
 
@@ -163,28 +152,9 @@ def get_empresa_candidatos():
 
     except Exception as e:
         print(f"Error obteniendo candidatos: {e}")
-        # Fallback a datos de demostración
         return jsonify({
             "ok": True,
-            "candidatos": [
-                {
-                    "id": 1,
-                    "postulante_id": 1,
-                    "solicitud_id": 1,
-                    "nombre": "Ana García (Demo)",
-                    "correo": "ana.garcia@email.com",
-                    "cargo": "Ejecutivo de Cuentas",
-                    "estado": "en_revision",
-                    "fecha_postulacion": "2025-10-01T10:00:00Z",
-                    "fecha_actualizacion": "2025-10-01T10:00:00Z",
-                    "descripcion": "Profesional con 5 años de experiencia en ventas",
-                    "linkedin": "https://linkedin.com/in/ana-garcia",
-                    "github": None,
-                    "portfolio": None,
-                    "cv_filename": "ana_garcia_cv.pdf",
-                    "notas": None
-                }
-            ]
+            "candidatos": []
         })
 
 

@@ -42,8 +42,19 @@ class EmpresaService:
         if not cargo:
             raise NotFoundError("Falta el cargo/perfil solicitado")
 
+        # Obtener o crear la empresa para este usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            empresa = Empresa(
+                usuario_id=user.id,
+                nombre_empresa=user.nombre or "Mi Empresa",
+                descripcion=""
+            )
+            db.session.add(empresa)
+            db.session.commit()
+
         sol = Solicitud(
-            empresa_id=user.id,  # ya tenés el user autenticado
+            empresa_id=empresa.id,  # Usar el ID de la empresa, no del usuario
             cargo=cargo,
             requisitos=data.get("empresa_requisitos"),
             expectativa=data.get("empresa_expectativa"),
@@ -65,7 +76,34 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
-        solicitudes = Solicitud.query.filter_by(empresa_id=user.id).order_by(Solicitud.creado_en.desc()).all()
+        print(f"Buscando solicitudes para usuario ID: {user.id}")
+        
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        print(f"Empresa encontrada: {empresa is not None}")
+        if not empresa:
+            print("No se encontró empresa para este usuario")
+            return []
+            
+        # Buscar solicitudes con la nueva lógica (empresa.id)
+        solicitudes = Solicitud.query.filter_by(empresa_id=empresa.id).order_by(Solicitud.creado_en.desc()).all()
+        print(f"Solicitudes encontradas con empresa.id: {len(solicitudes)}")
+        
+        # Si no hay solicitudes con la nueva lógica, buscar con la lógica anterior (user.id)
+        if len(solicitudes) == 0:
+            print("Buscando con lógica anterior (user.id)...")
+            solicitudes_antiguas = Solicitud.query.filter_by(empresa_id=user.id).order_by(Solicitud.creado_en.desc()).all()
+            print(f"Solicitudes encontradas con user.id: {len(solicitudes_antiguas)}")
+            
+            # Migrar las solicitudes antiguas
+            for sol in solicitudes_antiguas:
+                sol.empresa_id = empresa.id
+                db.session.commit()
+                print(f"Migrada solicitud ID {sol.id}")
+            
+            # Volver a buscar con la nueva lógica
+            solicitudes = Solicitud.query.filter_by(empresa_id=empresa.id).order_by(Solicitud.creado_en.desc()).all()
+            print(f"Solicitudes después de migración: {len(solicitudes)}")
 
         data = []
         for sol in solicitudes:
@@ -96,7 +134,17 @@ class EmpresaService:
         if not user or user.rol != "empresa":
             raise AuthorizationError("Acceso denegado")
 
-        total_solicitudes = Solicitud.query.filter_by(empresa_id=user.id).count()
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            return {
+                "total_solicitudes": 0,
+                "solicitudes_activas": 0,
+                "solicitudes_pendientes": 0,
+                "total_candidatos": 0
+            }
+            
+        total_solicitudes = Solicitud.query.filter_by(empresa_id=empresa.id).count()
         total_candidatos = PostulanteRegistro.query.count()
 
         return {
@@ -114,10 +162,15 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            return jsonify({"ok": False, "error": "Empresa no encontrada"}), 404
+
         # Buscar la solicitud y verificar que pertenece al usuario
         solicitud = Solicitud.query.filter_by(
             id=solicitud_id,
-            empresa_id=user.id
+            empresa_id=empresa.id
         ).first()
 
         if not solicitud:
@@ -156,10 +209,15 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            raise NotFoundError("Empresa no encontrada")
+
         # Buscar la solicitud y verificar que pertenece al usuario
         solicitud = Solicitud.query.filter_by(
             id=solicitud_id,
-            empresa_id=user.id
+            empresa_id=empresa.id
         ).first()
 
         if not solicitud:
@@ -178,12 +236,12 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
-        empresa = Empresa.query.filter_by(id=user.id).first()
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
 
         if not empresa:
             # Si no existe empresa, crear una básica
             empresa = Empresa(
-                id=user.id,
+                usuario_id=user.id,
                 nombre_empresa=user.nombre or "Mi Empresa",
                 descripcion=""
             )
@@ -210,12 +268,12 @@ class EmpresaService:
         if not data:
             raise NotFoundError("Datos JSON requeridos")
 
-        empresa = Empresa.query.filter_by(id=user.id).first()
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
 
         if not empresa:
             # Si no existe empresa, crear una nueva
             empresa = Empresa(
-                id=user.id,
+                usuario_id=user.id,
                 nombre_empresa=data.get('nombre_empresa', user.nombre or "Mi Empresa"),
                 descripcion=data.get('descripcion', "")
             )
@@ -272,11 +330,11 @@ class EmpresaService:
         # Guardar archivo
         file.save(file_path)
 
-        empresa = Empresa.query.filter_by(id=user.id).first()
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
 
         if not empresa:
             empresa = Empresa(
-                id=user.id,
+                usuario_id=user.id,
                 nombre_empresa=user.nombre or "Mi Empresa",
                 descripcion=""
             )
@@ -303,7 +361,7 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
-        empresa = Empresa.query.filter_by(id=user.id).first()
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
 
         if not empresa or not empresa.logo_url:
             raise NotFoundError("No hay logo para eliminar")
@@ -329,16 +387,31 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
+        print(f"Buscando postulaciones para usuario empresa ID: {user.id}")
+        
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            print("Empresa no encontrada para este usuario")
+            return []
+        
+        # Primero verificar si hay solicitudes de esta empresa
+        solicitudes_empresa = Solicitud.query.filter_by(empresa_id=empresa.id).all()
+        print(f"Solicitudes encontradas para empresa: {len(solicitudes_empresa)}")
+        
         # Obtener postulaciones para las solicitudes de esta empresa
         postulaciones = db.session.query(PostulacionEmpresa) \
             .join(Solicitud, PostulacionEmpresa.solicitud_id == Solicitud.id) \
             .join(PostulanteRegistro, PostulacionEmpresa.postulante_id == PostulanteRegistro.id) \
             .join(Usuario, PostulanteRegistro.usuario_id == Usuario.id) \
-            .filter(Solicitud.empresa_id == user.id) \
+            .filter(Solicitud.empresa_id == empresa.id) \
             .order_by(PostulacionEmpresa.fecha_postulacion.desc()) \
             .all()
+            
+        print(f"Postulaciones encontradas: {len(postulaciones)}")
 
         data = []
+        print("Procesando postulaciones...")
         for postulacion in postulaciones:
             # Obtener nombre del postulante
             postulante_usuario = Usuario.query.filter_by(id_usuario=postulacion.postulante.usuario_id).first()
@@ -354,37 +427,9 @@ class EmpresaService:
                 "postulante_id": postulacion.postulante_id
             })
 
-        # Si no hay postulaciones reales, mostrar datos de demostración
+        # Si no hay postulaciones reales, devolver array vacío
         if not data:
-            data = [
-                {
-                    "id": 1,
-                    "nombre_postulante": "Ana García (Demo)",
-                    "cargo": "Ejecutivo de Cuentas",
-                    "estado": "en_revision",
-                    "fecha_postulacion": "2025-10-01T10:00:00Z",
-                    "solicitud_id": 1,
-                    "postulante_id": 1
-                },
-                {
-                    "id": 2,
-                    "nombre_postulante": "Carlos López (Demo)",
-                    "cargo": "Vendedor de Terreno",
-                    "estado": "cv_aprobado",
-                    "fecha_postulacion": "2025-09-30T14:30:00Z",
-                    "solicitud_id": 2,
-                    "postulante_id": 2
-                },
-                {
-                    "id": 3,
-                    "nombre_postulante": "María Rodríguez (Demo)",
-                    "cargo": "Teleoperador",
-                    "estado": "espera_entrevista",
-                    "fecha_postulacion": "2025-09-29T09:15:00Z",
-                    "solicitud_id": 3,
-                    "postulante_id": 3
-                }
-            ]
+            print("No hay postulaciones reales, devolviendo array vacío")
 
         return data
 
@@ -411,11 +456,16 @@ class EmpresaService:
         if nuevo_estado not in estados_validos:
             raise NotFoundError("Estado no válido")
 
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            raise NotFoundError("Empresa no encontrada")
+
         # Buscar la postulación y verificar que pertenece a esta empresa
         postulacion = db.session.query(PostulacionEmpresa) \
             .join(Solicitud, PostulacionEmpresa.solicitud_id == Solicitud.id) \
             .filter(PostulacionEmpresa.id == postulacion_id) \
-            .filter(Solicitud.empresa_id == user.id) \
+            .filter(Solicitud.empresa_id == empresa.id) \
             .first()
 
         if not postulacion:
@@ -449,12 +499,17 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            return []
+
         # Obtener candidatos para las solicitudes de esta empresa
         candidatos = db.session.query(PostulacionEmpresa) \
             .join(Solicitud, PostulacionEmpresa.solicitud_id == Solicitud.id) \
             .join(PostulanteRegistro, PostulacionEmpresa.postulante_id == PostulanteRegistro.id) \
             .join(Usuario, PostulanteRegistro.usuario_id == Usuario.id) \
-            .filter(Solicitud.empresa_id == user.id) \
+            .filter(Solicitud.empresa_id == empresa.id) \
             .order_by(PostulacionEmpresa.fecha_postulacion.desc()) \
             .all()
 
@@ -481,44 +536,9 @@ class EmpresaService:
                 "notas": candidato.notas
             })
 
-        # Si no hay candidatos reales, mostrar datos de demostración
+        # Si no hay candidatos reales, devolver lista vacía
         if not data:
-            data = [
-                {
-                    "id": 1,
-                    "postulante_id": 1,
-                    "solicitud_id": 1,
-                    "nombre": "Ana García (Demo)",
-                    "correo": "ana.garcia@email.com",
-                    "cargo": "Ejecutivo de Cuentas",
-                    "estado": "en_revision",
-                    "fecha_postulacion": "2025-10-01T10:00:00Z",
-                    "fecha_actualizacion": "2025-10-01T10:00:00Z",
-                    "descripcion": "Profesional con 5 años de experiencia en ventas y atención al cliente",
-                    "linkedin": "https://linkedin.com/in/ana-garcia",
-                    "github": None,
-                    "portfolio": None,
-                    "cv_filename": "ana_garcia_cv.pdf",
-                    "notas": None
-                },
-                {
-                    "id": 2,
-                    "postulante_id": 2,
-                    "solicitud_id": 2,
-                    "nombre": "Carlos López (Demo)",
-                    "correo": "carlos.lopez@email.com",
-                    "cargo": "Vendedor de Terreno",
-                    "estado": "cv_aprobado",
-                    "fecha_postulacion": "2025-09-30T14:30:00Z",
-                    "fecha_actualizacion": "2025-10-01T09:00:00Z",
-                    "descripcion": "Especialista en ventas con experiencia en sector inmobiliario",
-                    "linkedin": "https://linkedin.com/in/carlos-lopez",
-                    "github": None,
-                    "portfolio": "https://carloslopez.com",
-                    "cv_filename": "carlos_lopez_cv.pdf",
-                    "notas": "Candidato prometedor, buena experiencia"
-                }
-            ]
+            data = []
 
         return data
 
@@ -530,11 +550,16 @@ class EmpresaService:
         if not user or user.rol != 'empresa':
             raise AuthorizationError("Acceso denegado")
 
+        # Obtener la empresa del usuario
+        empresa = Empresa.query.filter_by(usuario_id=user.id).first()
+        if not empresa:
+            raise NotFoundError("Empresa no encontrada")
+
         # Buscar la postulación y verificar que pertenece a esta empresa
         postulacion = db.session.query(PostulacionEmpresa) \
             .join(Solicitud, PostulacionEmpresa.solicitud_id == Solicitud.id) \
             .filter(PostulacionEmpresa.id == candidato_id) \
-            .filter(Solicitud.empresa_id == user.id) \
+            .filter(Solicitud.empresa_id == empresa.id) \
             .first()
 
         if not postulacion:
